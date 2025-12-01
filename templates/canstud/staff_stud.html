@@ -1,0 +1,143 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% trans "SSW & Working Visa Checklist" %}</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #f4f6f8;
+      color: #333;
+    }
+
+    header {
+      background-color: #004e89;
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 2rem;
+    }
+
+    main {
+      padding: 3rem 2rem;
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    h2 {
+      color: #0077b6;
+      margin-bottom: 2rem;
+      font-size: 1.8rem;
+      text-align: center;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .grid-container {
+      display: grid;
+      /* Using minmax ensures the 2 columns stack if the screen is too small */
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2rem;
+    }
+
+    .button-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem; /* Increased gap between vertical buttons */
+    }
+
+    .workflow-button {
+      display: flex; /* Centers text vertically and horizontally */
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      
+      background-color: #ffffff;
+      border: 3px solid #0077b6; /* Thicker border */
+      color: #0077b6;
+      
+      /* BULKINESS SETTINGS */
+      padding: 2rem 1.5rem;
+      min-height: 80px;
+      border-radius: 12px;
+      
+      /* TEXT SETTINGS */
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      
+      /* DEPTH */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease-in-out;
+    }
+
+    .workflow-button:hover {
+      background-color: #0077b6;
+      color: white;
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 78, 137, 0.3);
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      background-color: #e0e0e0;
+      font-size: 1rem;
+      margin-top: 3rem;
+    }
+    
+    /* Small tweak for mobile screens to handle the bulky buttons */
+    @media (max-width: 500px) {
+        .grid-container {
+            grid-template-columns: 1fr;
+        }
+        .workflow-button {
+            padding: 1.5rem 1rem;
+            font-size: 1rem;
+        }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{% trans "STUDENT VISA & DOCUMENT" %}</h1>
+  </header>
+
+  <main>
+    <h2>{% trans "Required Steps & Documents" %}</h2>
+    <div class="grid-container">
+      <div class="button-list">
+        <a href="{% url 'dashboard:student_registration' %}" class="workflow-button">{% trans "STUDENT REGISTRATION" %}</a>
+        <a href="#" class="workflow-button">{% trans "STUDENT BIO-DATA" %}</a>
+        <a href="#" class="workflow-button">{% trans "COLLEGE APPLICATION FORM" %}</a>
+        <a href="#" class="workflow-button">{% trans "COE & VISA REPORT" %}</a>
+        <a href="#" class="workflow-button">{% trans "SCAN DOCUMENTS" %}</a>
+      </div>
+
+      <div class="button-list">
+        <a href="#" class="workflow-button">{% trans "ADMISSION & FEE PAYMENT" %}</a>
+        <a href="#" class="workflow-button">{% trans "LANGUAGE LEARNING CERTIFICATE" %}</a>
+        <a href="#" class="workflow-button">{% trans "JAPANESE LANGUAGE EXAM" %}</a>
+        <a href="#" class="workflow-button">{% trans "BANK AND CITY OFFICE DOCUMENT" %}</a>
+        <a href="#" class="workflow-button">{% trans "OTHER DOCUMENTS" %}</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© Aqua Group, All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

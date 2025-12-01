@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Registration Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            padding: 20px 0;
+        }
+        .form-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header-section {
+            background: linear-gradient(135deg, #ffb380 0%, #ffa366 100%);
+            padding: 30px;
+            text-align: center;
+            border-bottom: 4px solid #ff9966;
+        }
+        .header-section h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        .header-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #555;
+            margin-top: 10px;
+        }
+        .section-title {
+            background: #f8f9fa;
+            padding: 12px;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #666;
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+        .form-section {
+            border: 2px solid #666;
+            margin-bottom: 20px;
+        }
+        .form-row-custom {
+            display: flex;
+            border-bottom: 2px solid #666;
+        }
+        .form-row-custom:last-child {
+            border-bottom: none;
+        }
+        .label-cell {
+            background: #f8f9fa;
+            padding: 12px;
+            font-weight: 600;
+            border-right: 2px solid #666;
+            display: flex;
+            align-items: center;
+        }
+        .input-cell {
+            padding: 8px 12px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+        .input-cell input,
+        .input-cell select,
+        .input-cell textarea {
+            width: 100%;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .photo-section {
+            border-left: 2px solid #666;
+            padding: 15px;
+            text-align: center;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .photo-box {
+            width: 150px;
+            height: 180px;
+            border: 3px dashed #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            margin-bottom: 10px;
+            overflow: hidden;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .photo-box:hover {
+            border-color: #ff9966;
+            background: #fff;
+        }
+        .photo-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+        .photo-placeholder {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+        .photo-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .upload-btn i {
+            margin-right: 5px;
+        }
+        .file-name {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #ffb380 0%, #ffa366 100%);
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #ffa366 0%, #ff9966 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .formset-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .formset-table th,
+        .formset-table td {
+            border: 2px solid #666;
+            padding: 10px;
+        }
+        .formset-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .formset-table input,
+        .formset-table select {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .alert {
+            margin: 20px;
+        }
+        .errorlist {
+            color: red;
+            list-style: none;
+            padding: 0;
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+        .hidden-file-input {
+            display: none;
+        }
+        .doc-card {
+            border: 3px solid #666;
+            padding: 30px 20px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 10px;
+            height: 100%;
+        }
+        .doc-card:hover {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-color: #ff9966;
+        }
+        .doc-card i {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .doc-card:hover i {
+            color: #ff9966;
+            animation: pulse 0.5s ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .doc-title {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .doc-subtitle {
+            color: #666;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1>STAFF MANAGEMENT</h1>
+            <h2>STAFF REGISTRATION</h2>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form Errors Display -->
+        {% if form.errors or education_formset.errors or work_formset.errors %}
+            <div class="alert alert-danger" role="alert">
+                <strong><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ field }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="p-4" id="staffForm">
+            {% csrf_token %}
+            
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <div class="form-row-custom">
+                    <div class="label-cell" style="width: 15%;">STAFF ID *</div>
+                    <div class="input-cell" style="width: 35%; border-right: 2px solid #666;">
+                        {{ form.staff_id }}
+                        {{ form.staff_id.errors }}
+                    </div>
+                    <div class="label-cell" style="width: 15%;">Gender *</div>
+                    <div class="input-cell" style="width: 20%; border-right: 2px solid #666;">
+                        {{ form.gender }}
+                        {{ form.gender.errors }}
+                    </div>
+                    <div class="photo-section" style="width: 15%;">
+                        <div class="photo-box" id="photoPreview" onclick="document.getElementById('photoInput').click()">
+                            {% if staff.candidate_photo %}
+                                <img src="{{ staff.candidate_photo.url }}" alt="Photo">
+                            {% else %}
+                                <div class="photo-placeholder">
+                                    <i class="fas fa-camera"></i>
+                                    <div style="font-weight: bold; font-size: 0.8rem;">CANDIDATE</div>
+                                    <div style="font-weight: bold; font-size: 0.8rem;">PHOTO</div>
+                                    <div style="font-size: 0.7rem; margin-top: 5px;">Click to upload</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <input type="file" id="photoInput" name="candidate_photo" accept="image/*" class="hidden-file-input">
+                        <div class="file-name" id="fileName">No file chosen</div>
+                        <button type="button" class="upload-btn mt-2" onclick="document.getElementById('photoInput').click()">
+                            <i class="fas fa-upload"></i> Choose Photo
+                        </button>
+                        {{ form.candidate_photo.errors }}
+                    </div>
+                </div>
+
+                <div class="form-row-custom">
+                    <div class="label-cell" style="width: 15%;">Full Name *</div>
+                    <div class="input-cell" style="width: 35%; border-right: 2px solid #666;">
+                        {{ form.full_name }}
+                        {{ form.full_name.errors }}
+                    </div>
+                    <div class="label-cell" style="width: 15%;">Marital Status</div>
+                    <div class="input-cell" style="width: 35%;">
+                        {{ form.marital_status }}
+                        {{ form.marital_status.errors }}
+                    </div>
+                </div>
+
+                <div class="form-row-custom">
+                    <div class="label-cell" style="width: 15%;">Address</div>
+                    <div class="label-cell" style="width: 10%;">Permanent *</div>
+                    <div class="input-cell" style="width: 75%;">
+                        {{ form.permanent_address }}
+                        {{ form.permanent_address.errors }}
+                    </div>
+                </div>
+
+                <div class="form-row-custom">
+                    <div class="label-cell" style="width: 15%;"></div>
+                    <div class="label-cell" style="width: 10%;">Present *</div>
+                    <div class="input-cell" style="width: 75%;">
+                        {{ form.present_address }}
+                        {{ form.present_address.errors }}
+                    </div>
+                </div>
+
+                <div class="form-row-custom">
+                    <div class="label-cell" style="width: 20%;">ID / Passport No *</div>
+                    <div class="input-cell" style="width: 25%; border-right: 2px solid #666;">
+                        {{ form.id_passport_no }}
+                        {{ form.id_passport_no.errors }}
+                    </div>
+                    <div class="label-cell" style="width: 15%;">Date of Issue</div>
+                    <div class="input-cell" style="width: 15%; border-right: 2px solid #666;">
+                        {{ form.date_of_issue }}
+                        {{ form.date_of_issue.errors }}
+                    </div>
+                    <div class="label-cell" style="width: 10%;">Issue From</div>
+                    <div class="input-cell" style="width: 15%;">
+                        {{ form.issue_from }}
+                        {{ form.issue_from.errors }}
+                    </div>
+                </div>
+
+                <div class="form-row-custom">
+                    <div class="label-cell" style="width: 20%;">Personal Information</div>
+                    <div class="input-cell" style="width: 80%;">
+                        <div class="row w-100">
+                            <div class="col-md-2">
+                                <label class="form-label small">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Eye Lense (R)</label>
+                                {{ form.eye_lense_right }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Eye Lense (L)</label>
+                                {{ form.eye_lense_left }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Blood Group</label>
+                                {{ form.blood_group }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Phone No *</label>
+                                {{ form.phone_no }}
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">Email ID *</label>
+                                {{ form.email_id }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Family Records Section -->
+            <div class="form-section">
+                <div class="form-row-custom">
+                    <div class="label-cell" style="width: 15%;">Family Records</div>
+                    <div class="label-cell" style="width: 10%;">Spouse Name</div>
+                    <div class="input-cell" style="width: 40%; border-right: 2px solid #666;">
+                        {{ form.spouse_name }}
+                    </div>
+                    <div class="label-cell" style="width: 15%;">CONTACT NO</div>
+                    <div class="input-cell" style="width: 20%;">
+                        {{ form.contact_no }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Educational History Section -->
+            <div class="section-title">EDUCATIONAL HISTORY</div>
+            <table class="formset-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Pass Level</th>
+                        <th style="width: 30%;">Name of School</th>
+                        <th style="width: 10%;">Adm Year</th>
+                        <th style="width: 10%;">Adm Month</th>
+                        <th style="width: 10%;">Grad Year</th>
+                        <th style="width: 10%;">Grad Month</th>
+                        <th style="width: 15%;">Enrolled Years</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ education_formset.management_form }}
+                    {% for form in education_formset %}
+                        <tr>
+                            <td>{{ form.pass_level }}</td>
+                            <td>{{ form.name_of_school }}</td>
+                            <td>{{ form.admission_year }}</td>
+                            <td>{{ form.admission_month }}</td>
+                            <td>{{ form.graduation_year }}</td>
+                            <td>{{ form.graduation_month }}</td>
+                            <td>{{ form.enrolled_years }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Working Experience Section -->
+            <div class="section-title mt-4">WORKING EXPERIENCE</div>
+            <table class="formset-table">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Type of Work</th>
+                        <th style="width: 30%;">Company Name</th>
+                        <th style="width: 10%;">Join Year</th>
+                        <th style="width: 10%;">Join Month</th>
+                        <th style="width: 10%;">Resign Year</th>
+                        <th style="width: 10%;">Resign Month</th>
+                        <th style="width: 10%;">Working Years</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ work_formset.management_form }}
+                    {% for form in work_formset %}
+                        <tr>
+                            <td>{{ form.type_of_work }}</td>
+                            <td>{{ form.name_of_company }}</td>
+                            <td>{{ form.join_year }}</td>
+                            <td>{{ form.join_month }}</td>
+                            <td>{{ form.resign_year }}</td>
+                            <td>{{ form.resign_month }}</td>
+                            <td>{{ form.working_years }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Certificates Section -->
+            <div class="section-title mt-4">CERTIFICATE OF SKILLS</div>
+            <table class="formset-table">
+                <thead>
+                    <tr>
+                        <th>Pass Year</th>
+                        <th>Pass Month</th>
+                        <th>Certificate Name</th>
+                        <th>Join Year</th>
+                        <th>Join Month</th>
+                        <th>Organization</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ certificate_formset.management_form }}
+                    {% for form in certificate_formset %}
+                        <tr>
+                            <td>{{ form.pass_year }}</td>
+                            <td>{{ form.pass_month }}</td>
+                            <td>{{ form.name_of_certificate }}</td>
+                            <td>{{ form.join_year }}</td>
+                            <td>{{ form.join_month }}</td>
+                            <td>{{ form.organization }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Training Section -->
+            <div class="section-title mt-4">SKILLS TRAINING STATUS</div>
+            <table class="formset-table">
+                <thead>
+                    <tr>
+                        <th>Pass Year</th>
+                        <th>Pass Month</th>
+                        <th>Training Name</th>
+                        <th>Join Year</th>
+                        <th>Join Month</th>
+                        <th>Organization</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ training_formset.management_form }}
+                    {% for form in training_formset %}
+                        <tr>
+                            <td>{{ form.pass_year }}</td>
+                            <td>{{ form.pass_month }}</td>
+                            <td>{{ form.name_of_training }}</td>
+                            <td>{{ form.join_year }}</td>
+                            <td>{{ form.join_month }}</td>
+                            <td>{{ form.organization }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Driving License Section -->
+            <div class="form-section mt-4">
+                <div class="form-row-custom">
+                    <div class="label-cell" style="width: 15%;">DRIVING LICENSE</div>
+                    <div class="input-cell" style="width: 15%; border-right: 2px solid #666;">
+                        <div>
+                            <label class="form-label small">Pass Year</label>
+                            {{ license_form.pass_year }}
+                        </div>
+                    </div>
+                    <div class="input-cell" style="width: 15%; border-right: 2px solid #666;">
+                        <div>
+                            <label class="form-label small">Pass Month</label>
+                            {{ license_form.pass_month }}
+                        </div>
+                    </div>
+                    <div class="label-cell" style="width: 20%;">Discretion of License</div>
+                    <div class="input-cell" style="width: 35%;">
+                        {{ license_form.discretion_of_license }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hobbies and Motivation Section -->
+            <div class="form-section mt-4">
+                <div class="form-row-custom">
+                    <div style="width: 50%; border-right: 2px solid #666;">
+                        <div class="label-cell" style="border-bottom: 2px solid #666;">Hobbies, Special skills, etc.</div>
+                        <div class="input-cell" style="min-height: 120px;">
+                            {{ form.hobbies }}
+                        </div>
+                    </div>
+                    <div style="width: 50%;">
+                        <div class="label-cell" style="border-bottom: 2px solid #666;">Motivation, Self-promotion</div>
+                        <div class="input-cell" style="min-height: 120px;">
+                            {{ form.motivation }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Upload Buttons -->
+            <div class="section-title mt-4">DOCUMENT UPLOADS</div>
+            <div class="row mt-3 mb-4">
+                <!-- Staff Bio Data PDF -->
+                <div class="col-md-3 mb-3">
+                    <div class="doc-card" onclick="document.getElementById('bioDataInput').click()">
+                        <i class="fas fa-file-pdf" id="bioDataIcon"></i>
+                        <div class="doc-title">STAFF BIO DATA</div>
+                        <div class="doc-subtitle">PDF DOC</div>
+                        <div class="upload-status" id="bioDataStatus">
+                            {% if staff.staff_bio_data_pdf %}
+                                <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
+                            {% else %}
+                                <small class="text-muted">Click to upload</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <input type="file" id="bioDataInput" name="staff_bio_data_pdf" accept="application/pdf" class="hidden-file-input" onchange="handleFileUpload(this, 'bioData')">
+                    <div class="file-name-display" id="bioDataFileName">
+                        {% if staff.staff_bio_data_pdf %}
+                            {{ staff.staff_bio_data_pdf.name|default:"No file" }}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Staff ID Doc PDF -->
+                <div class="col-md-3 mb-3">
+                    <div class="doc-card" onclick="document.getElementById('idDocInput').click()">
+                        <i class="fas fa-id-card" id="idDocIcon"></i>
+                        <div class="doc-title">STAFF ID DOC</div>
+                        <div class="doc-subtitle">PDF DOC</div>
+                        <div class="upload-status" id="idDocStatus">
+                            {% if staff.staff_id_doc_pdf %}
+                                <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
+                            {% else %}
+                                <small class="text-muted">Click to upload</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <input type="file" id="idDocInput" name="staff_id_doc_pdf" accept="application/pdf" class="hidden-file-input" onchange="handleFileUpload(this, 'idDoc')">
+                    <div class="file-name-display" id="idDocFileName">
+                        {% if staff.staff_id_doc_pdf %}
+                            {{ staff.staff_id_doc_pdf.name|default:"No file" }}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Staff Login Report PDF -->
+                <div class="col-md-3 mb-3">
+                    <div class="doc-card" onclick="document.getElementById('loginReportInput').click()">
+                        <i class="fas fa-chart-line" id="loginReportIcon"></i>
+                        <div class="doc-title">STAFF LOGIN REPORT</div>
+                        <div class="doc-subtitle">PDF DOC</div>
+                        <div class="upload-status" id="loginReportStatus">
+                            {% if staff.staff_login_report_pdf %}
+                                <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
+                            {% else %}
+                                <small class="text-muted">Click to upload</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <input type="file" id="loginReportInput" name="staff_login_report_pdf" accept="application/pdf" class="hidden-file-input" onchange="handleFileUpload(this, 'loginReport')">
+                    <div class="file-name-display" id="loginReportFileName">
+                        {% if staff.staff_login_report_pdf %}
+                            {{ staff.staff_login_report_pdf.name|default:"No file" }}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Staff Login ID PDF -->
+                <div class="col-md-3 mb-3">
+                    <div class="doc-card" onclick="document.getElementById('loginIdInput').click()">
+                        <i class="fas fa-user-lock" id="loginIdIcon"></i>
+                        <div class="doc-title">STAFF LOGIN ID</div>
+                        <div class="doc-subtitle">PDF DOC</div>
+                        <div class="upload-status" id="loginIdStatus">
+                            {% if staff.staff_login_id_pdf %}
+                                <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
+                            {% else %}
+                                <small class="text-muted">Click to upload</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <input type="file" id="loginIdInput" name="staff_login_id_pdf" accept="application/pdf" class="hidden-file-input" onchange="handleFileUpload(this, 'loginId')">
+                    <div class="file-name-display" id="loginIdFileName">
+                        {% if staff.staff_login_id_pdf %}
+                            {{ staff.staff_login_id_pdf.name|default:"No file" }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center mt-4 mb-4">
+                <button type="submit" class="btn btn-submit">
+                    <i class="fas fa-check-circle"></i> 
+                    {% if staff %}Update Registration{% else %}Submit Registration{% endif %}
+                </button>
+                <a href="{% url 'staff_list' %}" class="btn btn-secondary ms-3" style="padding: 15px 50px; font-size: 1.2rem;">
+                    <i class="fas fa-times-circle"></i> Cancel
+                </a>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center" style="color: #666;">
+                Copyright © Aqua Group, All Rights Reserved
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Photo preview and file name display
+        const photoInput = document.getElementById('photoInput');
+        const photoPreview = document.getElementById('photoPreview');
+        const fileName = document.getElementById('fileName');
+
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Display file name
+                fileName.textContent = file.name;
+                fileName.style.color = '#28a745';
+                
+                // Display preview
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    photoPreview.innerHTML = '<img src="' + event.target.result + '" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Form submission confirmation
+        document.getElementById('staffForm').addEventListener('submit', function(e) {
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        });
+
+        // PDF Generation Functions
+        function generatePDF(type) {
+            const staffId = '{{ staff.pk|default:"" }}';
+            
+            if (!staffId) {
+                alert('Please save the staff record first before generating documents.');
+                return;
+            }
+
+            let pdfUrl = '';
+            switch(type) {
+                case 'bio':
+                    pdfUrl = `/manager/${staffId}/pdf/bio/`;
+                    break;
+                case 'id':
+                    pdfUrl = `/manager/${staffId}/pdf/id/`;
+                    break;
+                case 'report':
+                    pdfUrl = `/manager/${staffId}/pdf/report/`;
+                    break;
+                case 'login':
+                    pdfUrl = `/manager/${staffId}/pdf/login/`;
+                    break;
+            }
+
+            if (pdfUrl) {
+                window.open(pdfUrl, '_blank');
+            } else {
+                alert('Document generation feature coming soon!');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,793 @@
+<!-- templates/dashboards/recruitment_client_dashboard.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruitment Pipeline Dashboard</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .header { 
+            background: #2c3e50; 
+            color: white;
+            padding: 20px; 
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .pipeline-stats {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .pipeline-card {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            border-top: 4px solid;
+            position: relative;
+        }
+        
+        .pipeline-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .pipeline-card.active {
+            border-top-color: #27ae60;
+            background: #f8fff9;
+        }
+        
+        .pipeline-card.completed {
+            border-top-color: #27ae60;
+            background: #f8fff9;
+        }
+        
+        .pipeline-card.pending {
+            border-top-color: #f39c12;
+            background: #fffaf2;
+        }
+        
+        .pipeline-card.future {
+            border-top-color: #bdc3c7;
+            background: #f8f9fa;
+            color: #7f8c8d;
+        }
+        
+        .pipeline-arrow {
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #3498db;
+            font-size: 20px;
+            z-index: 2;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .tab:hover {
+            color: #495057;
+            background: #f8f9fa;
+        }
+        
+        .tab.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+            background: #f8f9fa;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .student-card {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid;
+            transition: transform 0.2s ease;
+        }
+        
+        .student-card:hover {
+            transform: translateX(5px);
+            background: #f5f5f5;
+        }
+        
+        .student-candidate-info { border-left-color: #f39c12; }
+        .student-select-candidate { border-left-color: #3498db; }
+        .student-interview-pattern { border-left-color: #9b59b6; }
+        .student-pass-interview { border-left-color: #27ae60; }
+        .student-ceo-approval { border-left-color: #e74c3c; }
+        .student-visa-arrival { border-left-color: #1abc9c; }
+        
+        .student-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            display: inline-block;
+            margin: 0 3px;
+            font-size: 14px;
+        }
+        
+        .btn-pdf { background: #e74c3c; }
+        .btn-approve { background: #27ae60; }
+        .btn-decline { background: #95a5a6; }
+        .btn-view { background: #3498db; }
+        .btn-move { background: #3498db; }
+        .btn-complete { background: #27ae60; }
+        
+        .student-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .detail-item {
+            padding: 5px 0;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .status-candidate-info { background: #f39c12; }
+        .status-select-candidate { background: #3498db; }
+        .status-interview-pattern { background: #9b59b6; }
+        .status-pass-interview { background: #27ae60; }
+        .status-ceo-approval { background: #e74c3c; }
+        .status-visa-arrival { background: #1abc9c; }
+        
+        .no-students {
+            text-align: center;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 2px dashed #ddd;
+            color: #666;
+        }
+        
+        .logout-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .btn-logout {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-logout:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .stage-progress {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .stage-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            position: relative;
+        }
+        
+        .stage-item.completed {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .stage-item.current {
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .stage-item.future {
+            color: #95a5a6;
+        }
+        
+        /* Messages styling */
+        .messages {
+            margin: 20px 0;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .alert-error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .alert-info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        
+        @media (max-width: 1200px) {
+            .pipeline-stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .pipeline-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .student-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .student-header > div:last-child {
+                margin-top: 10px;
+            }
+            .tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+            .tab {
+                white-space: nowrap;
+            }
+            .btn {
+                margin: 2px;
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Recruitment Pipeline Dashboard</h1>
+            <p>Welcome, {{ user.username }}! ({{ role_name }}) - {{ role_description }}</p>
+        </div>
+        
+        <div class="logout-container">
+            <a href="{% url 'accounts:login_view' %}" class="btn-logout" 
+               onclick="return confirm('Are you sure you want to logout?')">
+                🚪 Logout
+            </a>
+        </div>
+
+        <!-- Display Messages -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Pipeline Statistics -->
+        <div class="pipeline-stats">
+            <div class="pipeline-card {% if active_tab == 'candidate-info' %}active{% else %}completed{% endif %}" onclick="showTab('candidate-info')">
+                <h3>Candidate Information</h3>
+                <div style="font-size: 2em; font-weight: bold; color: #f39c12;">{{ candidate_info_count }}</div>
+                <p>Initial details submitted</p>
+                <div class="pipeline-arrow">→</div>
+            </div>
+            
+            <div class="pipeline-card {% if active_tab == 'select-candidate' %}active{% elif active_tab == 'candidate-info' %}future{% else %}completed{% endif %}" onclick="showTab('select-candidate')">
+                <h3>Select Candidate</h3>
+                <div style="font-size: 2em; font-weight: bold; color: #3498db;">{{ select_candidate_count }}</div>
+                <p>Shortlisted candidates</p>
+                <div class="pipeline-arrow">→</div>
+            </div>
+            
+            <div class="pipeline-card {% if active_tab == 'interview-pattern' %}active{% elif active_tab in 'candidate-info,select-candidate' %}future{% else %}completed{% endif %}" onclick="showTab('interview-pattern')">
+                <h3>Interview Pattern</h3>
+                <div style="font-size: 2em; font-weight: bold; color: #9b59b6;">{{ interview_pattern_count }}</div>
+                <p>Interview process defined</p>
+                <div class="pipeline-arrow">→</div>
+            </div>
+            
+            <div class="pipeline-card {% if active_tab == 'pass-interview' %}active{% elif active_tab in 'candidate-info,select-candidate,interview-pattern' %}future{% else %}completed{% endif %}" onclick="showTab('pass-interview')">
+                <h3>Pass Interview</h3>
+                <div style="font-size: 2em; font-weight: bold; color: #27ae60;">{{ pass_interview_count }}</div>
+                <p>Successful interviews</p>
+                <div class="pipeline-arrow">→</div>
+            </div>
+            
+            <div class="pipeline-card {% if active_tab == 'ceo-approval' %}active{% elif active_tab in 'candidate-info,select-candidate,interview-pattern,pass-interview' %}future{% else %}completed{% endif %}" onclick="showTab('ceo-approval')">
+                <h3>CEO Approval</h3>
+                <div style="font-size: 2em; font-weight: bold; color: #e74c3c;">{{ ceo_approval_count }}</div>
+                <p>Final approval stage</p>
+                <div class="pipeline-arrow">→</div>
+            </div>
+            
+            <div class="pipeline-card {% if active_tab == 'visa-arrival' %}active{% elif active_tab != 'visa-arrival' %}future{% endif %}" onclick="showTab('visa-arrival')">
+                <h3>Visa & Arrival</h3>
+                <div style="font-size: 2em; font-weight: bold; color: #1abc9c;">{{ visa_arrival_count }}</div>
+                <p>Final onboarding</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab {% if active_tab == 'candidate-info' %}active{% endif %}" onclick="showTab('candidate-info')">
+                📋 Candidate Information ({{ candidate_info_count }})
+            </button>
+            <button class="tab {% if active_tab == 'select-candidate' %}active{% endif %}" onclick="showTab('select-candidate')">
+                ✅ Select Candidate ({{ select_candidate_count }})
+            </button>
+            <button class="tab {% if active_tab == 'interview-pattern' %}active{% endif %}" onclick="showTab('interview-pattern')">
+                🎯 Interview Pattern ({{ interview_pattern_count }})
+            </button>
+            <button class="tab {% if active_tab == 'pass-interview' %}active{% endif %}" onclick="showTab('pass-interview')">
+                🎉 Pass Interview ({{ pass_interview_count }})
+            </button>
+            <button class="tab {% if active_tab == 'ceo-approval' %}active{% endif %}" onclick="showTab('ceo-approval')">
+                👑 CEO Approval ({{ ceo_approval_count }})
+            </button>
+            <button class="tab {% if active_tab == 'visa-arrival' %}active{% endif %}" onclick="showTab('visa-arrival')">
+                ✈️ Visa & Arrival ({{ visa_arrival_count }})
+            </button>
+        </div>
+
+        <!-- Candidate Information Tab -->
+        <div id="candidate-info-tab" class="tab-content {% if active_tab == 'candidate-info' %}active{% endif %}">
+            <h2>📋 Candidate Information</h2>
+            <p>Initial candidate details and documents submission</p>
+            
+            {% if candidate_info_students %}
+                {% for student in candidate_info_students %}
+                <div class="student-card student-candidate-info">
+                    <div class="stage-progress">
+                        <div class="stage-item completed">Candidate Info</div>
+                        <div class="stage-item future">Select Candidate</div>
+                        <div class="stage-item future">Interview Pattern</div>
+                        <div class="stage-item future">Pass Interview</div>
+                        <div class="stage-item future">CEO Approval</div>
+                        <div class="stage-item future">Visa & Arrival</div>
+                    </div>
+                    
+                    <div class="student-header">
+                        <div>
+                            <h3 style="margin: 0; color: #2c3e50;">{{ student.full_name }}</h3>
+                            <p style="margin: 5px 0 0 0; color: #666;">
+                                ID: {{ student.student_id }} 
+                                <span class="status-badge status-candidate-info" style="margin-left: 10px;">CANDIDATE INFO</span>
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{% url 'dashboard:generate_student_pdf' student.id %}" target="_blank" class="btn btn-pdf">📄 PDF</a>
+                            <a href="{% url 'dashboard:student_application_detail' student.id %}" class="btn btn-view">📁 Documents</a>
+                            <a href="{% url 'dashboard:move_to_next_stage' student.id 'select-candidate' %}" 
+                               class="btn btn-move" 
+                               onclick="return confirm('Are you sure you want to move {{ student.full_name }} to Select Candidate stage?')">
+                               ✅ Move to Select Candidate
+                            </a>
+                        </div>
+                    </div>
+                    <div class="student-details">
+                        <div class="detail-item"><span class="detail-label">Email:</span> {{ student.email }}</div>
+                        <div class="detail-item"><span class="detail-label">Phone:</span> {{ student.phone }}</div>
+                        <div class="detail-item"><span class="detail-label">Age:</span> {{ student.age }} years</div>
+                        <div class="detail-item"><span class="detail-label">Applied:</span> {{ student.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-students">
+                    <h3>No Candidates in This Stage</h3>
+                    <p>No candidate information has been submitted yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Select Candidate Tab -->
+        <div id="select-candidate-tab" class="tab-content {% if active_tab == 'select-candidate' %}active{% endif %}">
+            <h2>✅ Select Candidate</h2>
+            <p>Review and shortlist candidates for interviews</p>
+            
+            {% if select_candidate_students %}
+                {% for student in select_candidate_students %}
+                <div class="student-card student-select-candidate">
+                    <div class="stage-progress">
+                        <div class="stage-item completed">Candidate Info</div>
+                        <div class="stage-item current">Select Candidate</div>
+                        <div class="stage-item future">Interview Pattern</div>
+                        <div class="stage-item future">Pass Interview</div>
+                        <div class="stage-item future">CEO Approval</div>
+                        <div class="stage-item future">Visa & Arrival</div>
+                    </div>
+                    
+                    <div class="student-header">
+                        <div>
+                            <h3 style="margin: 0; color: #2c3e50;">{{ student.full_name }}</h3>
+                            <p style="margin: 5px 0 0 0; color: #666;">
+                                ID: {{ student.student_id }} 
+                                <span class="status-badge status-select-candidate" style="margin-left: 10px;">SELECT CANDIDATE</span>
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{% url 'dashboard:generate_student_pdf' student.id %}" target="_blank" class="btn btn-pdf">📄 PDF</a>
+                            <a href="{% url 'dashboard:student_application_detail' student.id %}" class="btn btn-view">📁 Documents</a>
+                            <a href="{% url 'dashboard:move_to_next_stage' student.id 'interview-pattern' %}" 
+                               class="btn btn-move" 
+                               onclick="return confirm('Are you sure you want to move {{ student.full_name }} to Interview Pattern stage?')">
+                               🎯 Move to Interview Pattern
+                            </a>
+                        </div>
+                    </div>
+                    <div class="student-details">
+                        <div class="detail-item"><span class="detail-label">Email:</span> {{ student.email }}</div>
+                        <div class="detail-item"><span class="detail-label">Phone:</span> {{ student.phone }}</div>
+                        <div class="detail-item"><span class="detail-label">Qualification:</span> {{ student.qualification|default:"Not specified" }}</div>
+                        <div class="detail-item"><span class="detail-label">Experience:</span> {{ student.experience }} years</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-students">
+                    <h3>No Candidates in Selection Stage</h3>
+                    <p>No candidates have been moved to selection stage yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Interview Pattern Tab -->
+        <div id="interview-pattern-tab" class="tab-content {% if active_tab == 'interview-pattern' %}active{% endif %}">
+            <h2>🎯 Interview Pattern</h2>
+            <p>Define interview process and schedule</p>
+            
+            {% if interview_pattern_students %}
+                {% for student in interview_pattern_students %}
+                <div class="student-card student-interview-pattern">
+                    <div class="stage-progress">
+                        <div class="stage-item completed">Candidate Info</div>
+                        <div class="stage-item completed">Select Candidate</div>
+                        <div class="stage-item current">Interview Pattern</div>
+                        <div class="stage-item future">Pass Interview</div>
+                        <div class="stage-item future">CEO Approval</div>
+                        <div class="stage-item future">Visa & Arrival</div>
+                    </div>
+                    
+                    <div class="student-header">
+                        <div>
+                            <h3 style="margin: 0; color: #2c3e50;">{{ student.full_name }}</h3>
+                            <p style="margin: 5px 0 0 0; color: #666;">
+                                ID: {{ student.student_id }} 
+                                <span class="status-badge status-interview-pattern" style="margin-left: 10px;">INTERVIEW PATTERN</span>
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{% url 'dashboard:generate_student_pdf' student.id %}" target="_blank" class="btn btn-pdf">📄 PDF</a>
+                            <a href="{% url 'dashboard:student_application_detail' student.id %}" class="btn btn-view">📁 Documents</a>
+                            <a href="{% url 'dashboard:move_to_next_stage' student.id 'pass-interview' %}" 
+                               class="btn btn-move" 
+                               onclick="return confirm('Are you sure you want to move {{ student.full_name }} to Pass Interview stage?')">
+                               🎉 Move to Pass Interview
+                            </a>
+                        </div>
+                    </div>
+                    <div class="student-details">
+                        <div class="detail-item"><span class="detail-label">Email:</span> {{ student.email }}</div>
+                        <div class="detail-item"><span class="detail-label">Interview Date:</span> {{ student.interview_date|date:"M d, Y"|default:"Not scheduled" }}</div>
+                        <div class="detail-item"><span class="detail-label">Interview Type:</span> {{ student.interview_type|default:"Not specified" }}</div>
+                        <div class="detail-item"><span class="detail-label">Interviewer:</span> {{ student.interviewer_name|default:"Not assigned" }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-students">
+                    <h3>No Interviews Scheduled</h3>
+                    <p>No candidates have been moved to interview stage yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Pass Interview Tab -->
+        <div id="pass-interview-tab" class="tab-content {% if active_tab == 'pass-interview' %}active{% endif %}">
+            <h2>🎉 Pass Interview</h2>
+            <p>Candidates who successfully passed the interview</p>
+            
+            {% if pass_interview_students %}
+                {% for student in pass_interview_students %}
+                <div class="student-card student-pass-interview">
+                    <div class="stage-progress">
+                        <div class="stage-item completed">Candidate Info</div>
+                        <div class="stage-item completed">Select Candidate</div>
+                        <div class="stage-item completed">Interview Pattern</div>
+                        <div class="stage-item current">Pass Interview</div>
+                        <div class="stage-item future">CEO Approval</div>
+                        <div class="stage-item future">Visa & Arrival</div>
+                    </div>
+                    
+                    <div class="student-header">
+                        <div>
+                            <h3 style="margin: 0; color: #2c3e50;">{{ student.full_name }}</h3>
+                            <p style="margin: 5px 0 0 0; color: #666;">
+                                ID: {{ student.student_id }} 
+                                <span class="status-badge status-pass-interview" style="margin-left: 10px;">PASS INTERVIEW</span>
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{% url 'dashboard:generate_student_pdf' student.id %}" target="_blank" class="btn btn-pdf">📄 PDF</a>
+                            <a href="{% url 'dashboard:student_application_detail' student.id %}" class="btn btn-view">📁 Documents</a>
+                            <a href="{% url 'dashboard:move_to_next_stage' student.id 'ceo-approval' %}" 
+                               class="btn btn-move" 
+                               onclick="return confirm('Are you sure you want to move {{ student.full_name }} to CEO Approval stage?')">
+                               👑 Move to CEO Approval
+                            </a>
+                        </div>
+                    </div>
+                    <div class="student-details">
+                        <div class="detail-item"><span class="detail-label">Email:</span> {{ student.email }}</div>
+                        <div class="detail-item"><span class="detail-label">Interview Score:</span> {{ student.interview_score|default:"Not scored" }}/100</div>
+                        <div class="detail-item"><span class="detail-label">Interview Feedback:</span> {{ student.interview_feedback|default:"No feedback"|truncatewords:10 }}</div>
+                        <div class="detail-item"><span class="detail-label">Interview Date:</span> {{ student.interview_date|date:"M d, Y"|default:"Not specified" }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-students">
+                    <h3>No Candidates Passed Interview</h3>
+                    <p>No candidates have passed the interview stage yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- CEO Approval Tab -->
+        <div id="ceo-approval-tab" class="tab-content {% if active_tab == 'ceo-approval' %}active{% endif %}">
+            <h2>👑 CEO Approval</h2>
+            <p>Final approval from CEO for selected candidates</p>
+            
+            {% if ceo_approval_students %}
+                {% for student in ceo_approval_students %}
+                <div class="student-card student-ceo-approval">
+                    <div class="stage-progress">
+                        <div class="stage-item completed">Candidate Info</div>
+                        <div class="stage-item completed">Select Candidate</div>
+                        <div class="stage-item completed">Interview Pattern</div>
+                        <div class="stage-item completed">Pass Interview</div>
+                        <div class="stage-item current">CEO Approval</div>
+                        <div class="stage-item future">Visa & Arrival</div>
+                    </div>
+                    
+                    <div class="student-header">
+                        <div>
+                            <h3 style="margin: 0; color: #2c3e50;">{{ student.full_name }}</h3>
+                            <p style="margin: 5px 0 0 0; color: #666;">
+                                ID: {{ student.student_id }} 
+                                <span class="status-badge status-ceo-approval" style="margin-left: 10px;">CEO APPROVAL</span>
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{% url 'dashboard:generate_student_pdf' student.id %}" target="_blank" class="btn btn-pdf">📄 PDF</a>
+                            <a href="{% url 'dashboard:student_application_detail' student.id %}" class="btn btn-view">📁 Documents</a>
+                            <a href="{% url 'dashboard:move_to_next_stage' student.id 'visa-arrival' %}" 
+                               class="btn btn-move" 
+                               onclick="return confirm('Are you sure you want to move {{ student.full_name }} to Visa & Arrival stage?')">
+                               ✈️ Move to Visa & Arrival
+                            </a>
+                        </div>
+                    </div>
+                    <div class="student-details">
+                        <div class="detail-item"><span class="detail-label">Email:</span> {{ student.email }}</div>
+                        <div class="detail-item"><span class="detail-label">Approval Status:</span> {{ student.ceo_approval_status|default:"Pending" }}</div>
+                        <div class="detail-item"><span class="detail-label">Approval Date:</span> {{ student.ceo_approval_date|date:"M d, Y"|default:"Not approved" }}</div>
+                        <div class="detail-item"><span class="detail-label">Approved By:</span> {{ student.approved_by|default:"Not specified" }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-students">
+                    <h3>No Candidates Pending CEO Approval</h3>
+                    <p>No candidates are awaiting CEO approval yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Visa and Arrival Tab -->
+        <div id="visa-arrival-tab" class="tab-content {% if active_tab == 'visa-arrival' %}active{% endif %}">
+            <h2>✈️ Visa & Arrival</h2>
+            <p>Final onboarding - visa processing and arrival arrangements</p>
+            
+            {% if visa_arrival_students %}
+                {% for student in visa_arrival_students %}
+                <div class="student-card student-visa-arrival">
+                    <div class="stage-progress">
+                        <div class="stage-item completed">Candidate Info</div>
+                        <div class="stage-item completed">Select Candidate</div>
+                        <div class="stage-item completed">Interview Pattern</div>
+                        <div class="stage-item completed">Pass Interview</div>
+                        <div class="stage-item completed">CEO Approval</div>
+                        <div class="stage-item current">Visa & Arrival</div>
+                    </div>
+                    
+                    <div class="student-header">
+                        <div>
+                            <h3 style="margin: 0; color: #2c3e50;">{{ student.full_name }}</h3>
+                            <p style="margin: 5px 0 0 0; color: #666;">
+                                ID: {{ student.student_id }} 
+                                <span class="status-badge status-visa-arrival" style="margin-left: 10px;">VISA & ARRIVAL</span>
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{% url 'dashboard:generate_student_pdf' student.id %}" target="_blank" class="btn btn-pdf">📄 PDF</a>
+                            <a href="{% url 'dashboard:student_application_detail' student.id %}" class="btn btn-view">📁 Documents</a>
+                            <a href="{% url 'dashboard:move_to_next_stage' student.id 'completed' %}" 
+                               class="btn btn-complete" 
+                               onclick="return confirm('Are you sure you want to mark {{ student.full_name }} as completed?')">
+                               🎊 Mark as Completed
+                            </a>
+                        </div>
+                    </div>
+                    <div class="student-details">
+                        <div class="detail-item"><span class="detail-label">Email:</span> {{ student.email }}</div>
+                        <div class="detail-item"><span class="detail-label">Visa Status:</span> {{ student.visa_status|default:"Not processed" }}</div>
+                        <div class="detail-item"><span class="detail-label">Expected Arrival:</span> {{ student.expected_arrival|date:"M d, Y"|default:"Not scheduled" }}</div>
+                        <div class="detail-item"><span class="detail-label">Accommodation:</span> {{ student.accommodation_status|default:"Not arranged" }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-students">
+                    <h3>No Candidates in Final Stage</h3>
+                    <p>No candidates have reached the visa and arrival stage yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            console.log('Showing tab:', tabName);
+            
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            const tabElement = document.getElementById(tabName + '-tab');
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Update URL without reloading page
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabName);
+            window.history.pushState({}, '', url);
+        }
+
+        // Set initial tab based on URL parameter
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab') || 'candidate-info';
+            console.log('Initial tab:', tab);
+            showTab(tab);
+        });
+
+        // Debug function to check URLs
+        function debugURLs() {
+            console.log('=== DEBUG: Checking Move URLs ===');
+            const moveLinks = document.querySelectorAll('a[href*="move-to-next-stage"]');
+            console.log(`Found ${moveLinks.length} move links`);
+            
+            moveLinks.forEach((link, index) => {
+                console.log(`Link ${index + 1}:`, {
+                    href: link.href,
+                    text: link.textContent.trim(),
+                    onclick: link.onclick
+                });
+            });
+        }
+
+        // Run debug on load
+        document.addEventListener('DOMContentLoaded', debugURLs);
+    </script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+{% extends 'basefour.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">
+                <i class="fas fa-building me-2"></i>
+                {% if form.instance.pk %}Edit Company - {{ form.instance.company_name_english }}{% else %}Company Registration{% endif %}
+            </h2>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                
+                <!-- Display Form Errors -->
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">Please correct the following errors:</h5>
+                    <ul class="mb-0">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Basic Information -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="border-bottom pb-2 text-primary">Basic Information</h5>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.company_id.id_for_label }}" class="form-label fw-bold">Company ID *</label>
+                            {{ form.company_id }}
+                            {% if form.instance.pk %}
+                            <div class="form-text">Current: {{ form.instance.company_id }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.phone_no.id_for_label }}" class="form-label fw-bold">Phone No.</label>
+                            {{ form.phone_no }}
+                            {% if form.instance.phone_no %}
+                            <div class="form-text">Current: {{ form.instance.phone_no }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.fax_no.id_for_label }}" class="form-label fw-bold">Fax No.</label>
+                            {{ form.fax_no }}
+                            {% if form.instance.fax_no %}
+                            <div class="form-text">Current: {{ form.instance.fax_no }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.company_name_english.id_for_label }}" class="form-label fw-bold">Company Name (English)</label>
+                            {{ form.company_name_english }}
+                            {% if form.instance.company_name_english %}
+                            <div class="form-text">Current: {{ form.instance.company_name_english }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.company_name_japanese.id_for_label }}" class="form-label fw-bold">Company Name (Japanese)</label>
+                            {{ form.company_name_japanese }}
+                            {% if form.instance.company_name_japanese %}
+                            <div class="form-text">Current: {{ form.instance.company_name_japanese }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Information -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="border-bottom pb-2 text-primary">Address Information</h5>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.head_office_address.id_for_label }}" class="form-label fw-bold">Head Office Address</label>
+                            {{ form.head_office_address }}
+                            {% if form.instance.head_office_address %}
+                            <div class="form-text">Current: {{ form.instance.head_office_address|linebreaks }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.corporate_office_address.id_for_label }}" class="form-label fw-bold">Corporate Office Address</label>
+                            {{ form.corporate_office_address }}
+                            {% if form.instance.corporate_office_address %}
+                            <div class="form-text">Current: {{ form.instance.corporate_office_address|linebreaks }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Representative Information -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="border-bottom pb-2 text-primary">Company Owner Information</h5>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.representative_name.id_for_label }}" class="form-label fw-bold">Representative Name</label>
+                            {{ form.representative_name }}
+                            {% if form.instance.representative_name %}
+                            <div class="form-text">Current: {{ form.instance.representative_name }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.representative_mobile.id_for_label }}" class="form-label fw-bold">Representative Mobile</label>
+                            {{ form.representative_mobile }}
+                            {% if form.instance.representative_mobile %}
+                            <div class="form-text">Current: {{ form.instance.representative_mobile }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.email.id_for_label }}" class="form-label fw-bold">Company Email ID</label>
+                            {{ form.email }}
+                            {% if form.instance.email %}
+                            <div class="form-text">Current: {{ form.instance.email }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.company_type.id_for_label }}" class="form-label fw-bold">Type of Company</label>
+                            {{ form.company_type }}
+                            {% if form.instance.company_type %}
+                            <div class="form-text">Current: {{ form.instance.company_type }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.website.id_for_label }}" class="form-label fw-bold">Home Page</label>
+                            {{ form.website }}
+                            {% if form.instance.website %}
+                            <div class="form-text">Current: <a href="{{ form.instance.website }}" target="_blank">{{ form.instance.website }}</a></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.agreement_date.id_for_label }}" class="form-label fw-bold">Agreement Date</label>
+                            {{ form.agreement_date }}
+                            {% if form.instance.agreement_date %}
+                            <div class="form-text">Current: {{ form.instance.agreement_date }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="{{ form.expire_date.id_for_label }}" class="form-label fw-bold">Expire Date</label>
+                            {{ form.expire_date }}
+                            {% if form.instance.expire_date %}
+                            <div class="form-text">Current: {{ form.instance.expire_date }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.agreement_type.id_for_label }}" class="form-label fw-bold">Agreement Type</label>
+                            {{ form.agreement_type }}
+                            {% if form.instance.agreement_type %}
+                            <div class="form-text">Current: {{ form.instance.get_agreement_type_display }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yearly Data Table -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="border-bottom pb-2 text-primary">Yearly Statistics</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Recruit Demand No.</th>
+                                        <th>Interview Attend No.</th>
+                                        <th>Interview Pass No.</th>
+                                        <th>Visa Application No.</th>
+                                        <th>CEO Success No.</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{ yearly_data_formset.management_form }}
+                                    {% for form in yearly_data_formset %}
+                                    <tr class="yearly-data-form">
+                                        <td>
+                                            {{ form.id }}
+                                            {{ form.year }}
+                                        </td>
+                                        <td>{{ form.yearly_student_no }}</td>
+                                        <td>{{ form.interview_attend_no }}</td>
+                                        <td>{{ form.interview_pass_no }}</td>
+                                        <td>{{ form.visa_application_no }}</td>
+                                        <td>{{ form.ceo_success_no }}</td>
+                                        <td class="text-center">
+                                            {% if form.instance.pk %}
+                                                {{ form.DELETE }} Delete
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents Section -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="border-bottom pb-2 text-primary">Documents</h5>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ form.agreement_doc.id_for_label }}" class="form-label fw-bold">Agreement Document</label>
+                            {{ form.agreement_doc }}
+                            {% if form.instance.agreement_doc %}
+                            <div class="mt-1">
+                                <small class="text-muted">Current: 
+                                    <a href="{{ form.instance.agreement_doc.url }}" target="_blank">View Document</a>
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ form.interview_pass_doc.id_for_label }}" class="form-label fw-bold">Interview Pass Document</label>
+                            {{ form.interview_pass_doc }}
+                            {% if form.instance.interview_pass_doc %}
+                            <div class="mt-1">
+                                <small class="text-muted">Current: 
+                                    <a href="{{ form.instance.interview_pass_doc.url }}" target="_blank">View Document</a>
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ form.visa_apply_doc.id_for_label }}" class="form-label fw-bold">Visa Apply Document</label>
+                            {{ form.visa_apply_doc }}
+                            {% if form.instance.visa_apply_doc %}
+                            <div class="mt-1">
+                                <small class="text-muted">Current: 
+                                    <a href="{{ form.instance.visa_apply_doc.url }}" target="_blank">View Document</a>
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ form.ceo_visa_doc.id_for_label }}" class="form-label fw-bold">CEO Visa Document</label>
+                            {{ form.ceo_visa_doc }}
+                            {% if form.instance.ceo_visa_doc %}
+                            <div class="mt-1">
+                                <small class="text-muted">Current: 
+                                    <a href="{{ form.instance.ceo_visa_doc.url }}" target="_blank">View Document</a>
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ form.other_doc.id_for_label }}" class="form-label fw-bold">Other Document</label>
+                            {{ form.other_doc }}
+                            {% if form.instance.other_doc %}
+                            <div class="mt-1">
+                                <small class="text-muted">Current: 
+                                    <a href="{{ form.instance.other_doc.url }}" target="_blank">View Document</a>
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ form.pdf_doc_1.id_for_label }}" class="form-label fw-bold">PDF Document 1</label>
+                            {{ form.pdf_doc_1 }}
+                            {% if form.instance.pdf_doc_1 %}
+                            <div class="mt-1">
+                                <small class="text-muted">Current: 
+                                    <a href="{{ form.instance.pdf_doc_1.url }}" target="_blank">View Document</a>
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="form-group">
+                            <label for="{{ form.pdf_doc_2.id_for_label }}" class="form-label fw-bold">PDF Document 2</label>
+                            {{ form.pdf_doc_2 }}
+                            {% if form.instance.pdf_doc_2 %}
+                            <div class="mt-1">
+                                <small class="text-muted">Current: 
+                                    <a href="{{ form.instance.pdf_doc_2.url }}" target="_blank">View Document</a>
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary me-md-2">
+                        <i class="fas fa-save me-2"></i>
+                        {% if form.instance.pk %}Update Company{% else %}Save Company{% endif %}
+                    </button>
+                    <a href="{% url 'regcompany:company_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

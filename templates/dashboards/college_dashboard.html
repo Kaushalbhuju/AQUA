@@ -1,0 +1,235 @@
+{% extends 'basethree.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4">College Management Dashboard</h1>
+        <p class="lead">Manage all college registrations and agreements</p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ colleges.count }}</h4>
+                        <p class="card-text">Total Colleges</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-university fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ active_agreements }}</h4>
+                        <p class="card-text">Active Agreements</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-file-contract fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ expiring_soon }}</h4>
+                        <p class="card-text">Expiring Soon</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_students }}</h4>
+                        <p class="card-text">Total Students</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="{% url 'company:college_create' %}" class="btn btn-primary me-md-2">
+                        <i class="fas fa-plus-circle"></i> Register New College
+                    </a>
+                    <a href="{% url 'company:college_list' %}" class="btn btn-success me-md-2">
+                        <i class="fas fa-list"></i> View All Colleges
+                    </a>
+                    <a href="/admin/company/college/" class="btn btn-outline-dark me-md-2">
+                        <i class="fas fa-cog"></i> Admin Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Colleges -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent College Registrations</h5>
+                <a href="{% url 'company:college_list' %}" class="btn btn-light btn-sm">View All</a>
+            </div>
+            <div class="card-body">
+                {% if colleges %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>College ID</th>
+                                <th>College Name</th>
+                                <th>Agreement Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for college in colleges|slice:":5" %}
+                            <tr>
+                                <td><strong>{{ college.college_id }}</strong></td>
+                                <td>{{ college.college_name_english }}</td>
+                                <td>{{ college.agreement_date }}</td>
+                                <td>
+                                    {% if college.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Expired</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'company:college_detail' college.pk %}" class="btn btn-info btn-sm">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-university fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No colleges registered yet.</p>
+                    <a href="{% url 'company:college_create' %}" class="btn btn-primary">Register First College</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Agreement Status</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="agreementChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Information -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">System Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <i class="fas fa-database fa-2x text-primary mb-2"></i>
+                        <h6>Database</h6>
+                        <small class="text-muted">PostgreSQL</small>
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                        <h6>Security</h6>
+                        <small class="text-muted">Django Protected</small>
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-cloud-upload-alt fa-2x text-info mb-2"></i>
+                        <h6>File Storage</h6>
+                        <small class="text-muted">Secure Uploads</small>
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-mobile-alt fa-2x text-warning mb-2"></i>
+                        <h6>Responsive</h6>
+                        <small class="text-muted">Mobile Friendly</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Simple chart for demonstration
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('agreementChart').getContext('2d');
+    const agreementChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Active Agreements', 'Expired Agreements', 'Expiring Soon'],
+            datasets: [{
+                data: [{{ active_agreements }}, {{ expired_agreements }}, {{ expiring_soon }}],
+                backgroundColor: [
+                    '#28a745',
+                    '#dc3545',
+                    '#ffc107'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+
+<!-- Font Awesome for icons -->
+<script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% trans "Recruitment Management System" %}{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <header>
+    <nav>
+      <h2>{% trans "Recruitment Management System" %}</h2>
+      <form action="{% url 'set_language' %}" method="post">
+        {% csrf_token %}
+        <ul class="nav-links">
+          <li><a href="{% url 'student_registration' %}">{% trans "CANDIDATE REGISTRATION" %}</a></li>
+          <li><a href="{% url 'biodata' %}">{% trans "BIO-DATA MANAGE" %}</a></li>
+            <li><a href="#">{% trans "JOB DEMAND" %}</a></li>
+            <li><a href="#">{% trans "INFORMATION APPLICATION DOCUMENT" %}</a></li>
+            <li><a href="#">{% trans "COE & VISA RECORDS" %}</a></li>
+            <li><a href="#">{% trans "SCAN DOCUMENT" %}</a></li>
+          </ul>
+        <select name="language" onchange="this.form.submit()">
+          {% get_current_language as LANGUAGE_CODE %}
+          {% get_available_languages as LANGUAGES %}
+          {% for lang in LANGUAGES %}
+            <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
+              {{ lang.1 }}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+
+
+
+<style>
+    /* Additional styles for enhanced navigation */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #2c3e50;
+      color: white;
+      flex-wrap: wrap;
+    }
+    
+    .nav-section {
+      display: flex;
+      align-items: center;
+    }
+    
+    .nav-links {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      flex-wrap: wrap;
+    }
+    
+    .nav-links li {
+      margin: 0 0.5rem;
+    }
+    
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      white-space: nowrap;
+    }
+    
+    .nav-links a:hover {
+      background-color: #34495e;
+    }
+    
+    .language-selector {
+      margin-left: 1rem;
+    }
+    
+    .language-selector select {
+      padding: 0.3rem;
+      border-radius: 4px;
+      border: none;
+    }
+    
+    @media (max-width: 768px) {
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .nav-section {
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+      
+      .nav-links {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .nav-links li {
+        margin: 0.2rem 0;
+      }
+      
+      .nav-links a {
+        display: block;
+        width: 100%;
+      }
+    }
+  </style>
+</html> 

@@ -1,0 +1,137 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Workflow Interface</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    header {
+      background-color: #004e89;
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 2rem;
+    }
+
+    main {
+      padding: 3rem 2rem;
+      max-width: 1400px; /* Increased max-width for bigger layout */
+      margin: auto;
+    }
+
+    section {
+      margin-bottom: 4rem;
+    }
+
+    h2 {
+      color: #0077b6;
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+      font-weight: 700;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 0.5rem;
+    }
+
+    .button-grid {
+      display: grid;
+      /* Increased minmax from 220px to 280px for wider buttons */
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .workflow-button {
+      display: flex; /* Helps center text perfectly */
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      
+      background-color: #ffffff;
+      border: 3px solid #0077b6; /* Thicker border */
+      color: #0077b6;
+      
+      /* BULKINESS SETTINGS */
+      padding: 2rem 1.5rem; /* Much larger padding */
+      min-height: 80px; /* Ensures a minimum height */
+      border-radius: 12px; /* Slightly more rounded */
+      
+      /* TEXT SETTINGS */
+      font-size: 1.2rem; /* Bigger text */
+      font-weight: 700; /* Bold text */
+      text-decoration: none;
+      text-transform: uppercase; /* Makes text look uniform and strong */
+      letter-spacing: 0.5px;
+      
+      /* DEPTH */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease-in-out;
+    }
+
+    .workflow-button:hover {
+      background-color: #0077b6;
+      color: white;
+      transform: translateY(-5px); /* Moves up slightly on hover */
+      box-shadow: 0 10px 15px rgba(0, 78, 137, 0.3); /* Stronger shadow on hover */
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      background-color: #e0e0e0;
+      font-size: 1rem;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{% trans "Student Workflow Interface" %}</h1>
+  </header>
+
+  <main>
+    <section>
+      <h2>{% trans "Student Business Operation" %}</h2>
+      <div class="button-grid">
+        <a href="{% url 'company:college_list' %}" class="workflow-button">{% trans "COLLEGE REGISTRATION & EDIT" %}</a>
+        <a href="{% url 'dashboard:student_registration' %}" class="workflow-button">{% trans "STUDENT REGISTRATION & EDIT" %}</a>
+        <a href="#" class="workflow-button">{% trans "COLLEGE AGREEMENT DOCUMENT" %}</a>
+        <a href="#" class="workflow-button">{% trans "JLPT & LANGUAGE EXAM" %}</a>
+        <a href="#" class="workflow-button">{% trans "STUDENT DEMAND" %}</a>
+        <a href="#" class="workflow-button">{% trans "STUDENT INTERVIEW" %}</a>
+        <a href="#" class="workflow-button">{% trans "COE APPLICATION" %}</a>
+        <a href="#" class="workflow-button">{% trans "VISA APPLICATION" %}</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>{% trans "Document Issue and Manage" %}</h2>
+      <div class="button-grid">
+        <a href="#" class="workflow-button">{% trans "STUDENT BIO-DATA" %}</a>
+        <a href="#" class="workflow-button">{% trans "LANGUAGE CERTIFICATE" %}</a>
+        <a href="#" class="workflow-button">{% trans "COLLEGE APPLICATION FORM" %}</a>
+        <a href="#" class="workflow-button">{% trans "BANK DOCUMENT" %}</a>
+        <a href="#" class="workflow-button">{% trans "VISA SUCCESS REPORT" %}</a>
+        <a href="#" class="workflow-button">{% trans "CITY OFFICE DOCUMENTS" %}</a>
+        <a href="#" class="workflow-button">{% trans "SCAN DOCUMENTS" %}</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© Aqua Group, All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful</title>
+    <style>
+        .success-container {
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            margin: 50px auto;
+            max-width: 600px;
+        }
+        .success-icon {
+            font-size: 80px;
+            color: #2ecc71;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-container">
+            <div class="success-icon">✓</div>
+            <h2>Registration Successful!</h2>
+            <p>Student <strong>{{ student.full_name }}</strong> has been registered successfully with ID: <strong>{{ student.student_id }}</strong></p>
+            <div>
+                <a href="{% url 'student_registration' %}" class="btn">Register Another Student</a>
+                <a href="{% url 'student_list' %}" class="btn btn-secondary">View All Students</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

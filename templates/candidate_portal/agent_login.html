@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard Login</title>
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2 style="text-align: center; margin-bottom: 30px;">Partner's Dashboard Login</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">
+            Access your candidate management dashboard
+        </p>
+        
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div style="padding: 10px; background: {% if message.tags == 'error' %}#f8d7da{% else %}#d4edda{% endif %}; 
+                      color: {% if message.tags == 'error' %}#721c24{% else %}#155724{% endif %}; 
+                      border-radius: 5px; margin-bottom: 10px;">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Partner's Code:</label>
+                <input type="text" name="agent_code" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>PIN Code:</label>
+                <input type="password" name="pin_code" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Your Private Email:</label>
+                <input type="Email" name="email" class="form-control" required>
+            </div>
+            <button type="submit" class="btn">Login to Dashboard</button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <p><small>For student registration: <a href="{% url 'dashboard:portal_student_registration' %}">Click here →</a></small></p>
+        </div>
+    </div>
+</body>
+</html>

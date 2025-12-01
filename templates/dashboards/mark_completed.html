@@ -1,0 +1,46 @@
+<!-- templates/dashboards/mark_completed.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Mark as Completed</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .confirmation-box { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 5px; 
+            border-left: 4px solid #27ae60;
+        }
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            display: inline-block; 
+            margin: 5px;
+        }
+        .btn-confirm { background: #27ae60; color: white; }
+        .btn-cancel { background: #95a5a6; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mark Student as Completed</h1>
+        
+        <div class="confirmation-box">
+            <h3>Confirm Completion</h3>
+            <p>Are you sure you want to mark <strong>{{ student.full_name }}</strong> (ID: {{ student.student_id }}) as completed?</p>
+            <p>This will move the student to the final "Completed" stage.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-confirm">✅ Yes, Mark as Completed</button>
+                <a href="{% url 'dashboard:recruitment_client_dashboard' %}" class="btn btn-cancel">❌ Cancel</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

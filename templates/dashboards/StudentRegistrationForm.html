@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration Form</title>
+    <style>
+        /* Your existing CSS styles remain the same */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 25px;
+            border-bottom: 3px solid #3498db;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header h1 {
+            color: #ecf0f1;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .header h2 {
+            color: #3498db;
+            font-size: 1.4rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        
+        .form-container {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid #e1e8ed;
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-section {
+            margin-bottom: 35px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #ecf0f1;
+            transition: all 0.3s ease;
+        }
+        
+        .form-section:hover {
+            border-bottom-color: #3498db;
+        }
+        
+        .section-title {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 14px 24px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .section-title:hover::before {
+            left: 100%;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease;
+        }
+        
+        .form-group:focus-within {
+            transform: translateY(-2px);
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+        
+        .form-group:focus-within label {
+            color: #3498db;
+        }
+        
+        .required label::after {
+            content: " *";
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+        
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            background: #ffffff;
+            transform: translateY(-1px);
+        }
+        
+        .readonly-field {
+            background-color: #f8f9fa !important;
+            color: #6c757d !important;
+            cursor: not-allowed;
+        }
+        
+        .error {
+            border-color: #e74c3c !important;
+            background: #fdf2f2 !important;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 6px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .error-message::before {
+            content: '⚠';
+            font-size: 0.8rem;
+        }
+        
+        .photo-container {
+            border: 2px dashed #bdc3c7;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-top: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .photo-container:hover {
+            border-color: #3498db;
+            background: #f0f7ff;
+            transform: scale(1.02);
+        }
+        
+        .photo-placeholder {
+            text-align: center;
+            color: #7f8c8d;
+            transition: all 0.3s ease;
+        }
+        
+        .photo-container:hover .photo-placeholder {
+            color: #3498db;
+        }
+        
+        .photo-preview {
+            max-width: 100%;
+            max-height: 100%;
+            display: none;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+            gap: 20px;
+        }
+        
+        .checkbox-group input {
+            margin-right: 6px;
+            transform: scale(1.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        th, td {
+            border: 1px solid #e1e8ed;
+            padding: 14px 12px;
+            text-align: center;
+            transition: background-color 0.2s ease;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            font-weight: 600;
+            border-color: #2c3e50;
+        }
+        
+        td {
+            background: #ffffff;
+        }
+        
+        tr:hover td {
+            background: #f8f9fa;
+        }
+        
+        .table-section {
+            overflow-x: auto;
+            border-radius: 10px;
+        }
+        
+        .document-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .document-item {
+            text-align: center;
+            padding: 25px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .document-item:hover {
+            border-color: #3498db;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.15);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+        
+        .document-item .pdf-icon {
+            font-size: 48px;
+            color: #e74c3c;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+        
+        .document-item:hover .pdf-icon {
+            transform: scale(1.1);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e1e8ed;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-container {
+            text-align: center;
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .messages {
+            margin-bottom: 25px;
+        }
+        
+        .alert {
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .errorlist {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 6px;
+            list-style: none;
+            padding: 0;
+        }
+        
+        .errorlist li {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .errorlist li::before {
+            content: '•';
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .form-container {
+                padding: 25px 20px;
+            }
+            
+            .form-group {
+                min-width: 100%;
+                margin-right: 0;
+            }
+            
+            .document-item {
+                min-width: 100%;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .form-row {
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .form-container {
+                padding: 20px 15px;
+            }
+            
+            .section-title {
+                padding: 12px 18px;
+                font-size: 1.1rem;
+            }
+            
+            .document-section {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AQUA EDUCATION AND TRAINING ACADEMY</h1>
+            <h2>ADMISSION FORM FOR SSW AND WORKING</h2>
+        </div>
+
+        <div class="form-container">
+            <form method="POST" enctype="multipart/form-data" id="studentForm">
+                {% csrf_token %}
+                
+                <!-- Agent Information Section -->
+                <div class="form-section">
+                    <div class="section-title">Agent Information</div>
+                    <div class="form-row">
+                        <div class="form-group required">
+                            <label for="id_agent_code">Agent Code *</label>
+                            {{ form.agent_code }}
+                            {% if form.agent_code.errors %}
+                            <div class="error-message">{{ form.agent_code.errors }}</div>
+                            {% endif %}
+                            <small style="color: #666; margin-top: 5px; display: block;">
+                                This code is automatically filled from your agent account
+                            </small>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_student_id_preview">Student ID Preview</label>
+                            {{ form.student_id_preview }}
+                            <small style="color: #666; margin-top: 5px; display: block;">
+                                This ID will be automatically assigned after submission
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Personal Information Section -->
+                <div class="form-section">
+                    <div class="section-title">Personal Information</div>
+                    
+                    <div class="form-row">
+                        <div class="form-group required">
+                            <label for="id_gender">Gender</label>
+                            {{ form.gender }}
+                            {% if form.gender.errors %}
+                            <div class="error-message">{{ form.gender.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_photo">Candidate Photo</label>
+                            {{ form.photo }}
+                            <div class="photo-container" id="photoContainer">
+                                <div class="photo-placeholder">
+                                    <div style="font-size: 40px; margin-bottom: 10px;">📷</div>
+                                    <span>Upload Photo (3cm × 4cm)</span>
+                                </div>
+                                <img class="photo-preview" id="photoPreview" alt="Student Photo">
+                            </div>
+                            {% if form.photo.errors %}
+                            <div class="error-message">{{ form.photo.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group required">
+                            <label for="id_full_name">Full Name</label>
+                            {{ form.full_name }}
+                            {% if form.full_name.errors %}
+                            <div class="error-message">{{ form.full_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group required">
+                            <label for="id_date_of_birth">Date of Birth</label>
+                            {{ form.date_of_birth }}
+                            {% if form.date_of_birth.errors %}
+                            <div class="error-message">{{ form.date_of_birth.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_age">Age</label>
+                            {{ form.age }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group required">
+                            <label for="id_permanent_address">Address (Permanent)</label>
+                            {{ form.permanent_address }}
+                            {% if form.permanent_address.errors %}
+                            <div class="error-message">{{ form.permanent_address.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_present_address">Address (Present)</label>
+                            {{ form.present_address }}
+                            {% if form.present_address.errors %}
+                            <div class="error-message">{{ form.present_address.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group required">
+                            <label for="id_marital_status">Marital Status</label>
+                            {{ form.marital_status }}
+                            {% if form.marital_status.errors %}
+                            <div class="error-message">{{ form.marital_status.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_spouse_name">Spouse Name</label>
+                            {{ form.spouse_name }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_spouse_contact">Spouse Contact No.</label>
+                            {{ form.spouse_contact }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_passport_no">Passport No.</label>
+                            {{ form.passport_no }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_passport_issue_date">Date of Issue</label>
+                            {{ form.passport_issue_date }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_passport_expiry_date">Date of Expired</label>
+                            {{ form.passport_expiry_date }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_height">Height</label>
+                            {{ form.height }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_weight">Weight</label>
+                            {{ form.weight }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_blood_group">Blood Group</label>
+                            {{ form.blood_group }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_medical_report">Medical Report</label>
+                            {{ form.medical_report }}
+                        </div>
+                        <div class="form-group">
+                            <label>TB Status</label>
+                            <div class="checkbox-group">
+                                <input type="radio" id="tbPositive" name="tb_status" value="positive">
+                                <label for="tbPositive">Positive</label>
+                                <input type="radio" id="tbNegative" name="tb_status" value="negative" style="margin-left: 15px;">
+                                <label for="tbNegative">Negative</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="id_visa_apply_record">Past Visa Apply Record</label>
+                            {{ form.visa_apply_record }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="visaDetailsContainer" style="display: none;">
+                        <div class="form-group">
+                            <label for="id_visa_details">Visa Apply if Yes (Apply No. & Result)</label>
+                            {{ form.visa_details }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group required">
+                            <label for="id_email">Email ID</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="error-message">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group required">
+                            <label for="id_phone">Phone No.</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                            <div class="error-message">{{ form.phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Educational History Section -->
+                <div class="form-section">
+                    <div class="section-title">Educational History</div>
+                    
+                    <div class="table-section">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pass Level</th>
+                                    <th>Name of School</th>
+                                    <th colspan="2">Admission</th>
+                                    <th colspan="2">Graduation</th>
+                                    <th>Enrolled Years</th>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th>Year</th>
+                                    <th>Month</th>
+                                    <th>Year</th>
+                                    <th>Month</th>
+                                    <th>Years</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Primary School</td>
+                                    <td>{{ form.school_primary_school }}</td>
+                                    <td>{{ form.admission_year_primary_school }}</td>
+                                    <td>{{ form.admission_month_primary_school }}</td>
+                                    <td>{{ form.graduation_year_primary_school }}</td>
+                                    <td>{{ form.graduation_month_primary_school }}</td>
+                                    <td>{{ form.enrolled_years_primary_school }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Junior H. School</td>
+                                    <td>{{ form.school_junior_h_school }}</td>
+                                    <td>{{ form.admission_year_junior_h_school }}</td>
+                                    <td>{{ form.admission_month_junior_h_school }}</td>
+                                    <td>{{ form.graduation_year_junior_h_school }}</td>
+                                    <td>{{ form.graduation_month_junior_h_school }}</td>
+                                    <td>{{ form.enrolled_years_junior_h_school }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Higher S. School</td>
+                                    <td>{{ form.school_higher_s_school }}</td>
+                                    <td>{{ form.admission_year_higher_s_school }}</td>
+                                    <td>{{ form.admission_month_higher_s_school }}</td>
+                                    <td>{{ form.graduation_year_higher_s_school }}</td>
+                                    <td>{{ form.graduation_month_higher_s_school }}</td>
+                                    <td>{{ form.enrolled_years_higher_s_school }}</td>
+                                </tr>
+                                <tr>
+                                    <td>College / University</td>
+                                    <td>{{ form.school_college_university }}</td>
+                                    <td>{{ form.admission_year_college_university }}</td>
+                                    <td>{{ form.admission_month_college_university }}</td>
+                                    <td>{{ form.graduation_year_college_university }}</td>
+                                    <td>{{ form.graduation_month_college_university }}</td>
+                                    <td>{{ form.enrolled_years_college_university }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Graduate University</td>
+                                    <td>{{ form.school_graduate_university }}</td>
+                                    <td>{{ form.admission_year_graduate_university }}</td>
+                                    <td>{{ form.admission_month_graduate_university }}</td>
+                                    <td>{{ form.graduation_year_graduate_university }}</td>
+                                    <td>{{ form.graduation_month_graduate_university }}</td>
+                                    <td>{{ form.enrolled_years_graduate_university }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Other School</td>
+                                    <td>{{ form.school_other_school }}</td>
+                                    <td>{{ form.admission_year_other_school }}</td>
+                                    <td>{{ form.admission_month_other_school }}</td>
+                                    <td>{{ form.graduation_year_other_school }}</td>
+                                    <td>{{ form.graduation_month_other_school }}</td>
+                                    <td>{{ form.enrolled_years_other_school }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Working Experience Section -->
+                <div class="form-section">
+                    <div class="section-title">Working Experience</div>
+                    
+                    <div class="table-section">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Type of Work</th>
+                                    <th>Name of Working Company</th>
+                                    <th>Date of Join</th>
+                                    <th>Date of Resign</th>
+                                    <th>Working Years</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ form.work_type_1 }}</td>
+                                    <td>{{ form.company_name_1 }}</td>
+                                    <td>{{ form.join_date_1 }}</td>
+                                    <td>{{ form.resign_date_1 }}</td>
+                                    <td>{{ form.working_years_1 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>{{ form.work_type_2 }}</td>
+                                    <td>{{ form.company_name_2 }}</td>
+                                    <td>{{ form.join_date_2 }}</td>
+                                    <td>{{ form.resign_date_2 }}</td>
+                                    <td>{{ form.working_years_2 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Certificates Section -->
+                <div class="form-section">
+                    <div class="section-title">Certificates & Skills</div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_certificate_pass_year">Pass Year & Month</label>
+                            {{ form.certificate_pass_year }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_certificate_name">Name of Certificate</label>
+                            {{ form.certificate_name }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_language_join_year">Join Year and Month</label>
+                            {{ form.language_join_year }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_organization">Organization</label>
+                            {{ form.organization }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_driving_license">Driving License</label>
+                            {{ form.driving_license }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_license_pass_year">Pass Year & Month</label>
+                            {{ form.license_pass_year }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_license_discretion">Discretion of License</label>
+                            {{ form.license_discretion }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_hobbies">Hobbies, Special skills, etc.</label>
+                            {{ form.hobbies }}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_motivation">Motivation, Self-promotion</label>
+                            {{ form.motivation }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Documents Section -->
+                <div class="form-section">
+                    <div class="section-title">Student Documents</div>
+                    
+                    <div class="document-section">
+                        <div class="document-item">
+                            <div class="pdf-icon">📄</div>
+                            <div>Student BIO-DATA</div>
+                            {{ form.bio_data_file }}
+                            <small style="color: #666; font-size: 12px;">PDF, Word, Images</small>
+                        </div>
+                        <div class="document-item">
+                            <div class="pdf-icon">📄</div>
+                            <div>Student ID Information</div>
+                            {{ form.id_info_file }}
+                            <small style="color: #666; font-size: 12px;">PDF, Word, Images</small>
+                        </div>
+                        <div class="document-item">
+                            <div class="pdf-icon">📄</div>
+                            <div>Student Educational Doc</div>
+                            {{ form.educational_doc_file }}
+                            <small style="color: #666; font-size: 12px;">PDF, Word, Images</small>
+                        </div>
+                        <div class="document-item">
+                            <div class="pdf-icon">📄</div>
+                            <div>Student Report</div>
+                            {{ form.report_file }}
+                            <small style="color: #666; font-size: 12px;">PDF, Word, Images</small>
+                        </div>
+                        <div class="document-item">
+                            <div class="pdf-icon">📄</div>
+                            <div>Other PDF</div>
+                            {{ form.other_file }}
+                            <small style="color: #666; font-size: 12px;">PDF, Word, Images</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <button type="submit" class="btn">Submit Registration</button>
+                    {% comment %} <a href="{% url 'dashboard:student_list' %}" class="btn" style="background-color: #95a5a6; margin-left: 10px;">
+                        View Students
+                    </a> {% endcomment %}
+                </div>
+            </form>
+        </div>
+        
+        <div class="footer">
+            <p>Copyright © Aqua Group, All Rights Reserved</p>
+        </div>
+    </div>
+
+    <script>
+        // Calculate age when date of birth is entered
+        document.getElementById('id_date_of_birth').addEventListener('change', function() {
+            const dob = new Date(this.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const monthDiff = today.getMonth() - dob.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            
+            document.getElementById('id_age').value = age;
+        });
+        
+        // Show/hide visa details based on selection
+        document.getElementById('id_visa_apply_record').addEventListener('change', function() {
+            const visaDetailsContainer = document.getElementById('visaDetailsContainer');
+            if (this.value === 'yes') {
+                visaDetailsContainer.style.display = 'flex';
+            } else {
+                visaDetailsContainer.style.display = 'none';
+            }
+        });
+        
+        // Photo upload preview
+        document.getElementById('id_photo').addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const photoContainer = document.getElementById('photoContainer');
+                    const photoPreview = document.getElementById('photoPreview');
+                    const photoPlaceholder = photoContainer.querySelector('.photo-placeholder');
+                    
+                    photoPlaceholder.style.display = 'none';
+                    photoPreview.src = e.target.result;
+                    photoPreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Click on photo container to trigger file input
+        document.getElementById('photoContainer').addEventListener('click', function() {
+            document.getElementById('id_photo').click();
+        });
+        
+        // Add error class to fields with errors
+        document.addEventListener('DOMContentLoaded', function() {
+            const errorFields = document.querySelectorAll('.errorlist');
+            errorFields.forEach(function(errorField) {
+                const input = errorField.closest('.form-group').querySelector('input, select, textarea');
+                if (input) {
+                    input.classList.add('error');
+                }
+            });
+            
+            // Initialize visa details visibility
+            const visaRecord = document.getElementById('id_visa_apply_record');
+            if (visaRecord) {
+                visaRecord.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
+</body>
+</html>

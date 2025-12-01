@@ -1,0 +1,34 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% trans "Recruitment Management System" %}{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <header>
+    <nav>
+      <h2>{% trans "Recruitment Management System" %}</h2>
+      <form action="{% url 'set_language' %}" method="post">
+        {% csrf_token %}
+        <select name="language" onchange="this.form.submit()">
+          {% get_current_language as LANGUAGE_CODE %}
+          {% get_available_languages as LANGUAGES %}
+          {% for lang in LANGUAGES %}
+            <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
+              {{ lang.1 }}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html> 

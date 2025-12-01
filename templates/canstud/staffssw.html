@@ -1,0 +1,110 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% trans "SSW & Working Visa Checklist" %}</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #f4f6f8;
+      color: #333;
+    }
+
+    header {
+      background-color: #004e89;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h2 {
+      color: #0077b6;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .button-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .workflow-button {
+      display: block;
+      text-align: center;
+      background-color: #ffffff;
+      border: 2px solid #0077b6;
+      color: #0077b6;
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .workflow-button:hover {
+      background-color: #0077b6;
+      color: white;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{% trans "SSW & Working Visa " %}</h1>
+  </header>
+
+  <main>
+    <h2>{% trans "Required Steps & Documents" %}</h2>
+    <div class="grid-container">
+      <!-- Left Column -->
+      <div class="button-list">
+        <a href="{% url 'dashboard:student_registration' %}" class="workflow-button">{% trans "CANDIDATE REGISTRATION" %}</a>
+        <a href="{% url 'dashboard:student_list' %}" class="workflow-button">{% trans "CANDIDATE BIO-DATA" %}</a>
+        <a href="#" class="workflow-button">{% trans "COMPANY APPLICATION FORM" %}</a>
+        <a href="#"class="workflow-button">{% trans "COE & VISA REPORT" %}</a>
+        <a href="#" class="workflow-button">{% trans "SCAN DOCUMENTS" %}</a>
+      </div>
+
+
+      
+
+      <!-- Right Column -->
+      <div class="button-list">
+        <a href="#" class="workflow-button">{% trans "ADMISSION & FEE PAYMENT" %}</a>
+        <a href="#" class="workflow-button">{% trans "LANGUAGE LEARNING CERTIFICATE" %}</a>
+        <a href="#" class="workflow-button">{% trans "JAPANESE LANGUAGE EXAM" %}</a>
+        <a href="#" class="workflow-button">{% trans "SSW SKILL EXAM" %}</a>
+        <a href="#" class="workflow-button">{% trans "OTHER DOCUMENTS" %}</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© Aqua Group, All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

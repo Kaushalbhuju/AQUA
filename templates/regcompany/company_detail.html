@@ -1,0 +1,281 @@
+{% extends 'basefour.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">COMPANY DETAILS - {{ company.company_id }}</h2>
+        <div>
+            <a href="{% url 'regcompany:company_update' company.pk %}" class="btn btn-warning btn-sm">Edit</a>
+            <a href="{% url 'regcompany:company_list' %}" class="btn btn-light btn-sm">Back to List</a>
+        </div>
+    </div>
+    <div class="card-body">
+        
+        <!-- Basic Information -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5 class="border-bottom pb-2">Basic Information</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="40%">Company ID:</th>
+                        <td>{{ company.company_id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Company Name (English):</th>
+                        <td>{{ company.company_name_english }}</td>
+                    </tr>
+                    <tr>
+                        <th>Company Name (Japanese):</th>
+                        <td>{{ company.company_name_japanese|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Type of Company:</th>
+                        <td>{{ company.company_type }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h5 class="border-bottom pb-2">Contact Information</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="40%">Phone No.:</th>
+                        <td>{{ company.phone_no|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Fax No.:</th>
+                        <td>{{ company.fax_no|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email ID:</th>
+                        <td>{{ company.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Home Page:</th>
+                        <td>
+                            {% if company.website %}
+                            <a href="{{ company.website }}" target="_blank">{{ company.website }}</a>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Address Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Address Information</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Head Office:</strong>
+                        <p class="mt-2">{{ company.head_office_address|linebreaks }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Corporate Office:</strong>
+                        <p class="mt-2">
+                            {% if company.corporate_office_address %}
+                                {{ company.corporate_office_address|linebreaks }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Representative Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Representative Information</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">Name:</th>
+                        <td>{{ company.representative_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Mobile:</th>
+                        <td>{{ company.representative_mobile }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Agreement Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Agreement Information</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">Agreement Date:</th>
+                        <td>{{ company.agreement_date }}</td>
+                    </tr>
+                    <tr>
+                        <th>Expire Date:</th>
+                        <td>{{ company.expire_date }}</td>
+                    </tr>
+                    <tr>
+                        <th>Agreement Type:</th>
+                        <td>{{ company.get_agreement_type_display }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Yearly Data Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Yearly Statistics</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Year</th>
+                                <th>Recruit Demand.No.</th>
+                                <th>Interview Attend No.</th>
+                                <th>Interview Pass No.</th>
+                                <th>Visa Application No.</th>
+                                <th>CEO Success No.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for yearly_data in company.yearly_data.all %}
+                            <tr>
+                                <td><strong>{{ yearly_data.year }}</strong></td>
+                                <td>{{ yearly_data.yearly_student_no }}</td>
+                                <td>{{ yearly_data.interview_attend_no }}</td>
+                                <td>{{ yearly_data.interview_pass_no }}</td>
+                                <td>{{ yearly_data.visa_application_no }}</td>
+                                <td>{{ yearly_data.ceo_success_no }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No yearly data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if company.yearly_data.all %}
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td><strong>
+                                    {% with total=0 %}
+                                        {% for data in company.yearly_data.all %}
+                                            {% with total=total|add:data.yearly_student_no %}{% endwith %}
+                                        {% endfor %}
+                                        {{ total }}
+                                    {% endwith %}
+                                </strong></td>
+                                <td><strong>
+                                    {% with total=0 %}
+                                        {% for data in company.yearly_data.all %}
+                                            {% with total=total|add:data.interview_attend_no %}{% endwith %}
+                                        {% endfor %}
+                                        {{ total }}
+                                    {% endwith %}
+                                </strong></td>
+                                <td><strong>
+                                    {% with total=0 %}
+                                        {% for data in company.yearly_data.all %}
+                                            {% with total=total|add:data.interview_pass_no %}{% endwith %}
+                                        {% endfor %}
+                                        {{ total }}
+                                    {% endwith %}
+                                </strong></td>
+                                <td><strong>
+                                    {% with total=0 %}
+                                        {% for data in company.yearly_data.all %}
+                                            {% with total=total|add:data.visa_application_no %}{% endwith %}
+                                        {% endfor %}
+                                        {{ total }}
+                                    {% endwith %}
+                                </strong></td>
+                                <td><strong>
+                                    {% with total=0 %}
+                                        {% for data in company.yearly_data.all %}
+                                            {% with total=total|add:data.ceo_success_no %}{% endwith %}
+                                        {% endfor %}
+                                        {{ total }}
+                                    {% endwith %}
+                                </strong></td>
+                            </tr>
+                        </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Section -->
+        <div class="row">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Documents</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Agreement Document:</strong><br>
+                        {% if company.agreement_doc %}
+                        <a href="{{ company.agreement_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View Agreement DOC</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Interview Pass Document:</strong><br>
+                        {% if company.interview_pass_doc %}
+                        <a href="{{ company.interview_pass_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View Interview Pass DOC</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Visa Apply Document:</strong><br>
+                        {% if company.visa_apply_doc %}
+                        <a href="{{ company.visa_apply_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View Visa Apply DOC</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>CEO Visa Document:</strong><br>
+                        {% if company.ceo_visa_doc %}
+                        <a href="{{ company.ceo_visa_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View CEO Visa DOC</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Other Document:</strong><br>
+                        {% if company.other_doc %}
+                        <a href="{{ company.other_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View Other DOC</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>PDF Document 1:</strong><br>
+                        {% if company.pdf_doc_1 %}
+                        <a href="{{ company.pdf_doc_1.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View PDF DOC 1</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>PDF Document 2:</strong><br>
+                        {% if company.pdf_doc_2 %}
+                        <a href="{{ company.pdf_doc_2.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View PDF DOC 2</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer text-muted">
+        Created: {{ company.created_at|date:"M d, Y H:i" }} | Last Updated: {{ company.updated_at|date:"M d, Y H:i" }}
+    </div>
+</div>
+{% endblock %}

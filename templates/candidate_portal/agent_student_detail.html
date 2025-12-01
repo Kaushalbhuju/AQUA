@@ -1,0 +1,592 @@
+<!-- templates/candidate_portal/agent_student_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Details - {{ student.full_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .student-info h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 8px;
+        }
+        
+        .student-meta {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .status-badge {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-declined { background: #f8d7da; color: #721c24; }
+        
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-back { background: #95a5a6; color: white; }
+        .btn-pdf { background: #e74c3c; color: white; }
+        .btn-dashboard { background: #3498db; color: white; }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 4px solid #3498db;
+        }
+        
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+            font-size: 1.4em;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .education-item, .work-item, .document-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .item-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        
+        .item-meta {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .item-details {
+            color: #5a6c7d;
+            line-height: 1.5;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #bdc3c7;
+        }
+        
+        .review-notes {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .review-label {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+        
+        .review-content {
+            color: #856404;
+            line-height: 1.5;
+        }
+        
+        .photo-container {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .student-photo {
+            width: 200px;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 3px solid #ecf0f1;
+        }
+        
+        .photo-placeholder {
+            width: 200px;
+            height: 250px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            font-size: 3em;
+            border: 3px dashed #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="student-info">
+                <h1>{{ student.full_name }}</h1>
+                <div class="student-meta">
+                    Student ID: {{ student.student_id }} • 
+                    <span class="status-badge status-{{ student.status }}">
+                        {{ student.status|upper }}
+                    </span>
+                    {% if student.reviewed_at %}
+                    • Reviewed: {{ student.reviewed_at|date:"M d, Y" }}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="actions">
+                <a href="{% url 'dashboard:agent_dashboard' %}" class="btn btn-dashboard">
+                    ← Back to Dashboard
+                </a>
+                <a href="{% url 'dashboard:generate_student_pdf' student.id %}" target="_blank" class="btn btn-pdf">
+                    📄 Generate PDF
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Left Column: Personal Information -->
+            <div class="card">
+                <h2>Personal Information</h2>
+                
+                <!-- Student Photo -->
+                <div class="photo-container">
+                    {% if student.photo %}
+                    <img src="{{ student.photo.url }}" alt="{{ student.full_name }}" class="student-photo">
+                    {% else %}
+                    <div class="photo-placeholder">📷</div>
+                    {% endif %}
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Full Name</span>
+                        <span class="info-value">{{ student.full_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Student ID</span>
+                        <span class="info-value">{{ student.student_id }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Date of Birth</span>
+                        <span class="info-value">{{ student.date_of_birth|date:"F j, Y" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Age</span>
+                        <span class="info-value">{{ student.age }} years</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Gender</span>
+                        <span class="info-value">{{ student.get_gender_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Marital Status</span>
+                        <span class="info-value">{{ student.get_marital_status_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Blood Group</span>
+                        <span class="info-value">{{ student.blood_group|default:"Not specified" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">TB Status</span>
+                        <span class="info-value">{{ student.tb_status|default:"Not specified" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Contact & Physical Information -->
+            <div class="card">
+                <h2>Contact & Physical Information</h2>
+                
+                <div class="info-grid">
+                    <div class="info-item full-width">
+                        <span class="info-label">Email</span>
+                        <span class="info-value">{{ student.email }}</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">Phone</span>
+                        <span class="info-value">{{ student.phone }}</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">Permanent Address</span>
+                        <span class="info-value">{{ student.permanent_address }}</span>
+                    </div>
+                    {% if student.present_address %}
+                    <div class="info-item full-width">
+                        <span class="info-label">Present Address</span>
+                        <span class="info-value">{{ student.present_address }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-item">
+                        <span class="info-label">Height</span>
+                        <span class="info-value">{{ student.height|default:"Not specified" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Weight</span>
+                        <span class="info-value">{{ student.weight|default:"Not specified" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Medical Report</span>
+                        <span class="info-value">{{ student.medical_report|default:"Not provided" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Passport Information -->
+        {% if student.passport_no %}
+        <div class="card">
+            <h2>Passport Information</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Passport Number</span>
+                    <span class="info-value">{{ student.passport_no }}</span>
+                </div>
+                {% if student.passport_issue_date %}
+                <div class="info-item">
+                    <span class="info-label">Issue Date</span>
+                    <span class="info-value">{{ student.passport_issue_date|date:"F j, Y" }}</span>
+                </div>
+                {% endif %}
+                {% if student.passport_expiry_date %}
+                <div class="info-item">
+                    <span class="info-label">Expiry Date</span>
+                    <span class="info-value">{{ student.passport_expiry_date|date:"F j, Y" }}</span>
+                </div>
+                {% endif %}
+                <div class="info-item">
+                    <span class="info-label">Visa Apply Record</span>
+                    <span class="info-value">{{ student.visa_apply_record|default:"No" }}</span>
+                </div>
+                {% if student.visa_details %}
+                <div class="info-item full-width">
+                    <span class="info-label">Visa Details</span>
+                    <span class="info-value">{{ student.visa_details }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Family Records -->
+        {% if student.spouse_name %}
+        <div class="card">
+            <h2>Family Records</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Spouse Name</span>
+                    <span class="info-value">{{ student.spouse_name }}</span>
+                </div>
+                {% if student.spouse_contact %}
+                <div class="info-item">
+                    <span class="info-label">Spouse Contact</span>
+                    <span class="info-value">{{ student.spouse_contact }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Educational History -->
+        <div class="card">
+            <h2>Educational History</h2>
+            {% if student.education_history.all %}
+                {% for education in student.education_history.all %}
+                <div class="education-item">
+                    <div class="item-header">
+                        <div class="item-title">{{ education.pass_level }}</div>
+                        <div class="item-meta">
+                            {% if education.admission_year and education.graduation_year %}
+                            {{ education.admission_year }} - {{ education.graduation_year }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="item-details">
+                        <strong>School:</strong> {{ education.school_name }}<br>
+                        {% if education.admission_month and education.graduation_month %}
+                        <strong>Period:</strong> {{ education.admission_month }} {{ education.admission_year }} to 
+                        {{ education.graduation_month }} {{ education.graduation_year }}<br>
+                        {% endif %}
+                        {% if education.enrolled_years %}
+                        <strong>Duration:</strong> {{ education.enrolled_years }} years
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-data">
+                    <h3>No Educational History</h3>
+                    <p>No educational records found for this student.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Work Experience -->
+        <div class="card">
+            <h2>Work Experience</h2>
+            {% if student.work_experience.all %}
+                {% for work in student.work_experience.all %}
+                <div class="work-item">
+                    <div class="item-header">
+                        <div class="item-title">{{ work.work_type }}</div>
+                        <div class="item-meta">
+                            {% if work.working_years %}
+                            {{ work.working_years }} years
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="item-details">
+                        <strong>Company:</strong> {{ work.company_name }}<br>
+                        {% if work.join_date %}
+                        <strong>Join Date:</strong> {{ work.join_date }}<br>
+                        {% endif %}
+                        {% if work.resign_date %}
+                        <strong>Resign Date:</strong> {{ work.resign_date }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-data">
+                    <h3>No Work Experience</h3>
+                    <p>No work experience records found for this student.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Certificates & Skills -->
+        <div class="card">
+            <h2>Certificates & Skills</h2>
+            <div class="info-grid">
+                {% if student.certificate_name %}
+                <div class="info-item">
+                    <span class="info-label">Certificate</span>
+                    <span class="info-value">{{ student.certificate_name }}</span>
+                </div>
+                {% endif %}
+                {% if student.certificate_pass_year %}
+                <div class="info-item">
+                    <span class="info-label">Pass Year</span>
+                    <span class="info-value">{{ student.certificate_pass_year }}</span>
+                </div>
+                {% endif %}
+                {% if student.language_join_year %}
+                <div class="info-item">
+                    <span class="info-label">Language Course</span>
+                    <span class="info-value">{{ student.language_join_year }}</span>
+                </div>
+                {% endif %}
+                {% if student.organization %}
+                <div class="info-item">
+                    <span class="info-label">Organization</span>
+                    <span class="info-value">{{ student.organization }}</span>
+                </div>
+                {% endif %}
+                {% if student.driving_license %}
+                <div class="info-item">
+                    <span class="info-label">Driving License</span>
+                    <span class="info-value">{{ student.driving_license }}</span>
+                </div>
+                {% endif %}
+                {% if student.license_pass_year %}
+                <div class="info-item">
+                    <span class="info-label">License Pass Year</span>
+                    <span class="info-value">{{ student.license_pass_year }}</span>
+                </div>
+                {% endif %}
+                {% if student.license_discretion %}
+                <div class="info-item full-width">
+                    <span class="info-label">License Details</span>
+                    <span class="info-value">{{ student.license_discretion }}</span>
+                </div>
+                {% endif %}
+                {% if student.hobbies %}
+                <div class="info-item full-width">
+                    <span class="info-label">Hobbies & Skills</span>
+                    <span class="info-value">{{ student.hobbies }}</span>
+                </div>
+                {% endif %}
+                {% if student.motivation %}
+                <div class="info-item full-width">
+                    <span class="info-label">Motivation</span>
+                    <span class="info-value">{{ student.motivation }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Review Information -->
+        {% if student.reviewed_at %}
+        <div class="card">
+            <h2>Review Information</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">
+                        <span class="status-badge status-{{ student.status }}">
+                            {{ student.status|upper }}
+                        </span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Reviewed On</span>
+                    <span class="info-value">{{ student.reviewed_at|date:"F j, Y" }}</span>
+                </div>
+                {% if student.review_notes %}
+                <div class="info-item full-width">
+                    <span class="info-label">Review Notes</span>
+                    <div class="review-notes">
+                        <div class="review-content">{{ student.review_notes }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Add confirmation for PDF generation
+        document.addEventListener('DOMContentLoaded', function() {
+            const pdfButton = document.querySelector('.btn-pdf');
+            if (pdfButton) {
+                pdfButton.addEventListener('click', function(e) {
+                    if (!confirm('Generate PDF report for this student?')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

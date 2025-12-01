@@ -1,0 +1,254 @@
+{% extends 'basethree.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">COLLEGE DETAILS - {{ college.college_id }}</h2>
+        <div>
+            <a href="{% url 'company:college_update' college.pk %}" class="btn btn-warning btn-sm">Edit</a>
+            <a href="{% url 'company:college_list' %}" class="btn btn-light btn-sm">Back to List</a>
+        </div>
+    </div>
+    <div class="card-body">
+        
+        <!-- Basic Information -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5 class="border-bottom pb-2">Basic Information</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="40%">College ID:</th>
+                        <td>{{ college.college_id }}</td>
+                    </tr>
+                    <tr>
+                        <th>College Name (English):</th>
+                        <td>{{ college.college_name_english }}</td>
+                    </tr>
+                    <tr>
+                        <th>College Name (Japanese):</th>
+                        <td>{{ college.college_name_japanese|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Type of College:</th>
+                        <td>{{ college.college_type }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h5 class="border-bottom pb-2">Contact Information</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="40%">Phone No.:</th>
+                        <td>{{ college.phone_no|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Fax No.:</th>
+                        <td>{{ college.fax_no|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email ID:</th>
+                        <td>{{ college.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Home Page:</th>
+                        <td>
+                            {% if college.website %}
+                            <a href="{{ college.website }}" target="_blank">{{ college.website }}</a>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Address Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Address Information</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Head Office:</strong>
+                        <p class="mt-2">{{ college.head_office_address|linebreaks }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Corporate Office:</strong>
+                        <p class="mt-2">
+                            {% if college.corporate_office_address %}
+                                {{ college.corporate_office_address|linebreaks }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Representative Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Representative Information</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">Name:</th>
+                        <td>{{ college.representative_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Mobile:</th>
+                        <td>{{ college.representative_mobile }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Agreement Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Agreement Information</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">Agreement Date:</th>
+                        <td>{{ college.agreement_date }}</td>
+                    </tr>
+                    <tr>
+                        <th>Expire Date:</th>
+                        <td>{{ college.expire_date }}</td>
+                    </tr>
+                    <tr>
+                        <th>Agreement Type:</th>
+                        <td>{{ college.get_agreement_type_display }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Yearly Data Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Yearly Statistics</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Year</th>
+                                <th>Yearly Student No.</th>
+                                <th>Interview Attend No.</th>
+                                <th>Interview Pass No.</th>
+                                <th>Visa Application No.</th>
+                                <th>CEO Success No.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for yearly_data in college.yearly_data.all %}
+                            <tr>
+                                <td><strong>{{ yearly_data.year }}</strong></td>
+                                <td>{{ yearly_data.yearly_student_no }}</td>
+                                <td>{{ yearly_data.interview_attend_no }}</td>
+                                <td>{{ yearly_data.interview_pass_no }}</td>
+                                <td>{{ yearly_data.visa_application_no }}</td>
+                                <td>{{ yearly_data.ceo_success_no }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No yearly data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if college.yearly_data.all %}
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                <td><strong>
+                                    {% with total_students=0 %}
+                                        {% for data in college.yearly_data.all %}
+                                            {% with total_students=total_students|add:data.yearly_student_no %}
+                                            {% endwith %}
+                                        {% endfor %}
+                                        {{ college.yearly_data.all|sum_attr:"yearly_student_no" }}
+                                    {% endwith %}
+                                </strong></td>
+                                <td><strong>{{ college.yearly_data.all|sum_attr:"interview_attend_no" }}</strong></td>
+                                <td><strong>{{ college.yearly_data.all|sum_attr:"interview_pass_no" }}</strong></td>
+                                <td><strong>{{ college.yearly_data.all|sum_attr:"visa_application_no" }}</strong></td>
+                                <td><strong>{{ college.yearly_data.all|sum_attr:"ceo_success_no" }}</strong></td>
+                            </tr>
+                        </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Section -->
+        <div class="row">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Documents</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Agreement Document:</strong><br>
+                        {% if college.agreement_doc %}
+                        <a href="{{ college.agreement_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View Agreement DOC</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Interview Pass Document:</strong><br>
+                        {% if college.interview_pass_doc %}
+                        <a href="{{ college.interview_pass_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View Interview Pass DOC</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Visa Apply Document:</strong><br>
+                        {% if college.visa_apply_doc %}
+                        <a href="{{ college.visa_apply_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View Visa Apply DOC</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>CEO Visa Document:</strong><br>
+                        {% if college.ceo_visa_doc %}
+                        <a href="{{ college.ceo_visa_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View CEO Visa DOC</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Other Document:</strong><br>
+                        {% if college.other_doc %}
+                        <a href="{{ college.other_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View Other DOC</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>PDF Document 1:</strong><br>
+                        {% if college.pdf_doc_1 %}
+                        <a href="{{ college.pdf_doc_1.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View PDF DOC 1</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>PDF Document 2:</strong><br>
+                        {% if college.pdf_doc_2 %}
+                        <a href="{{ college.pdf_doc_2.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">View PDF DOC 2</a>
+                        {% else %}
+                        <span class="text-muted">Not uploaded</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer text-muted">
+        Created: {{ college.created_at|date:"M d, Y H:i" }} | Last Updated: {{ college.updated_at|date:"M d, Y H:i" }}
+    </div>
+</div>
+{% endblock %}

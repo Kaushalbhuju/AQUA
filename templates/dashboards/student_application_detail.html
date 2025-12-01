@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Application Details - {{ student.full_name }}</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header { 
+            background: #2c3e50; 
+            color: white; 
+            padding: 20px; 
+            border-radius: 5px; 
+            margin-bottom: 20px; 
+        }
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            color: white; 
+            display: inline-block;
+            margin: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        .btn-back { background: #95a5a6; }
+        .btn-pdf { background: #e74c3c; }
+        .btn-approve { background: #27ae60; }
+        .btn-decline { background: #e74c3c; }
+        .btn-view { background: #3498db; }
+        
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .info-item {
+            padding: 10px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #2c3e50;
+        }
+        .status-badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+        }
+        .status-pending { background: #f39c12; }
+        .status-approved { background: #27ae60; }
+        .status-declined { background: #e74c3c; }
+        
+        .document-section {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .document-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .document-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Back Button -->
+        <div class="header">
+            <!-- FIXED: Added dashboard: namespace -->
+            <a href="{% url 'dashboard:recruitment_client_dashboard' %}" class="btn btn-back">
+                ← Back to Recruitment Dashboard
+            </a>
+            <h1 style="margin: 10px 0 0 0;">Student Application Details</h1>
+        </div>
+
+        <!-- Student Information -->
+        <div class="section">
+            <h3>Student Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Student ID</div>
+                    <div class="info-value">{{ student.student_id }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value">{{ student.full_name }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Status</div>
+                    <div class="info-value">
+                        <span class="status-badge status-{{ student.status }}">
+                            {{ student.status|upper }}
+                        </span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ student.email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Phone</div>
+                    <div class="info-value">{{ student.phone }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Date of Birth</div>
+                    <div class="info-value">{{ student.date_of_birth|date:"F j, Y" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Age</div>
+                    <div class="info-value">{{ student.age }} years</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Gender</div>
+                    <div class="info-value">{{ student.get_gender_display }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Marital Status</div>
+                    <div class="info-value">{{ student.get_marital_status_display }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="section">
+            <h3>Contact Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Permanent Address</div>
+                    <div class="info-value">{{ student.permanent_address }}</div>
+                </div>
+                {% if student.present_address %}
+                <div class="info-item">
+                    <div class="info-label">Present Address</div>
+                    <div class="info-value">{{ student.present_address }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Passport Information -->
+        {% if student.passport_no %}
+        <div class="section">
+            <h3>Passport Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Passport Number</div>
+                    <div class="info-value">{{ student.passport_no }}</div>
+                </div>
+                {% if student.passport_issue_date %}
+                <div class="info-item">
+                    <div class="info-label">Issue Date</div>
+                    <div class="info-value">{{ student.passport_issue_date|date:"F j, Y" }}</div>
+                </div>
+                {% endif %}
+                {% if student.passport_expiry_date %}
+                <div class="info-item">
+                    <div class="info-label">Expiry Date</div>
+                    <div class="info-value">{{ student.passport_expiry_date|date:"F j, Y" }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Educational History -->
+        {% if education_history %}
+        <div class="section">
+            <h3>Educational History</h3>
+            {% for education in education_history %}
+            <div class="document-section">
+                <strong>{{ education.pass_level }}</strong><br>
+                <span>{{ education.school_name }}</span><br>
+                <small>
+                    Admission: {{ education.admission_year }}/{{ education.admission_month }} - 
+                    Graduation: {{ education.graduation_year }}/{{ education.graduation_month }} - 
+                    Years: {{ education.enrolled_years }}
+                </small>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Work Experience -->
+        {% if work_experience %}
+        <div class="section">
+            <h3>Work Experience</h3>
+            {% for work in work_experience %}
+            <div class="document-section">
+                <strong>{{ work.work_type }}</strong><br>
+                <span>{{ work.company_name }}</span><br>
+                <small>
+                    Join: {{ work.join_date }} - 
+                    Resign: {{ work.resign_date }} - 
+                    Years: {{ work.working_years }}
+                </small>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Documents -->
+        {% if all_documents %}
+        <div class="section">
+            <h3>Uploaded Documents</h3>
+            {% for document in all_documents %}
+            <div class="document-item">
+                <strong>{{ document.get_document_type_display }}</strong><br>
+                <a href="{{ document.document_file.url }}" target="_blank" class="btn btn-view" style="padding: 5px 10px; font-size: 12px;">
+                    📄 View Document
+                </a>
+                <small>Uploaded: {{ document.uploaded_at|date:"F j, Y" }}</small>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Review Information -->
+        {% if student.reviewed_at %}
+        <div class="section">
+            <h3>Review Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Reviewed On</div>
+                    <div class="info-value">{{ student.reviewed_at|date:"F j, Y" }}</div>
+                </div>
+                {% if student.review_notes %}
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <div class="info-label">Review Notes</div>
+                    <div class="info-value">{{ student.review_notes }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee;">
+            <!-- FIXED: Added dashboard: namespace -->
+            <a href="{% url 'dashboard:generate_student_pdf' student.id %}" target="_blank" class="btn btn-pdf">
+                📄 Generate PDF Report
+            </a>
+            
+            {% if student.status == 'pending' %}
+            <!-- FIXED: Added dashboard: namespace -->
+            <a href="{% url 'dashboard:approve_student' student.id %}" class="btn btn-approve"
+               onclick="return confirm('Are you sure you want to approve this student?')">
+                ✅ Approve Application
+            </a>
+            <!-- FIXED: Added dashboard: namespace -->
+            <a href="{% url 'dashboard:decline_student' student.id %}" class="btn btn-decline"
+               onclick="return confirm('Are you sure you want to decline this student?')">
+                ❌ Decline Application
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

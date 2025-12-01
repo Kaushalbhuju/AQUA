@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Detail - {{ staff.full_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px 0;
+        }
+        .detail-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .detail-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header-section {
+            background: linear-gradient(135deg, #ffb380 0%, #ffa366 100%);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header-section h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        .profile-section {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .profile-photo {
+            width: 200px;
+            height: 240px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 4px solid #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .profile-info {
+            flex: 1;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .info-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+        }
+        .section-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .table-detail {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .table-detail th {
+            background: #f8f9fa;
+            padding: 12px;
+            font-weight: bold;
+            border: 1px solid #dee2e6;
+        }
+        .table-detail td {
+            padding: 12px;
+            border: 1px solid #dee2e6;
+        }
+        .badge-custom {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-custom {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: none;
+        }
+        .btn-back {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-back:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .btn-edit-detail {
+            background: #ffc107;
+            color: #333;
+        }
+        .btn-edit-detail:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        .btn-delete-detail {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-delete-detail:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        .btn-print {
+            background: #28a745;
+            color: white;
+        }
+        .btn-print:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-style: italic;
+        }
+        @media print {
+            .action-buttons, .btn { display: none !important; }
+            body { background: white !important; }
+            .detail-card { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container detail-container">
+        <div class="detail-card">
+            <!-- Header -->
+            <div class="header-section">
+                <h1><i class="fas fa-user-circle"></i> STAFF DETAIL VIEW</h1>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="profile-section">
+                <div>
+                    {% if staff.candidate_photo %}
+                        <img src="{{ staff.candidate_photo.url }}" alt="{{ staff.full_name }}" class="profile-photo">
+                    {% else %}
+                        <div class="profile-photo bg-secondary d-flex align-items-center justify-content-center text-white" style="font-size: 4rem;">
+                            {{ staff.full_name|first|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="profile-info">
+                    <h2>{{ staff.full_name }}</h2>
+                    <p class="text-muted mb-3">Staff ID: <strong>{{ staff.staff_id }}</strong></p>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label"><i class="fas fa-venus-mars"></i> Gender</div>
+                            <div class="info-value">{{ staff.get_gender_display }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label"><i class="fas fa-heart"></i> Marital Status</div>
+                            <div class="info-value">{{ staff.marital_status }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label"><i class="fas fa-phone"></i> Phone Number</div>
+                            <div class="info-value">{{ staff.phone_no }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label"><i class="fas fa-envelope"></i> Email</div>
+                            <div class="info-value">{{ staff.email_id }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label"><i class="fas fa-birthday-cake"></i> Date of Birth</div>
+                            <div class="info-value">{{ staff.date_of_birth|date:"F d, Y"|default:"N/A" }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label"><i class="fas fa-tint"></i> Blood Group</div>
+                            <div class="info-value">{{ staff.blood_group|default:"N/A" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="section-title"><i class="fas fa-id-card"></i> Personal Information</div>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="info-item mb-3">
+                        <div class="info-label">ID / Passport No</div>
+                        <div class="info-value">{{ staff.id_passport_no }}</div>
+                    </div>
+                    <div class="info-item mb-3">
+                        <div class="info-label">Date of Issue</div>
+                        <div class="info-value">{{ staff.date_of_issue|date:"F d, Y"|default:"N/A" }}</div>
+                    </div>
+                    <div class="info-item mb-3">
+                        <div class="info-label">Issue From</div>
+                        <div class="info-value">{{ staff.issue_from|default:"N/A" }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item mb-3">
+                        <div class="info-label">Eye Lense (Right)</div>
+                        <div class="info-value">{{ staff.eye_lense_right|default:"N/A" }}</div>
+                    </div>
+                    <div class="info-item mb-3">
+                        <div class="info-label">Eye Lense (Left)</div>
+                        <div class="info-value">{{ staff.eye_lense_left|default:"N/A" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="section-title"><i class="fas fa-map-marker-alt"></i> Address Information</div>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Permanent Address</div>
+                        <div class="info-value">{{ staff.permanent_address }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Present Address</div>
+                        <div class="info-value">{{ staff.present_address }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Family Records -->
+            <div class="section-title"><i class="fas fa-users"></i> Family Records</div>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Spouse Name</div>
+                        <div class="info-value">{{ staff.spouse_name|default:"N/A" }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <div class="info-label">Contact Number</div>
+                        <div class="info-value">{{ staff.contact_no|default:"N/A" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Educational History -->
+            <div class="section-title"><i class="fas fa-graduation-cap"></i> Educational History</div>
+            {% if staff.education_history.all %}
+                <table class="table table-detail table-hover">
+                    <thead>
+                        <tr>
+                            <th>Level</th>
+                            <th>School/University</th>
+                            <th>Admission</th>
+                            <th>Graduation</th>
+                            <th>Years</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for edu in staff.education_history.all %}
+                            <tr>
+                                <td><strong>{{ edu.get_pass_level_display }}</strong></td>
+                                <td>{{ edu.name_of_school }}</td>
+                                <td>{{ edu.admission_month }}/{{ edu.admission_year }}</td>
+                                <td>{{ edu.graduation_month }}/{{ edu.graduation_year }}</td>
+                                <td>{{ edu.enrolled_years }} years</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="no-data">No educational history recorded</div>
+            {% endif %}
+
+            <!-- Working Experience -->
+            <div class="section-title"><i class="fas fa-briefcase"></i> Working Experience</div>
+            {% if staff.work_experience.all %}
+                <table class="table table-detail table-hover">
+                    <thead>
+                        <tr>
+                            <th>Type of Work</th>
+                            <th>Company</th>
+                            <th>Join Date</th>
+                            <th>Resign Date</th>
+                            <th>Years</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for work in staff.work_experience.all %}
+                            <tr>
+                                <td><strong>{{ work.type_of_work }}</strong></td>
+                                <td>{{ work.name_of_company }}</td>
+                                <td>{{ work.join_month }}/{{ work.join_year }}</td>
+                                <td>{{ work.resign_month }}/{{ work.resign_year }}</td>
+                                <td>{{ work.working_years }} years</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="no-data">No working experience recorded</div>
+            {% endif %}
+
+            <!-- Certificates -->
+            <div class="section-title"><i class="fas fa-certificate"></i> Certificates of Skills</div>
+            {% if staff.certificates.all %}
+                <table class="table table-detail table-hover">
+                    <thead>
+                        <tr>
+                            <th>Certificate Name</th>
+                            <th>Pass Date</th>
+                            <th>Join Date</th>
+                            <th>Organization</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cert in staff.certificates.all %}
+                            <tr>
+                                <td><strong>{{ cert.name_of_certificate }}</strong></td>
+                                <td>{{ cert.pass_month }}/{{ cert.pass_year }}</td>
+                                <td>{{ cert.join_month }}/{{ cert.join_year }}</td>
+                                <td>{{ cert.organization }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="no-data">No certificates recorded</div>
+            {% endif %}
+
+            <!-- Training Status -->
+            <div class="section-title"><i class="fas fa-chalkboard-teacher"></i> Skills Training Status</div>
+            {% if staff.training_status.all %}
+                <table class="table table-detail table-hover">
+                    <thead>
+                        <tr>
+                            <th>Training Name</th>
+                            <th>Pass Date</th>
+                            <th>Join Date</th>
+                            <th>Organization</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for training in staff.training_status.all %}
+                            <tr>
+                                <td><strong>{{ training.name_of_training }}</strong></td>
+                                <td>{{ training.pass_month }}/{{ training.pass_year }}</td>
+                                <td>{{ training.join_month }}/{{ training.join_year }}</td>
+                                <td>{{ training.organization }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="no-data">No training records found</div>
+            {% endif %}
+
+            <!-- Driving License -->
+            <div class="section-title"><i class="fas fa-car"></i> Driving License</div>
+            {% if staff.driving_license %}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-label">Pass Year</div>
+                            <div class="info-value">{{ staff.driving_license.pass_year|default:"N/A" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-label">Pass Month</div>
+                            <div class="info-value">{{ staff.driving_license.pass_month|default:"N/A" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-item">
+                            <div class="info-label">License Type</div>
+                            <div class="info-value">{{ staff.driving_license.discretion_of_license|default:"N/A" }}</div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="no-data">No driving license information</div>
+            {% endif %}
+
+            <!-- Hobbies and Motivation -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="section-title"><i class="fas fa-heart"></i> Hobbies & Special Skills</div>
+                    <div class="info-item">
+                        <div class="info-value">{{ staff.hobbies|default:"N/A" }}</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="section-title"><i class="fas fa-star"></i> Motivation & Self-Promotion</div>
+                    <div class="info-item">
+                        <div class="info-value">{{ staff.motivation|default:"N/A" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uploaded Documents -->
+            <div class="section-title mt-4"><i class="fas fa-file-pdf"></i> Uploaded Documents</div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="doc-card-view {% if staff.staff_bio_data_pdf %}has-file{% endif %}">
+                        <i class="fas fa-file-pdf"></i>
+                        <div class="doc-title">STAFF BIO DATA</div>
+                        {% if staff.staff_bio_data_pdf %}
+                            <a href="{{ staff.staff_bio_data_pdf.url }}" target="_blank" class="btn btn-sm btn-success mt-2">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        {% else %}
+                            <small class="text-muted">Not uploaded</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="doc-card-view {% if staff.staff_id_doc_pdf %}has-file{% endif %}">
+                        <i class="fas fa-id-card"></i>
+                        <div class="doc-title">STAFF ID DOC</div>
+                        {% if staff.staff_id_doc_pdf %}
+                            <a href="{{ staff.staff_id_doc_pdf.url }}" target="_blank" class="btn btn-sm btn-success mt-2">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        {% else %}
+                            <small class="text-muted">Not uploaded</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="doc-card-view {% if staff.staff_login_report_pdf %}has-file{% endif %}">
+                        <i class="fas fa-chart-line"></i>
+                        <div class="doc-title">LOGIN REPORT</div>
+                        {% if staff.staff_login_report_pdf %}
+                            <a href="{{ staff.staff_login_report_pdf.url }}" target="_blank" class="btn btn-sm btn-success mt-2">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        {% else %}
+                            <small class="text-muted">Not uploaded</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="doc-card-view {% if staff.staff_login_id_pdf %}has-file{% endif %}">
+                        <i class="fas fa-user-lock"></i>
+                        <div class="doc-title">STAFF LOGIN ID</div>
+                        {% if staff.staff_login_id_pdf %}
+                            <a href="{{ staff.staff_login_id_pdf.url }}" target="_blank" class="btn btn-sm btn-success mt-2">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        {% else %}
+                            <small class="text-muted">Not uploaded</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{% url 'staff_list' %}" class="btn btn-custom btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+                <button onclick="window.print()" class="btn btn-custom btn-print">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <a href="{% url 'staff_update' staff.pk %}" class="btn btn-custom btn-edit-detail">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'staff_delete' staff.pk %}" class="btn btn-custom btn-delete-detail">
+                    <i class="fas fa-trash"></i> Delete
+                </a>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-4" style="color: #666;">
+                <small>Registered on: {{ staff.created_at|date:"F d, Y g:i A" }} | Last Updated: {{ staff.updated_at|date:"F d, Y g:i A" }}</small>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-4" style="color: white;">
+            <p>Copyright © Aqua Group, All Rights Reserved</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

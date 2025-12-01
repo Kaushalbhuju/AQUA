@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block title %}{% trans "Login" %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <h2>{% trans "Login" %}</h2>
+
+  <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% trans "Log In" %}</button>
+  </form>
+
+  {% if messages %}
+    {% for message in messages %}
+      <p class="error">{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

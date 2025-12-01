@@ -1,0 +1,17 @@
+<!-- Documents -->
+{% if documents %}
+<div class="info-section">
+    <h3>Uploaded Documents</h3>
+    <div class="info-row">
+        {% for document in documents %}
+        <div class="info-item">
+            <span class="info-label">{{ document.get_document_type_display }}:</span>
+            <a href="{{ document.document_file.url }}" target="_blank" style="color: #3498db; text-decoration: none;">
+                📄 View Document
+            </a>
+            <small style="color: #666; display: block;">Uploaded: {{ document.uploaded_at|date:"M d, Y" }}</small>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
