@@ -1,0 +1,669 @@
+{% extends 'sswadmission/base.html' %}
+{% load humanize %}
+
+{% block title %}Financial Reports - Student Admission System{% endblock %}
+
+{% block page_title %}Financial Reports{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#dateFilterModal">
+        <i class="bi bi-calendar-range"></i> Date Range
+    </button>
+    <button class="btn btn-outline-success" onclick="exportReport()">
+        <i class="bi bi-download"></i> Export Report
+    </button>
+    <button class="btn btn-outline-info" onclick="printReport()">
+        <i class="bi bi-printer"></i> Print
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Date Range Modal -->
+<div class="modal fade" id="dateFilterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Date Range</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="get">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">From Date</label>
+                            <input type="date" name="date_from" class="form-control" value="{{ date_from|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">To Date</label>
+                            <input type="date" name="date_to" class="form-control" value="{{ date_to|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quick Select</label>
+                        <div class="btn-group w-100">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange('today')">Today</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange('week')">This Week</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange('month')">This Month</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange('quarter')">This Quarter</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange('year')">This Year</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Apply Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Total Collection</h6>
+                        <h2 class="mb-0">₹{{ summary.total_collected|intcomma }}</h2>
+                    </div>
+                    <i class="bi bi-cash-stack display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">
+                    {{ summary.total_transactions }} transactions
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Average Transaction</h6>
+                        <h2 class="mb-0">₹{{ summary.avg_payment|floatformat:0|intcomma }}</h2>
+                    </div>
+                    <i class="bi bi-graph-up display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">
+                    Per payment
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Unique Students</h6>
+                        <h2 class="mb-0">{{ summary.unique_students }}</h2>
+                    </div>
+                    <i class="bi bi-people display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">
+                    Made payments
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Date Range</h6>
+                        <h4 class="mb-0">{{ date_from|date:"d M" }} - {{ date_to|date:"d M Y" }}</h4>
+                    </div>
+                    <i class="bi bi-calendar display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">
+                    {{ days_count }} days
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Daily Collection Trend</h5>
+            </div>
+            <div class="card-body">
+                {% if daily_summary %}
+                <canvas id="dailyCollectionChart" height="250"></canvas>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-bar-chart display-1 text-muted"></i>
+                    <p class="mt-3 text-muted">No data available for chart</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Payment Methods</h5>
+            </div>
+            <div class="card-body">
+                {% if method_summary %}
+                <canvas id="paymentMethodChart" height="250"></canvas>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-pie-chart display-1 text-muted"></i>
+                    <p class="mt-3 text-muted">No data available for chart</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Reports -->
+<div class="row">
+    <!-- Daily Summary -->
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-calendar-day"></i> Daily Collection Summary</h5>
+                <small class="text-muted">Sorted by date</small>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                <th>Number of Payments</th>
+                                <th>Total Collection</th>
+                                <th>Average Amount</th>
+                                <th>% of Total</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day in daily_summary %}
+                            <tr>
+                                <td>
+                                    <strong>{{ day.date|date:"d M Y" }}</strong>
+                                </td>
+                                <td>{{ day.date|date:"l" }}</td>
+                                <td>{{ day.count }}</td>
+                                <td>
+                                    <strong class="text-success">₹{{ day.total|intcomma }}</strong>
+                                </td>
+                                <td>₹{{ day.avg_amount|floatformat:0|intcomma }}</td>
+                                <td>
+                                    {% if summary.total_collected > 0 %}
+                                        {% widthratio day.total summary.total_collected 100 as percentage %}
+                                    {% else %}
+                                        {% widthratio 0 1 100 as percentage %}
+                                    {% endif %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ percentage }}%">
+                                            {{ percentage|floatformat:1 }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if day.total > day_avg %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-arrow-up"></i> Above avg
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-warning">
+                                        <i class="bi bi-arrow-down"></i> Below avg
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="bi bi-calendar-x display-1 text-muted"></i>
+                                    <h5 class="mt-3">No data for selected period</h5>
+                                    <p class="text-muted">Try selecting a different date range</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if daily_summary %}
+                        <tfoot class="table-dark">
+                            <tr>
+                                <th colspan="2">TOTAL</th>
+                                <th>{{ summary.total_transactions }}</th>
+                                <th>₹{{ summary.total_collected|intcomma }}</th>
+                                <th>₹{{ summary.avg_payment|floatformat:0|intcomma }}</th>
+                                <th>100%</th>
+                                <th>-</th>
+                            </tr>
+                        </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Method Summary -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payment Method Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Payment Method</th>
+                                <th>Count</th>
+                                <th>Total Amount</th>
+                                <th>% of Total</th>
+                                <th>Avg. Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for method in method_summary %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {{ method.payment_method|title }}
+                                    </span>
+                                </td>
+                                <td>{{ method.count }}</td>
+                                <td>
+                                    <strong class="text-success">₹{{ method.total|intcomma }}</strong>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 15px;">
+                                        <div class="progress-bar bg-info" role="progressbar" 
+                                             style="width: {{ method.percentage|floatformat:1 }}%">
+                                            {{ method.percentage|floatformat:1 }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>₹{{ method.avg_amount|floatformat:0|intcomma }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-3 text-muted">
+                                    No payment method data available
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Student Status Summary -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-check"></i> Payment by Student Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Student Status</th>
+                                <th>Students</th>
+                                <th>Total Paid</th>
+                                <th>Avg. per Student</th>
+                                <th>% of Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in student_payments %}
+                            <tr>
+                                <td>
+                                    <span class="badge 
+                                        {% if stat.status == 'enrolled' %}status-enrolled
+                                        {% elif stat.status == 'approved' %}status-approved
+                                        {% elif stat.status == 'pending' %}status-pending
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ stat.status|title }}
+                                    </span>
+                                </td>
+                                <td>{{ stat.student_count }}</td>
+                                <td>
+                                    <strong class="text-success">₹{{ stat.total_paid|intcomma }}</strong>
+                                </td>
+                                <td>₹{{ stat.avg_per_student|floatformat:0|intcomma }}</td>
+                                <td>
+                                    {% if summary.total_collected > 0 %}
+                                        {% widthratio stat.total_paid summary.total_collected 100 as percentage %}
+                                    {% else %}
+                                        {% widthratio 0 1 100 as percentage %}
+                                    {% endif %}
+                                    <span class="badge bg-light text-dark">
+                                        {{ percentage|floatformat:1 }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-3 text-muted">
+                                    No student status data available
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Insights & Recommendations -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Insights & Recommendations</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6><i class="bi bi-trophy text-warning"></i> Top Performing Day</h6>
+                                {% if daily_summary %}
+                                    {% with daily_summary|dictsortreversed:"total"|first as top_day %}
+                                    <p class="mb-1">{{ top_day.date|date:"l, d M Y" }}</p>
+                                    <h4 class="text-success">₹{{ top_day.total|intcomma }}</h4>
+                                    <small class="text-muted">{{ top_day.count }} payments</small>
+                                    {% endwith %}
+                                {% else %}
+                                    <p class="mb-1">No data available</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6><i class="bi bi-currency-dollar text-success"></i> Most Popular Method</h6>
+                                {% if method_summary %}
+                                    {% with method_summary|first as top_method %}
+                                    <p class="mb-1">{{ top_method.payment_method|title }}</p>
+                                    <h4 class="text-primary">{{ top_method.count }} transactions</h4>
+                                    <small class="text-muted">₹{{ top_method.total|intcomma }} total</small>
+                                    {% endwith %}
+                                {% else %}
+                                    <p class="mb-1">No data available</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6><i class="bi bi-graph-up-arrow text-info"></i> Collection Rate</h6>
+                                <p class="mb-1">Daily Average</p>
+                                <h4 class="text-success">₹{{ day_avg|floatformat:0|intcomma }}</h4>
+                                <small class="text-muted">Per day average</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>Recommendations:</h6>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Promote online payment methods for faster processing
+                            </div>
+                            <span class="badge bg-success">High Impact</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Focus on weekdays for collection drives
+                            </div>
+                            <span class="badge bg-warning">Medium Impact</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                Offer incentives for early fee payments
+                            </div>
+                            <span class="badge bg-info">Low Impact</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize charts
+    document.addEventListener('DOMContentLoaded', function() {
+        // Daily Collection Chart
+        const dailyCtx = document.getElementById('dailyCollectionChart');
+        if (dailyCtx) {
+            const dailyChart = new Chart(dailyCtx, {
+                type: 'line',
+                data: {
+                    labels: [
+                        {% for day in daily_summary %}
+                        '{{ day.date|date:"d M" }}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: 'Daily Collection (₹)',
+                        data: [
+                            {% for day in daily_summary %}
+                            {{ day.total }},
+                            {% endfor %}
+                        ],
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '₹' + context.parsed.y.toLocaleString('en-IN');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString('en-IN');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Payment Method Chart
+        const methodCtx = document.getElementById('paymentMethodChart');
+        if (methodCtx) {
+            const methodChart = new Chart(methodCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        {% for method in method_summary %}
+                        '{{ method.payment_method|title }}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        data: [
+                            {% for method in method_summary %}
+                            {{ method.total }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: [
+                            '#28a745', // green
+                            '#007bff', // blue
+                            '#6f42c1', // purple
+                            '#fd7e14', // orange
+                            '#20c997', // teal
+                            '#e83e8c'  // pink
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${context.label}: ₹${value.toLocaleString('en-IN')} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+    
+    // Date range quick select
+    function setDateRange(range) {
+        const today = new Date();
+        let fromDate, toDate;
+        
+        switch(range) {
+            case 'today':
+                fromDate = today.toISOString().split('T')[0];
+                toDate = fromDate;
+                break;
+            case 'week':
+                const weekAgo = new Date(today);
+                weekAgo.setDate(today.getDate() - 7);
+                fromDate = weekAgo.toISOString().split('T')[0];
+                toDate = today.toISOString().split('T')[0];
+                break;
+            case 'month':
+                const monthAgo = new Date(today);
+                monthAgo.setMonth(today.getMonth() - 1);
+                fromDate = monthAgo.toISOString().split('T')[0];
+                toDate = today.toISOString().split('T')[0];
+                break;
+            case 'quarter':
+                const quarterAgo = new Date(today);
+                quarterAgo.setMonth(today.getMonth() - 3);
+                fromDate = quarterAgo.toISOString().split('T')[0];
+                toDate = today.toISOString().split('T')[0];
+                break;
+            case 'year':
+                const yearAgo = new Date(today);
+                yearAgo.setFullYear(today.getFullYear() - 1);
+                fromDate = yearAgo.toISOString().split('T')[0];
+                toDate = today.toISOString().split('T')[0];
+                break;
+        }
+        
+        document.querySelector('input[name="date_from"]').value = fromDate;
+        document.querySelector('input[name="date_to"]').value = toDate;
+    }
+    
+    // Export report
+    function exportReport() {
+        const format = prompt('Select export format:\n1. CSV\n2. Excel\n3. PDF', '1');
+        let exportUrl = '';
+        
+        switch(format) {
+            case '1':
+                exportUrl = '?export=csv';
+                break;
+            case '2':
+                exportUrl = '?export=excel';
+                break;
+            case '3':
+                exportUrl = '?export=pdf';
+                break;
+            default:
+                return;
+        }
+        
+        // Add current filters to export URL
+        const params = new URLSearchParams(window.location.search);
+        params.forEach((value, key) => {
+            if (key !== 'export') {
+                exportUrl += `&${key}=${value}`;
+            }
+        });
+        
+        window.location.href = exportUrl;
+    }
+    
+    // Print report
+    function printReport() {
+        window.print();
+    }
+    
+    // Initialize date pickers with limits
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        
+        dateInputs.forEach(input => {
+            input.max = today;
+        });
+        
+        // Set default date range if not set
+        const dateFrom = document.querySelector('input[name="date_from"]');
+        const dateTo = document.querySelector('input[name="date_to"]');
+        
+        if (!dateFrom.value) {
+            const monthAgo = new Date();
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            dateFrom.value = monthAgo.toISOString().split('T')[0];
+        }
+        
+        if (!dateTo.value) {
+            dateTo.value = today;
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,374 @@
+{% extends 'sswadmission/base.html' %}
+{% load humanize %}
+
+{% block title %}All Payments - Student Admission System{% endblock %}
+
+{% block page_title %}Payment Records{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{% url 'sswdashboard:add_payment' %}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> New Payment
+    </a>
+    <a href="{% url 'sswdashboard:payment_verification_queue' %}" class="btn btn-warning">
+        <i class="bi bi-shield-check"></i> Verification Queue
+        {% if stats.pending_count > 0 %}
+        <span class="badge bg-danger">{{ stats.pending_count }}</span>
+        {% endif %}
+    </a>
+    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+        <i class="bi bi-funnel"></i> Filters
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Summary -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Total Collection</h6>
+                <h3 class="text-success">₹{{ stats.total_amount|intcomma }}</h3>
+                <small class="text-muted">{{ stats.total_count }} payments</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Completed</h6>
+                <h3 class="text-success">{{ stats.completed_amount|intcomma }}</h3>
+                <small class="text-muted">Verified payments</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Pending</h6>
+                <h3 class="text-warning">{{ stats.pending_count }}</h3>
+                <small class="text-muted">Awaiting verification</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Average Payment</h6>
+                <h3 class="text-primary">
+                    {% if stats.total_count > 0 %}
+                    ₹{{ stats.total_amount|floatformat:0|intcomma }}
+                    {% else %}
+                    ₹0
+                    {% endif %}
+                </h3>
+                <small class="text-muted">Per transaction</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Filter Payments</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="get">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">All Statuses</option>
+                                {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Payment Method</label>
+                            <select name="method" class="form-select">
+                                <option value="">All Methods</option>
+                                {% for value, label in method_choices %}
+                                <option value="{{ value }}" {% if request.GET.method == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">From Date</label>
+                            <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">To Date</label>
+                            <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Search</label>
+                            <input type="text" name="search" class="form-control" 
+                                   value="{{ request.GET.search }}" 
+                                   placeholder="Payment ID, Student, Transaction ID...">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'sswdashboard:payment_list' %}" class="btn btn-secondary">Clear All</a>
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Payments Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-cash-stack"></i> Payment Records</h5>
+        <div class="text-muted">
+            Showing {{ payments.start_index }}-{{ payments.end_index }} of {{ payments.paginator.count }}
+        </div>
+    </div>
+    <div class="card-body">
+        {% if payments %}
+        <div class="table-responsive">
+            <table class="table table-hover data-table">
+                <thead>
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Student</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Verified By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>
+                            <strong>{{ payment.payment_id }}</strong><br>
+                            <small class="text-muted">{{ payment.receipt_number|default:"-" }}</small>
+                        </td>
+                        <td>
+                            <a href="{% url 'sswdashboard:student_detail' payment.student.id %}">
+                                {{ payment.student.full_name }}
+                            </a><br>
+                            <small class="text-muted">{{ payment.student.student_id }}</small>
+                        </td>
+                        <td>
+                            <strong class="text-success">₹{{ payment.amount|intcomma }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                {{ payment.get_payment_method_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {{ payment.payment_date|date:"d M Y" }}<br>
+                            <small class="text-muted">{{ payment.payment_date|time }}</small>
+                        </td>
+                        <td>
+                            <span class="badge {% if payment.status == 'completed' %}payment-status-completed{% elif payment.status == 'pending' %}payment-status-pending{% elif payment.status == 'failed' %}payment-status-failed{% else %}bg-secondary{% endif %}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if payment.verified_by %}
+                            {{ payment.verified_by.get_full_name|default:payment.verified_by.username }}<br>
+                            <small class="text-muted">{{ payment.verified_at|date:"d M Y" }}</small>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'sswdashboard:payment_detail' payment.id %}" 
+                                   class="btn btn-outline-primary" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'sswdashboard:generate_receipt' payment.id %}" 
+                                   class="btn btn-outline-success" title="Generate Receipt" target="_blank">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                                {% if payment.status == 'pending' and can_verify %}
+                                <a href="{% url 'sswdashboard:verify_payment' payment.id %}" 
+                                   class="btn btn-outline-warning" title="Verify Payment">
+                                    <i class="bi bi-shield-check"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if payments.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if payments.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ payments.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        Previous
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in payments.paginator.page_range %}
+                    {% if payments.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > payments.number|add:'-3' and num < payments.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if payments.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ payments.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                        Next
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-cash-stack display-1 text-muted"></i>
+            <h3 class="mt-4">No Payments Found</h3>
+            <p class="text-muted">Try changing your filters or add a new payment</p>
+            <a href="{% url 'sswdashboard:add_payment' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add First Payment
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Export Options -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-download"></i> Export Data</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <a href="?export=csv" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-file-earmark-text"></i> CSV Export
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="?export=excel" class="btn btn-outline-success w-100">
+                    <i class="bi bi-file-earmark-excel"></i> Excel Export
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="?export=pdf" class="btn btn-outline-danger w-100">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF Report
+                </a>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-outline-info w-100" onclick="printPayments()">
+                    <i class="bi bi-printer"></i> Print View
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize DataTables with custom settings
+    $(document).ready(function() {
+        $('.data-table').DataTable({
+            pageLength: 50,
+            order: [[4, 'desc']], // Sort by date descending
+            responsive: true,
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>tip',
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search payments..."
+            }
+        });
+    });
+    
+    // Print functionality
+    function printPayments() {
+        window.print();
+    }
+    
+    // Quick filter buttons
+    function filterToday() {
+        const today = new Date().toISOString().split('T')[0];
+        window.location.href = `{% url 'sswdashboard:payment_list' %}?date_from=${today}&date_to=${today}`;
+    }
+    
+    function filterThisWeek() {
+        const today = new Date();
+        const weekAgo = new Date(today);
+        weekAgo.setDate(today.getDate() - 7);
+        
+        const from = weekAgo.toISOString().split('T')[0];
+        const to = today.toISOString().split('T')[0];
+        
+        window.location.href = `{% url 'sswdashboard:payment_list' %}?date_from=${from}&date_to=${to}`;
+    }
+    
+    function filterPending() {
+        window.location.href = '{% url "sswdashboard:payment_list" %}?status=pending';
+    }
+    
+    // Auto-refresh for pending payments
+    function checkForNewPayments() {
+        const pendingCount = {{ stats.pending_count }};
+        const currentPending = parseInt('{{ stats.pending_count }}');
+        
+        if (pendingCount !== currentPending) {
+            // Show notification
+            if (pendingCount > currentPending) {
+                showNotification('New pending payments available!', 'warning');
+            }
+        }
+    }
+    
+    function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            <strong>Notification</strong><br>
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 5000);
+    }
+    
+    // Check every 30 seconds for new pending payments
+    setInterval(checkForNewPayments, 30000);
+</script>
+{% endblock %}

@@ -27,3 +27,25 @@ class AgentAuthenticationForm(forms.Form):
                 raise forms.ValidationError("Invalid agent code or PIN code or email.")
         
         return cleaned_data
+    
+
+from django import forms
+from .models import Agent
+
+class AgentLoginForm(forms.Form):
+    agent_code = forms.CharField(max_length=20, required=True)
+    pin_code = forms.CharField(max_length=10, required=True)
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        agent_code = cleaned_data.get('agent_code')
+        pin_code = cleaned_data.get('pin_code')
+        
+        if agent_code and pin_code:
+            try:
+                agent = Agent.objects.get(agent_code=agent_code, pin_code=pin_code, is_active=True)
+                cleaned_data['agent'] = agent
+            except Agent.DoesNotExist:
+                raise forms.ValidationError('Invalid agent code or PIN')
+        
+        return cleaned_data

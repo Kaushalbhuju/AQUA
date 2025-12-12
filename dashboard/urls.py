@@ -1,4 +1,4 @@
-# urls.py - Update the move_to_next_stage URL pattern
+# dashboard/urls.py
 from django.urls import path
 from .views.dashboard_views import (
     operation_head_dashboard, manager_dashboard, staff_dashboard,
@@ -15,17 +15,18 @@ from .views.student_views import (
 from .views.portal_views import (
     PortalStudentRegistrationView, portal_registration_success
 )
-from .views.agent_views import (
-    agent_login, agent_logout, agent_dashboard, 
-    agent_student_detail, agent_student_registration
-)
+from .views.ssw_views import ( months_2026 )
+# REMOVE agent_views imports
+# from .views.agent_views import (
+#     agent_login, agent_logout, agent_dashboard, 
+#     agent_student_detail, agent_student_registration
+# )
 
 app_name = 'dashboard'
 
 urlpatterns = [
     # General pages
     path('', home_view, name='home'),
-   
     path('dashboard/', dashboard_view, name='dashboard'),
     path('profile/', profile_view, name='profile'),
     path('settings/', settings_view, name='settings'),
@@ -44,7 +45,7 @@ urlpatterns = [
     path('students/', student_list, name='student_list'),
     path('students/<int:student_id>/', student_detail, name='student_detail'),
 
-    # Recruitment / client dashboard - FIXED URL PATTERNS
+    # Recruitment / client dashboard
     path('recruitment/student/<int:student_id>/', student_application_detail, name='student_application_detail'),
     path('recruitment/student/<int:student_id>/update-status/', update_student_status, name='update_student_status'),
     path('recruitment/move-stage/<int:student_id>/<str:next_stage>/', move_to_next_stage, name='move_to_next_stage'),
@@ -60,14 +61,20 @@ urlpatterns = [
     path('dashboard/students/<int:student_id>/approve/', approve_student_page, name='approve_student_page'),
     path('dashboard/students/<int:student_id>/decline/', decline_student_page, name='decline_student_page'),
 
-    # Agent Dashboard Routes
-    path('agent/login/', agent_login, name='agent_login'),
-    path('agent/logout/', agent_logout, name='agent_logout'),
-    path('agent/dashboard/', agent_dashboard, name='agent_dashboard'),
-    path('agent/student/<int:student_id>/', agent_student_detail, name='agent_student_detail'),
-    path('agent/register-student/', agent_student_registration, name='agent_student_registration'),
+    # REMOVE Agent Dashboard Routes from here
+    # path('agent/login/', agent_login, name='agent_login'),
+    # path('agent/logout/', agent_logout, name='agent_logout'),
+    # path('agent/dashboard/', agent_dashboard, name='agent_dashboard'),
+    # path('agent/student/<int:student_id>/', agent_student_detail, name='agent_student_detail'),
+    # path('agent/register-student/', agent_student_registration, name='agent_student_registration'),
 
     # Student Registration Portal Routes
     path('portal/register/', PortalStudentRegistrationView.as_view(), name='portal_student_registration'),
     path('portal/success/', portal_registration_success, name='portal_registration_success'),
+
+
+    # SSW specific views
+    path('aggredcs/', months_2026, name='contracts_2026'),
+   
+    
 ]

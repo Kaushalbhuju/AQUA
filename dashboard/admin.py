@@ -9,7 +9,7 @@ class AgentAdmin(admin.ModelAdmin):
     list_display = ['agent_code', 'name', 'email', 'pin_code', 'max_candidates', 'current_candidate_count', 'is_active', 'created_at']
     list_filter = ['is_active', 'created_at']
     search_fields = ['agent_code', 'name', 'email']
-    readonly_fields = ['current_candidate_count', 'created_at', 'last_used']
+    readonly_fields = ['current_candidate_count', 'created_at']
     list_per_page = 20
     
     def get_readonly_fields(self, request, obj=None):
@@ -61,7 +61,7 @@ class CandidateAdmin(admin.ModelAdmin):
     list_display = ['student_id', 'first_name', 'last_name', 'email', 'phone', 'agent', 'is_active', 'created_at']
     list_filter = ['agent', 'is_active', 'created_at']
     search_fields = ['student_id', 'first_name', 'last_name', 'email', 'agent__agent_code']
-    readonly_fields = ['candidate_id', 'student_id', 'created_at', 'last_access']
+    readonly_fields = ['candidate_id', 'student_id', 'created_at']
     list_per_page = 20
     
     fieldsets = (
@@ -75,26 +75,29 @@ class CandidateAdmin(admin.ModelAdmin):
             'fields': ('is_active',)
         }),
         ('Timestamps', {
-            'fields': ('created_at', 'last_access'),
+            'fields': ('created_at',),  # Note the comma for single-item tuple
             'classes': ('collapse',)
         })
     )
 
-# ... rest of your admin classes remain the same ...
+
 class EducationalHistoryInline(admin.TabularInline):
     model = EducationalHistory
     extra = 1
     fields = ['pass_level', 'school_name', 'admission_year', 'graduation_year', 'enrolled_years']
+
 
 class WorkExperienceInline(admin.TabularInline):
     model = WorkExperience
     extra = 1
     fields = ['work_type', 'company_name', 'join_date', 'resign_date', 'working_years']
 
+
 class StudentDocumentInline(admin.TabularInline):
     model = StudentDocument
     extra = 1
     fields = ['document_type', 'document_file', 'uploaded_at']
+
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
@@ -154,6 +157,7 @@ class StudentAdmin(admin.ModelAdmin):
         })
     )
 
+
 @admin.register(EducationalHistory)
 class EducationalHistoryAdmin(admin.ModelAdmin):
     list_display = ['student', 'pass_level', 'school_name', 'admission_year', 'graduation_year', 'enrolled_years']
@@ -161,11 +165,13 @@ class EducationalHistoryAdmin(admin.ModelAdmin):
     search_fields = ['student__full_name', 'school_name']
     list_per_page = 20
 
+
 @admin.register(WorkExperience)
 class WorkExperienceAdmin(admin.ModelAdmin):
     list_display = ['student', 'company_name', 'work_type', 'working_years']
     search_fields = ['student__full_name', 'company_name']
     list_per_page = 20
+
 
 @admin.register(StudentDocument)
 class StudentDocumentAdmin(admin.ModelAdmin):
@@ -173,3 +179,4 @@ class StudentDocumentAdmin(admin.ModelAdmin):
     list_filter = ['document_type', 'uploaded_at']
     search_fields = ['student__full_name']
     list_per_page = 20
+

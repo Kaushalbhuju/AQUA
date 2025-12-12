@@ -279,6 +279,35 @@
                     </div>
                 </div>
             </div>
+             <!-- Bank Information --><!-- BANK INFORMATION -->
+<div class="section-title mt-4">BANK INFORMATION</div>
+
+{% if staff.bank_info.all %}
+<table class="table table-bordered table-striped mt-2">
+    <thead class="table-light">
+        <tr>
+            <th style="width: 20%;">Bank Name</th>
+            <th style="width: 25%;">Branch Name</th>
+            <th style="width: 20%;">Account No</th>
+            <th style="width: 25%;">Account Holder Name</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for bank in staff.bank_info.all %}
+        <tr>
+            <td>{{ bank.bank_name }}</td>
+            <td>{{ bank.branch_name }}</td>
+            <td>{{ bank.account_no }}</td>
+            <td>{{ bank.account_holder_name }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p class="text-muted">No bank information available.</p>
+{% endif %}
 
             <!-- Educational History -->
             <div class="section-title"><i class="fas fa-graduation-cap"></i> Educational History</div>

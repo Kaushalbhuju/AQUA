@@ -400,6 +400,32 @@
                 </div>
             </div>
 
+
+            <!-- Bank Information Section -->
+             <div class="section-title mt-4">BANK INFORMATION</div>
+             <table class="formset-table">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Bank Name</th>
+                        <th style="width: 30%;">Branch Name</th>
+                        <th style="width: 25%;">Account No</th>
+                        <th style="width: 25%;">Account Holder Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ bank_formset.management_form }}
+                    {% for form in bank_formset %}
+                        <tr>
+                            <td>{{ form.bank_name }}</td>
+                            <td>{{ form.branch_name }}</td>
+                            <td>{{ form.account_no }}</td>
+                            <td>{{ form.account_holder_name }}</td>
+                            <td>{{ form.DELETE }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
             <!-- Educational History Section -->
             <div class="section-title">EDUCATIONAL HISTORY</div>
             <table class="formset-table">

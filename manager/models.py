@@ -96,7 +96,18 @@ class StaffRegistration(models.Model):
     
     def __str__(self):
         return f"{self.staff_id} - {self.full_name}"
+    
 
+class BankInformation(models.Model):
+    staff = models.ForeignKey(StaffRegistration, on_delete=models.CASCADE, related_name='bank_info')
+ 
+    bank_name = models.CharField(max_length=150)
+    branch_name = models.CharField(max_length=150)
+    account_no = models.CharField(max_length=50)
+    account_holder_name = models.CharField(max_length=150)
+
+    def __str__(self):
+        return f"{self.bank_name} - {self.account_holder_name}"
 
 class EducationalHistory(models.Model):
     PASS_LEVEL_CHOICES = [
@@ -110,7 +121,7 @@ class EducationalHistory(models.Model):
     ]
     
     staff = models.ForeignKey(StaffRegistration, on_delete=models.CASCADE, related_name='education_history')
-    pass_level = models.CharField(max_length=20, choices=PASS_LEVEL_CHOICES)
+    pass_level = models.CharField(max_length=20, choices=PASS_LEVEL_CHOICES, )
     name_of_school = models.CharField(max_length=300)
     admission_year = models.IntegerField(null=True, blank=True)
     admission_month = models.IntegerField(null=True, blank=True)

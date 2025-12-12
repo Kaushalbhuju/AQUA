@@ -1,0 +1,333 @@
+{% extends 'sswadmission/base.html' %}
+{% load humanize %}
+
+{% block page_title %}{{ student.full_name }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{% url 'sswdashboard:student_list' %}" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left"></i> Back to List
+    </a>
+    <a href="{% url 'sswdashboard:update_student' student.id %}" class="btn btn-warning">
+        <i class="bi bi-pencil"></i> Edit
+    </a>
+    <a href="{% url 'sswdashboard:add_payment_for_student' student.id %}" class="btn btn-success">
+        <i class="bi bi-cash"></i> Add Payment
+    </a>
+    
+    <!-- Status Change Dropdown -->
+    <div class="btn-group">
+        <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="bi bi-gear"></i> Change Status
+        </button>
+        <ul class="dropdown-menu">
+            {% for value, label in student.STATUS_CHOICES %}
+            {% if value != student.status %}
+            <li>
+                <form method="post" action="{% url 'sswdashboard:change_student_status' student.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="{{ value }}">
+                    <button type="submit" class="dropdown-item">
+                        Mark as {{ label }}
+                    </button>
+                </form>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Student Info -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Student Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="bi bi-person display-4 text-white"></i>
+                    </div>
+                    <h4 class="mt-3">{{ student.full_name }}</h4>
+                    <p class="text-muted">{{ student.student_id }}</p>
+                    <span class="badge {% if student.status == 'pending' %}status-pending{% elif student.status == 'approved' %}status-approved{% elif student.status == 'enrolled' %}status-enrolled{% elif student.status == 'declined' %}status-declined{% elif student.status == 'graduated' %}status-graduated{% endif %} fs-6">
+                        {{ student.get_status_display }}
+                    </span>
+                </div>
+                
+                <table class="table table-sm">
+                    <tr>
+                        <th>Email</th>
+                        <td>{{ student.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Phone</th>
+                        <td>{{ student.phone }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date of Birth</th>
+                        <td>{{ student.date_of_birth|date:"d M Y"|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Age</th>
+                        <td>{{ student.age|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Gender</th>
+                        <td>{{ student.get_gender_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Blood Group</th>
+                        <td>{{ student.blood_group|default:"-" }}</td>
+                    </tr>
+                </table>
+                
+                <h6 class="mt-4">Emergency Contact</h6>
+                <p>
+                    {{ student.emergency_contact_name|default:"-" }}<br>
+                    {{ student.emergency_contact|default:"-" }}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Academic & Fee Info -->
+    <div class="col-md-8 mb-4">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Academic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <th>Course</th>
+                                        <td>{{ student.course|default:"-" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Batch</th>
+                                        <td>{{ student.batch|default:"-" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Registration Date</th>
+                                        <td>{{ student.registration_date|date:"d M Y" }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <th>Qualification</th>
+                                        <td>{{ student.qualification|default:"-" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Previous Institution</th>
+                                        <td>{{ student.previous_institution|default:"-" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Admission Date</th>
+                                        <td>{{ student.admission_date|date:"d M Y"|default:"-" }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Fee Summary -->
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Fee Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <h6>Total Fee</h6>
+                                <h3 class="text-primary">₹{{ student.total_fee|intcomma }}</h3>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h6>Discount</h6>
+                                <h3 class="text-success">-₹{{ student.discount|intcomma }}</h3>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h6>Paid</h6>
+                                <h3 class="text-success">₹{{ student.paid_amount|intcomma }}</h3>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h6>Due</h6>
+                                <h3 class="text-danger">₹{{ student.due_amount|intcomma }}</h3>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6>Payment Progress</h6>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ student.fee_paid_percentage }}%">
+                                    {{ student.fee_paid_percentage|floatformat:1 }}%
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <small>₹0</small>
+                                <small>₹{{ student.total_fee|intcomma }}</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Installment Plan Button -->
+                        {% if student.installments.exists %}
+                        <button class="btn btn-outline-info btn-sm mt-3" data-bs-toggle="collapse" data-bs-target="#installmentPlan">
+                            <i class="bi bi-calendar"></i> View Installment Plan
+                        </button>
+                        {% else %}
+                        <form method="post" action="{% url 'sswdashboard:create_installments' student.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <div class="input-group mt-3">
+                                <input type="number" name="num_installments" class="form-control" placeholder="No. of installments" min="1" max="12" required>
+                                <input type="date" name="start_date" class="form-control" value="{{ today|date:'Y-m-d' }}">
+                                <button type="submit" class="btn btn-outline-primary">Create Plan</button>
+                            </div>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Installment Plan (Collapsible) -->
+            {% if student.installments.exists %}
+            <div class="col-12 mb-4">
+                <div class="collapse show" id="installmentPlan">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Installment Plan</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Amount</th>
+                                            <th>Due Date</th>
+                                            <th>Status</th>
+                                            <th>Paid Date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for installment in installments %}
+                                        <tr {% if installment.is_overdue %}class="table-danger"{% endif %}>
+                                            <td>{{ installment.installment_number }}</td>
+                                            <td>₹{{ installment.amount|intcomma }}</td>
+                                            <td>{{ installment.due_date|date:"d M Y" }}</td>
+                                            <td>
+                                                <span class="badge {% if installment.status == 'paid' %}bg-success{% elif installment.status == 'overdue' %}bg-danger{% elif installment.status == 'pending' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                                    {{ installment.get_status_display }}
+                                                </span>
+                                                {% if installment.is_overdue %}
+                                                <span class="badge bg-danger">Overdue</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ installment.paid_date|date:"d M Y"|default:"-" }}</td>
+                                            <td>
+                                                {% if installment.status == 'pending' or installment.status == 'overdue' %}
+                                                <form method="post" action="{% url 'sswdashboard:mark_installment_paid' installment.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-success btn-sm">
+                                                        <i class="bi bi-check"></i> Mark Paid
+                                                    </button>
+                                                </form>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Payment History -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Payment History</h5>
+                <span class="badge bg-primary">
+                    Total: {{ payment_stats.total_payments }} payments
+                </span>
+            </div>
+            <div class="card-body">
+                {% if payments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Payment ID</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Receipt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'sswdashboard:payment_detail' payment.id %}">
+                                        {{ payment.payment_id }}
+                                    </a><br>
+                                    <small class="text-muted">{{ payment.receipt_number }}</small>
+                                </td>
+                                <td>{{ payment.payment_date|date:"d M Y H:i" }}</td>
+                                <td>
+                                    <strong class="text-success">₹{{ payment.amount|intcomma }}</strong>
+                                </td>
+                                <td>{{ payment.get_payment_method_display }}</td>
+                                <td>
+                                    <span class="badge {% if payment.status == 'completed' %}payment-status-completed{% elif payment.status == 'pending' %}payment-status-pending{% elif payment.status == 'failed' %}payment-status-failed{% else %}bg-secondary{% endif %}">
+                                        {{ payment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ payment.description|truncatechars:30 }}</td>
+                                <td>
+                                    <a href="{% url 'sswdashboard:generate_receipt' payment.id %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="bi bi-receipt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-cash display-1 text-muted"></i>
+                    <h5 class="mt-3">No payments recorded</h5>
+                    <p class="text-muted">Start by recording the first payment</p>
+                    <a href="{% url 'sswdashboard:add_payment_for_student' student.id %}" class="btn btn-primary">
+                        <i class="bi bi-cash"></i> Add Payment
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

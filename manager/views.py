@@ -8,11 +8,12 @@ from django.db import transaction
 from .models import StaffRegistration, DrivingLicense
 from .forms import (
     StaffRegistrationForm, EducationalHistoryFormSet, WorkingExperienceFormSet,
-    CertificateFormSet, TrainingFormSet, DrivingLicenseForm
+    CertificateFormSet, TrainingFormSet, DrivingLicenseForm, BankFormSet
+
 )
 from .models import (
     StaffRegistration, EducationalHistory, WorkingExperience,
-    CertificateOfSkills, SkillsTrainingStatus, DrivingLicense
+    CertificateOfSkills, SkillsTrainingStatus, DrivingLicense, BankInformation
 )
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -36,6 +37,7 @@ def staff_registration_create(request):
         certificate_formset = CertificateFormSet(request.POST, prefix='certificate')
         training_formset = TrainingFormSet(request.POST, prefix='training')
         license_form = DrivingLicenseForm(request.POST, prefix='license')
+        bank_formset = BankFormSet(request.POST, prefix='bank')
         
         # Check all forms validity
         form_valid = form.is_valid()
@@ -44,13 +46,19 @@ def staff_registration_create(request):
         certificate_valid = certificate_formset.is_valid()
         training_valid = training_formset.is_valid()
         license_valid = license_form.is_valid()
-        
+        bank_valid = bank_formset.is_valid()
+
+
+        print("Bank Valid:", bank_valid)                          # ✅ NEW
+        if not bank_valid:
+            print("Bank Errors:", bank_formset.errors)            # ✅ NEW
         print("Form Valid:", form_valid)
         print("Education Valid:", education_valid)
         print("Work Valid:", work_valid)
         print("Certificate Valid:", certificate_valid)
         print("Training Valid:", training_valid)
         print("License Valid:", license_valid)
+
         
         if not form_valid:
             print("Form Errors:", form.errors)
@@ -100,6 +108,12 @@ def staff_registration_create(request):
                         license = license_form.save(commit=False)
                         license.staff = staff
                         license.save()
+                       #Bank Information 
+                    bank_instances = bank_formset.save(commit=False)
+                    for bank in bank_instances:
+                        bank.staff = staff
+                        bank.save()
+
                     
                 messages.success(request, 'Staff registration completed successfully!')
                 return redirect('staff_detail', pk=staff.pk)
@@ -115,6 +129,8 @@ def staff_registration_create(request):
         certificate_formset = CertificateFormSet(prefix='certificate', queryset=CertificateOfSkills.objects.none())
         training_formset = TrainingFormSet(prefix='training', queryset=SkillsTrainingStatus.objects.none())
         license_form = DrivingLicenseForm(prefix='license')
+        bank_formset = BankFormSet(prefix='bank', queryset=BankInformation.objects.none())  # ✅ NEW
+
     
     context = {
         'form': form,
@@ -123,6 +139,7 @@ def staff_registration_create(request):
         'certificate_formset': certificate_formset,
         'training_formset': training_formset,
         'license_form': license_form,
+        'bank_formset': bank_formset, 
     }
     
     return render(request, 'dashboards/staff_registration.html', context)
@@ -137,6 +154,8 @@ def staff_registration_update(request, pk):
         work_formset = WorkingExperienceFormSet(request.POST, instance=staff, prefix='work')
         certificate_formset = CertificateFormSet(request.POST, instance=staff, prefix='certificate')
         training_formset = TrainingFormSet(request.POST, instance=staff, prefix='training')
+        bank_formset = BankFormSet(request.POST,instance=staff, prefix='bank')
+
         
         try:
             license = staff.driving_license
@@ -144,7 +163,7 @@ def staff_registration_update(request, pk):
         except DrivingLicense.DoesNotExist:
             license_form = DrivingLicenseForm(request.POST, prefix='license')
         
-        if form.is_valid() and education_formset.is_valid() and work_formset.is_valid() and certificate_formset.is_valid() and training_formset.is_valid() and license_form.is_valid():
+        if form.is_valid() and education_formset.is_valid() and work_formset.is_valid() and certificate_formset.is_valid() and training_formset.is_valid() and license_form.is_valid() and bank_formset.is_valid():
             try:
                 with transaction.atomic():
                     staff = form.save()
@@ -167,6 +186,9 @@ def staff_registration_update(request, pk):
                         license = license_form.save(commit=False)
                         license.staff = staff
                         license.save()
+                     # ✅ NEW — Save bank formset
+                    bank_formset.save()
+
                     
                 messages.success(request, 'Staff registration updated successfully!')
                 return redirect('staff_detail', pk=staff.pk)
@@ -180,6 +202,9 @@ def staff_registration_update(request, pk):
         work_formset = WorkingExperienceFormSet(instance=staff, prefix='work')
         certificate_formset = CertificateFormSet(instance=staff, prefix='certificate')
         training_formset = TrainingFormSet(instance=staff, prefix='training')
+        bank_formset = BankFormSet(prefix='bank', queryset=BankInformation.objects.filter(staff=staff))
+
+
         
         try:
             license = staff.driving_license
@@ -195,6 +220,7 @@ def staff_registration_update(request, pk):
         'training_formset': training_formset,
         'license_form': license_form,
         'staff': staff,
+        'bank_formset': bank_formset,
     }
     
     return render(request, 'dashboards/staff_registration.html', context)
@@ -375,6 +401,35 @@ def generate_staff_bio_pdf(request, pk):
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
         ]))
         elements.append(work_table)
+    # Bank Information
+    if staff.bank_info.exists():
+        elements.append(Paragraph("BANK INFORMATION", heading_style))
+
+    bank_data = [['Bank Name', 'Branch', 'Account No', 'Account Holder']]
+
+    for bank in staff.bank_info.all():
+        bank_data.append([
+            bank.bank_name,
+            bank.branch_name,
+            bank.account_no,
+            bank.account_holder_name
+        ])
+
+    bank_table = Table(bank_data, colWidths=[1.8*inch, 1.8*inch, 1.5*inch, 2*inch])
+    bank_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667eea')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
+    ]))
+
+    elements.append(bank_table)
+    elements.append(Spacer(1, 0.3*inch))
     
     # Footer
     elements.append(Spacer(1, 0.5*inch))
@@ -594,6 +649,7 @@ def generate_staff_login_id_pdf(request, pk):
     response.write(pdf)
     
     return response
+
 
 
 #Manger redirect to SSW AND STUDENTS

@@ -1,0 +1,213 @@
+{% extends "base_appointment.html" %}
+{% load static %}
+
+{% block title %}Available Appointment Slots{% endblock %}
+
+{% block content %}
+<div class="page-header mb-5">
+    <h1 class="display-5 fw-bold">
+        <i class="fas fa-calendar-day text-primary me-3"></i>Available Appointment Slots
+    </h1>
+    <p class="lead text-muted">Select an available time slot for your appointment</p>
+</div>
+
+<!-- Date Filter Card -->
+<div class="card shadow-sm mb-5">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter by Date</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="date" class="form-label fw-bold">Select Date</label>
+                <input type="date" class="form-control form-control-lg" id="date" name="date" 
+                       value="{{ selected_date|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-search me-2"></i>Filter
+                </button>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'available_slots' %}" class="btn btn-outline-secondary btn-lg w-100">
+                    <i class="fas fa-redo me-2"></i>Clear
+                </a>
+            </div>
+            <div class="col-md-2 text-end">
+                <div class="badge bg-info fs-6 p-2">
+                    <i class="fas fa-clock me-1"></i> {{ slots|length }} slots
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Slots Grid -->
+{% if slots %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for slot in slots %}
+    <div class="col">
+        <div class="card slot-card h-100 {% if slot.is_full %}border-danger{% else %}border-success{% endif %} 
+                    {% if slot.is_full %}booked{% else %}available{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="badge {% if slot.is_full %}bg-danger{% else %}bg-success{% endif %} mb-2">
+                            {% if slot.is_full %}
+                                <i class="fas fa-times-circle me-1"></i>Booked
+                            {% else %}
+                                <i class="fas fa-check-circle me-1"></i>Available
+                            {% endif %}
+                        </span>
+                        <h5 class="card-title mb-1">{{ slot.start_time|date:"l" }}</h5>
+                        <h4 class="text-primary fw-bold">{{ slot.start_time|date:"F j, Y" }}</h4>
+                    </div>
+                    <div class="text-end">
+                        <div class="h2 text-muted">{{ slot.start_time|time:"g:i" }}</div>
+                        <small class="text-muted">to {{ slot.end_time|time:"g:i A" }}</small>
+                    </div>
+                </div>
+                
+                <div class="slot-info mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">
+                            <i class="fas fa-users me-1"></i> Capacity: {{ slot.max_capacity }}
+                        </span>
+                        <span class="text-muted">
+                            <i class="fas fa-user-check me-1"></i> Booked: {{ slot.booked_count }}
+                        </span>
+                        <span class="text-muted">
+                            <i class="fas fa-chair me-1"></i> Available: {{ slot.available_spots }}
+                        </span>
+                    </div>
+                </div>
+                
+                {% if not slot.is_full %}
+                <div class="d-grid gap-2">
+                    <a href="{% url 'book_appointment' %}?slot_id={{ slot.id }}" 
+                       class="btn btn-success btn-lg">
+                        <i class="fas fa-bookmark me-2"></i>Book This Slot
+                    </a>
+                    <small class="text-center text-muted">
+                        <i class="fas fa-clock me-1"></i> Duration: {{ slot.duration }} minutes
+                    </small>
+                </div>
+                {% else %}
+                <button class="btn btn-danger btn-lg w-100" disabled>
+                    <i class="fas fa-ban me-2"></i>Fully Booked
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav aria-label="Page navigation" class="mt-5">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_date %}&date={{ selected_date|date:'Y-m-d' }}{% endif %}">
+                <i class="fas fa-chevron-left"></i> Previous
+            </a>
+        </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if selected_date %}&date={{ selected_date|date:'Y-m-d' }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_date %}&date={{ selected_date|date:'Y-m-d' }}{% endif %}">
+                Next <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<!-- No Slots Available -->
+<div class="text-center py-5">
+    <div class="mb-4">
+        <i class="fas fa-calendar-times fa-4x text-muted"></i>
+    </div>
+    <h3 class="text-muted mb-3">No Available Slots Found</h3>
+    <p class="text-muted mb-4">There are no available appointment slots for the selected date.</p>
+    <a href="{% url 'available_slots' %}" class="btn btn-primary btn-lg">
+        <i class="fas fa-redo me-2"></i>View All Slots
+    </a>
+</div>
+{% endif %}
+
+<!-- Legend -->
+<div class="card shadow-sm mt-5">
+    <div class="card-header bg-light">
+        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Legend</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="legend-color bg-success me-2" style="width: 20px; height: 20px;"></div>
+                    <span>Available Slots</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="legend-color bg-danger me-2" style="width: 20px; height: 20px;"></div>
+                    <span>Fully Booked</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="legend-color bg-warning me-2" style="width: 20px; height: 20px;"></div>
+                    <span>Limited Availability</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="legend-color bg-primary me-2" style="width: 20px; height: 20px;"></div>
+                    <span>Your Selection</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Auto-refresh page every 60 seconds for live updates
+setTimeout(function() {
+    window.location.reload();
+}, 60000);
+
+// Date picker enhancement
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('date');
+    if (dateInput) {
+        // Set min date to today
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.min = today;
+        
+        // Set max date to 3 months from now
+        const maxDate = new Date();
+        maxDate.setMonth(maxDate.getMonth() + 3);
+        dateInput.max = maxDate.toISOString().split('T')[0];
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

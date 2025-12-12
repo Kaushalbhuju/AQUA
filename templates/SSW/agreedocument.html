@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>2026 Months</title>
+  <style>
+    :root {
+      --bg:rgb(32, 84, 197);          /* deep black-blue background */
+      --panel:rgb(99, 138, 224);       /* dark panel */
+      --text:rgb(248, 248, 248);        /* light text */
+      --muted: #9ca3af;       /* muted gray */
+      --accent: #2563eb;      /* primary blue */
+      --accent-2: #1d4ed8;    /* darker blue */
+      --ring: #3b82f6;        /* focus ring */
+      --btn-bg:rgb(44, 94, 195);      /* button base */
+      --border: #1f2937;      /* border */
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      background: linear-gradient(180deg, var(--bg), #0b1022);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
+    .month-section {
+      max-width: 1100px;
+      margin: 56px auto;
+      padding: 0 20px;
+    }
+
+    .month-header { margin-bottom: 32px; text-align: center; }
+    .month-header h1 {
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      font-size: 2rem;
+      margin: 0;
+      color: var(--accent);
+    }
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 2.5rem;
+    }
+
+    .month-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 20px;
+    }
+    @media (max-width: 1024px) { .month-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 768px) { .month-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 460px) { .month-grid { grid-template-columns: 1fr; } }
+
+    .month-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 90px;              /* larger height */
+      padding: 24px 28px;            /* larger padding */
+      border-radius: 16px;
+      background: linear-gradient(180deg, var(--accent-2), var(--btn-bg));
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.1rem;            /* slightly larger text */
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+      will-change: transform;
+    }
+
+    .month-btn:hover {
+      border-color: var(--accent);
+      box-shadow: 0 12px 32px rgba(75, 124, 230, 0.45);
+      background: linear-gradient(180deg, var(--accent),rgb(188, 203, 231));
+      transform: translateY(-2px);
+    }
+
+    .month-btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+
+    .month-btn:active { transform: translateY(1px); }
+    .month-btn.loading { pointer-events: none; opacity: 0.85; }
+
+    .month-btn .spinner {
+      position: absolute;
+      right: 14px;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--accent);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 800ms linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <section class="month-section">
+    <header class="month-header">
+      
+      <p class="subtitle">Select a month to access the 2026 Agreements Document</p>
+    </header>
+    <div class="month-grid">
+      <a class="month-btn" href="{% url 'sswdash:list_documents' %}" data-month="JANUARY">2026 JANUARY</a>
+      <a class="month-btn" href="#" data-month="FEBRUARY">2026 FEBRUARY</a>
+      <a class="month-btn" href="#" data-month="MARCH">2026 MARCH</a>
+      <a class="month-btn" href="#" data-month="APRIL">2026 APRIL</a>
+      <a class="month-btn" href="#" data-month="MAY">2026 MAY</a>
+      <a class="month-btn" href="#" data-month="JUNE">2026 JUNE</a>
+      <a class="month-btn" href="#" data-month="JULY">2026 JULY</a>
+      <a class="month-btn" href="#" data-month="AUGUST">2026 AUGUST</a>
+      <a class="month-btn" href="#" data-month="SEPTEMBER">2026 SEPTEMBER</a>
+      <a class="month-btn" href="#" data-month="OCTOBER">2026 OCTOBER</a>
+      <a class="month-btn" href="#" data-month="NOVEMBER">2026 NOVEMBER</a>
+      <a class="month-btn" href="#" data-month="DECEMBER">2026 DECEMBER</a>
+    </div>
+  </section>
+</body>
+</html>

@@ -2,7 +2,7 @@ from django import forms
 from django.forms import inlineformset_factory
 from .models import (
     StaffRegistration, EducationalHistory, WorkingExperience,
-    CertificateOfSkills, SkillsTrainingStatus, DrivingLicense
+    CertificateOfSkills, SkillsTrainingStatus, DrivingLicense, BankInformation
 )
 
 class StaffRegistrationForm(forms.ModelForm):
@@ -36,6 +36,34 @@ class StaffRegistrationForm(forms.ModelForm):
             'staff_login_report_pdf': forms.FileInput(attrs={'class': 'form-control', 'accept': 'application/pdf'}),
             'staff_login_id_pdf': forms.FileInput(attrs={'class': 'form-control', 'accept': 'application/pdf'}),
         }
+class BankInformationForm(forms.ModelForm):
+    class Meta:
+        model = BankInformation
+        fields = [
+            "bank_name",
+            "branch_name",
+            "account_no",
+            "account_holder_name",
+        ]
+        widgets = {
+            "bank_name": forms.TextInput(attrs={"class": "form-control"}),
+            "branch_name": forms.TextInput(attrs={"class": "form-control"}),
+            "account_no": forms.TextInput(attrs={"class": "form-control"}),
+            "account_holder_name": forms.TextInput(attrs={"class": "form-control"}),
+        }
+# forms.py (same file)
+
+
+from django.forms import inlineformset_factory
+from .models import StaffRegistration, BankInformation
+
+BankFormSet = inlineformset_factory(
+    StaffRegistration,
+    BankInformation,
+    fields=["bank_name", "branch_name", "account_no", "account_holder_name"],
+    extra=1,
+    can_delete=True
+)
 
 
 class EducationalHistoryForm(forms.ModelForm):

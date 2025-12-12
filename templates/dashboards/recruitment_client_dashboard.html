@@ -6,135 +6,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recruitment Pipeline Dashboard</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0;
-            padding: 20px;
-            background: #f8f9fa;
+        /* ===== Base ===== */
+        body {
+          font: 16px/1.5 Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          background: #f8f9fa;
+        }
+        .container { max-width: 1400px; margin: 0 auto; position: relative; }
+        .header {
+          background: #2c3e50; color: #fff; padding: 20px;
+          border-radius: 5px; margin-bottom: 20px; text-align: center;
         }
         
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-        }
-        
-        .header { 
-            background: #2c3e50; 
-            color: white;
-            padding: 20px; 
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
+        /* ===== Pipeline ===== */
         .pipeline-stats {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-            margin-bottom: 30px;
+          display: grid; grid-template-columns: repeat(6,1fr);
+          gap: 10px; margin-bottom: 30px;
         }
-        
         .pipeline-card {
-            background: white;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            border-top: 4px solid;
-            position: relative;
+          background: #fff; padding: 15px; border-radius: 5px;
+          text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,.1);
+          cursor: pointer; transition: .3s; border-top: 4px solid; position: relative;
         }
-        
-        .pipeline-card:hover {
-            transform: translateY(-3px);
+        .pipeline-card:hover { transform: translateY(-3px); }
+        .pipeline-card.active, .pipeline-card.completed {
+          border-top-color: #27ae60; background: #f8fff9;
         }
-        
-        .pipeline-card.active {
-            border-top-color: #27ae60;
-            background: #f8fff9;
-        }
-        
-        .pipeline-card.completed {
-            border-top-color: #27ae60;
-            background: #f8fff9;
-        }
-        
-        .pipeline-card.pending {
-            border-top-color: #f39c12;
-            background: #fffaf2;
-        }
-        
-        .pipeline-card.future {
-            border-top-color: #bdc3c7;
-            background: #f8f9fa;
-            color: #7f8c8d;
-        }
-        
+        .pipeline-card.pending { border-top-color: #f39c12; background: #fffaf2; }
+        .pipeline-card.future { border-top-color: #bdc3c7; background: #f8f9fa; color: #7f8c8d; }
         .pipeline-arrow {
-            position: absolute;
-            right: -10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #3498db;
-            font-size: 20px;
-            z-index: 2;
+          position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+          color: #3498db; font-size: 20px; z-index: 2;
         }
         
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid #e9ecef;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
+        /* ===== Tabs ===== */
+        .tabs { display: flex; border-bottom: 1px solid #e9ecef; margin-bottom: 20px; flex-wrap: wrap; }
         .tab {
-            padding: 12px 20px;
-            background: none;
-            border: none;
-            font-size: 16px;
-            font-weight: 500;
-            color: #6c757d;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            cursor: pointer;
+          padding: 12px 20px; border: none; font: 500 16px Arial, sans-serif;
+          color: #6c757d; border-bottom: 3px solid transparent; cursor: pointer; transition: .3s;
         }
+        .tab:hover { color: #495057; background: #f8f9fa; }
+        .tab.active { color: #3498db; border-bottom-color: #3498db; background: #f8f9fa; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         
-        .tab:hover {
-            color: #495057;
-            background: #f8f9fa;
-        }
-        
-        .tab.active {
-            color: #3498db;
-            border-bottom-color: #3498db;
-            background: #f8f9fa;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
+        /* ===== Student Cards ===== */
         .student-card {
-            background: white;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border-left: 4px solid;
-            transition: transform 0.2s ease;
+          background: #fff; padding: 20px; margin: 15px 0; border-radius: 5px;
+          box-shadow: 0 2px 5px rgba(0,0,0,.1); border-left: 4px solid; transition: .2s;
         }
-        
-        .student-card:hover {
-            transform: translateX(5px);
-            background: #f5f5f5;
-        }
-        
+        .student-card:hover { transform: translateX(5px); background: #f5f5f5; }
         .student-candidate-info { border-left-color: #f39c12; }
         .student-select-candidate { border-left-color: #3498db; }
         .student-interview-pattern { border-left-color: #9b59b6; }
@@ -142,57 +64,28 @@
         .student-ceo-approval { border-left-color: #e74c3c; }
         .student-visa-arrival { border-left-color: #1abc9c; }
         
-        .student-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
+        .student-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; }
         
+        /* ===== Buttons ===== */
         .btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            text-decoration: none;
-            color: white;
-            display: inline-block;
-            margin: 0 3px;
-            font-size: 14px;
+          padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer;
+          text-decoration: none; color: #fff; display: inline-block; margin: 0 3px; font-size: 14px;
         }
-        
         .btn-pdf { background: #e74c3c; }
-        .btn-approve { background: #27ae60; }
+        .btn-approve, .btn-complete { background: #27ae60; }
         .btn-decline { background: #95a5a6; }
-        .btn-view { background: #3498db; }
-        .btn-move { background: #3498db; }
-        .btn-complete { background: #27ae60; }
+        .btn-view, .btn-move { background: #3498db; }
         
         .student-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
+          display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+          gap: 10px; margin-top: 10px;
         }
+        .detail-label { font-weight: bold; color: #555; }
         
-        .detail-item {
-            padding: 5px 0;
-        }
-        
-        .detail-label {
-            font-weight: bold;
-            color: #555;
-        }
-        
+        /* ===== Status Badges ===== */
         .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            color: white;
+          padding: 4px 12px; border-radius: 20px; font: bold 12px Arial, sans-serif; color: #fff;
         }
-        
         .status-candidate-info { background: #f39c12; }
         .status-select-candidate { background: #3498db; }
         .status-interview-pattern { background: #9b59b6; }
@@ -200,138 +93,44 @@
         .status-ceo-approval { background: #e74c3c; }
         .status-visa-arrival { background: #1abc9c; }
         
+        /* ===== Misc ===== */
         .no-students {
-            text-align: center;
-            padding: 40px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            border: 2px dashed #ddd;
-            color: #666;
+          text-align: center; padding: 40px; background: #f8f9fa;
+          border-radius: 5px; border: 2px dashed #ddd; color: #666;
         }
-        
-        .logout-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-        
+        .logout-container { position: absolute; top: 20px; right: 20px; }
         .btn-logout {
-            background: #e74c3c;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
+          background: #e74c3c; color: #fff; padding: 10px 20px; border-radius: 5px;
+          font-size: 14px; display: inline-flex; align-items: center; gap: 5px;
+          transition: .3s; border: none; cursor: pointer;
+        }
+        .btn-logout:hover { background: #c0392b; transform: translateY(-2px); box-shadow: 0 3px 10px rgba(0,0,0,.2); }
+        
+        /* ===== Stage Progress ===== */
+        .stage-progress { display: flex; align-items: center; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .stage-item { flex: 1; text-align: center; padding: 10px; }
+        .stage-item.completed { color: #27ae60; font-weight: bold; }
+        .stage-item.current { color: #3498db; font-weight: bold; }
+        .stage-item.future { color: #95a5a6; }
+        
+        /* ===== Alerts ===== */
+        .alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+        .alert-success { color: #155724; background: #d4edda; border-color: #c3e6cb; }
+        .alert-error { color: #721c24; background: #f8d7da; border-color: #f5c6cb; }
+        .alert-warning { color: #856404; background: #fff3cd; border-color: #ffeaa7; }
+        .alert-info { color: #0c5460; background: #d1ecf1; border-color: #bee5eb; }
+        
+        /* ===== Responsive ===== */
+        @media (max-width:1200px){ .pipeline-stats{ grid-template-columns: repeat(3,1fr);} }
+        @media (max-width:768px){
+          .pipeline-stats{ grid-template-columns: repeat(2,1fr);}
+          .student-header{ flex-direction: column; align-items: flex-start;}
+          .student-header>div:last-child{ margin-top: 10px;}
+          .tabs{ overflow-x:auto; flex-wrap:nowrap;}
+          .tab{ white-space:nowrap;}
+          .btn{ margin:2px; padding:6px 10px; font-size:12px;}
         }
         
-        .btn-logout:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-        }
-        
-        .stage-progress {
-            display: flex;
-            align-items: center;
-            margin: 10px 0;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-        }
-        
-        .stage-item {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            position: relative;
-        }
-        
-        .stage-item.completed {
-            color: #27ae60;
-            font-weight: bold;
-        }
-        
-        .stage-item.current {
-            color: #3498db;
-            font-weight: bold;
-        }
-        
-        .stage-item.future {
-            color: #95a5a6;
-        }
-        
-        /* Messages styling */
-        .messages {
-            margin: 20px 0;
-        }
-        
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid transparent;
-            border-radius: 4px;
-        }
-        
-        .alert-success {
-            color: #155724;
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-        }
-        
-        .alert-error {
-            color: #721c24;
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-        }
-        
-        .alert-warning {
-            color: #856404;
-            background-color: #fff3cd;
-            border-color: #ffeaa7;
-        }
-        
-        .alert-info {
-            color: #0c5460;
-            background-color: #d1ecf1;
-            border-color: #bee5eb;
-        }
-        
-        @media (max-width: 1200px) {
-            .pipeline-stats {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .pipeline-stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .student-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .student-header > div:last-child {
-                margin-top: 10px;
-            }
-            .tabs {
-                overflow-x: auto;
-                flex-wrap: nowrap;
-            }
-            .tab {
-                white-space: nowrap;
-            }
-            .btn {
-                margin: 2px;
-                padding: 6px 10px;
-                font-size: 12px;
-            }
-        }
     </style>
 </head>
 <body>

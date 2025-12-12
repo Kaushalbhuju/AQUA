@@ -1,0 +1,416 @@
+{% extends 'sswadmission/base.html' %}
+{% load humanize %}
+
+{% block title %}Payment Verification Queue - Student Admission System{% endblock %}
+
+{% block page_title %}Payment Verification Queue{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{% url 'sswdashboard:payment_list' %}" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left"></i> All Payments
+    </a>
+    <button class="btn btn-outline-secondary" onclick="refreshQueue()">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Pending Verification</h6>
+                        <h2 class="mb-0">{{ stats.total_pending }}</h2>
+                    </div>
+                    <i class="bi bi-clock-history display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">{{ stats.today_pending }} new today</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Verified Today</h6>
+                        <h2 class="mb-0">{{ stats.verified_today }}</h2>
+                    </div>
+                    <i class="bi bi-check-circle display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">Successfully verified</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">High Priority</h6>
+                        <h2 class="mb-0">{{ stats.high_priority }}</h2>
+                    </div>
+                    <i class="bi bi-exclamation-triangle display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">Requires immediate attention</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Avg. Processing Time</h6>
+                        <h2 class="mb-0">2.5h</h2>
+                    </div>
+                    <i class="bi bi-speedometer2 display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">From submission to verification</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Verification Queue -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-shield-check"></i> Pending Payments for Verification</h5>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+            <label class="form-check-label" for="autoRefresh">Auto-refresh (30s)</label>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if payments %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Student</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Submitted</th>
+                        <th>Age</th>
+                        <th>Priority</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr class="{% if payment.priority == 'high' %}table-danger{% elif payment.priority == 'medium' %}table-warning{% endif %}">
+                        <td>
+                            <strong>{{ payment.payment_id }}</strong><br>
+                            <small class="text-muted">Ref: {{ payment.transaction_id|default:"-" }}</small>
+                        </td>
+                        <td>
+                            <a href="{% url 'sswdashboard:student_detail' payment.student.id %}">
+                                {{ payment.student.full_name }}
+                            </a><br>
+                            <small class="text-muted">{{ payment.student.student_id }}</small>
+                        </td>
+                        <td>
+                            <strong class="text-primary">₹{{ payment.amount|intcomma }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">
+                                {{ payment.get_payment_method_display }}
+                            </span><br>
+                            <small>{{ payment.bank_name|default:"" }}</small>
+                        </td>
+                        <td>
+                            {{ payment.created_at|date:"d M" }}<br>
+                            <small class="text-muted">{{ payment.created_at|time }}</small>
+                        </td>
+                        <td>
+                            {{ payment.created_at|timesince }}
+                        </td>
+                        <td>
+                            {% if payment.created_at|timesince:"2 hours" %}
+                            <span class="badge bg-danger">High</span>
+                            {% elif payment.created_at|timesince:"6 hours" %}
+                            <span class="badge bg-warning">Medium</span>
+                            {% else %}
+                            <span class="badge bg-info">Low</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-success" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#verifyModal{{ payment.id }}">
+                                    <i class="bi bi-check-lg"></i> Verify
+                                </button>
+                                <button type="button" class="btn btn-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#rejectModal{{ payment.id }}">
+                                    <i class="bi bi-x-lg"></i> Reject
+                                </button>
+                                <a href="{% url 'sswdashboard:payment_detail' payment.id %}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Verify Modal -->
+                    <div class="modal fade" id="verifyModal{{ payment.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success text-white">
+                                    <h5 class="modal-title">Verify Payment</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="post" action="{% url 'sswdashboard:verify_payment' payment.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="approve">
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to verify this payment?</p>
+                                        <div class="alert alert-info">
+                                            <strong>Payment Details:</strong><br>
+                                            ID: {{ payment.payment_id }}<br>
+                                            Amount: ₹{{ payment.amount }}<br>
+                                            Student: {{ payment.student.full_name }}<br>
+                                            Method: {{ payment.get_payment_method_display }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="notes{{ payment.id }}" class="form-label">Verification Notes (Optional)</label>
+                                            <textarea class="form-control" id="notes{{ payment.id }}" 
+                                                      name="notes" rows="3" 
+                                                      placeholder="Add any verification notes..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="bi bi-check-lg"></i> Confirm Verification
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reject Modal -->
+                    <div class="modal fade" id="rejectModal{{ payment.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">Reject Payment</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="post" action="{% url 'sswdashboard:verify_payment' payment.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="reject">
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to reject this payment?</p>
+                                        <div class="alert alert-warning">
+                                            <strong>⚠ Warning:</strong> Rejecting this payment will mark it as failed.<br>
+                                            The student's payment status will be updated accordingly.
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="rejectNotes{{ payment.id }}" class="form-label">Rejection Reason *</label>
+                                            <textarea class="form-control" id="rejectNotes{{ payment.id }}" 
+                                                      name="notes" rows="3" required
+                                                      placeholder="Please provide the reason for rejection..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="bi bi-x-lg"></i> Confirm Rejection
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if payments.has_other_pages %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if payments.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ payments.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for num in payments.paginator.page_range %}
+                    {% if payments.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > payments.number|add:'-3' and num < payments.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if payments.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ payments.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-check-circle display-1 text-success"></i>
+            <h3 class="mt-4">All Clear!</h3>
+            <p class="text-muted">No pending payments for verification.</p>
+            <a href="{% url 'sswdashboard:payment_list' %}" class="btn btn-primary">
+                <i class="bi bi-cash-stack"></i> View All Payments
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Bulk Actions -->
+{% if payments %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-lightning"></i> Bulk Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <button class="btn btn-outline-success w-100" onclick="bulkApprove()">
+                    <i class="bi bi-check-all"></i> Approve Selected
+                </button>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-outline-danger w-100" onclick="bulkReject()">
+                    <i class="bi bi-x-circle"></i> Reject Selected
+                </button>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-outline-primary w-100" onclick="exportQueue()">
+                    <i class="bi bi-download"></i> Export Queue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh functionality
+    let autoRefreshInterval;
+    
+    function startAutoRefresh() {
+        if (document.getElementById('autoRefresh').checked) {
+            autoRefreshInterval = setInterval(function() {
+                refreshQueue();
+            }, 30000); // 30 seconds
+        }
+    }
+    
+    function stopAutoRefresh() {
+        clearInterval(autoRefreshInterval);
+    }
+    
+    function refreshQueue() {
+        window.location.reload();
+    }
+    
+    // Initialize auto-refresh
+    document.getElementById('autoRefresh').addEventListener('change', function() {
+        if (this.checked) {
+            startAutoRefresh();
+        } else {
+            stopAutoRefresh();
+        }
+    });
+    
+    // Start auto-refresh on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        startAutoRefresh();
+    });
+    
+    // Bulk actions
+    function bulkApprove() {
+        if (confirm('Approve all selected payments? This action cannot be undone.')) {
+            // Implement bulk approve logic
+            alert('Bulk approve feature coming soon!');
+        }
+    }
+    
+    function bulkReject() {
+        if (confirm('Reject all selected payments? This action cannot be undone.')) {
+            // Implement bulk reject logic
+            alert('Bulk reject feature coming soon!');
+        }
+    }
+    
+    function exportQueue() {
+        // Implement export functionality
+        window.location.href = '{% url "sswdashboard:payment_verification_queue" %}?export=csv';
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+Enter to approve current modal
+        if (e.ctrlKey && e.key === 'Enter') {
+            const modal = document.querySelector('.modal.show');
+            if (modal) {
+                const approveBtn = modal.querySelector('.btn-success');
+                if (approveBtn) {
+                    approveBtn.click();
+                }
+            }
+        }
+        
+        // Escape to close modal
+        if (e.key === 'Escape') {
+            const modal = bootstrap.Modal.getInstance(document.querySelector('.modal.show'));
+            if (modal) {
+                modal.hide();
+            }
+        }
+    });
+    
+    // Highlight old payments
+    function highlightOldPayments() {
+        const rows = document.querySelectorAll('tbody tr');
+        const now = new Date();
+        
+        rows.forEach(row => {
+            const ageCell = row.querySelector('td:nth-child(6)');
+            if (ageCell) {
+                const ageText = ageCell.textContent.trim();
+                if (ageText.includes('hour') || ageText.includes('hours')) {
+                    const hours = parseInt(ageText);
+                    if (hours >= 4) {
+                        row.classList.add('table-warning');
+                    }
+                    if (hours >= 12) {
+                        row.classList.add('table-danger');
+                    }
+                }
+            }
+        });
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        highlightOldPayments();
+    });
+</script>
+{% endblock %}

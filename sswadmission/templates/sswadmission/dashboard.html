@@ -1,0 +1,289 @@
+{% extends 'sswadmission/base.html' %}
+{% load humanize %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block page_actions %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="btn-group">
+            <a href="{% url 'sswdashboard:student_registration' %}" class="btn btn-success">
+                <i class="bi bi-person-plus"></i> New Student
+            </a>
+            <a href="{% url 'sswdashboard:add_payment' %}" class="btn btn-primary">
+                <i class="bi bi-cash"></i> New Payment
+            </a>
+            <a href="{% url 'sswdashboard:student_list' %}" class="btn btn-outline-primary">
+                <i class="bi bi-list"></i> All Students
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <!-- Quick Stats -->
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Total Students</h6>
+                        <h2 class="mb-0">{{ total_students }}</h2>
+                    </div>
+                    <i class="bi bi-people display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">
+                    <i class="bi bi-arrow-up"></i> {{ active_students }} active
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Total Collection</h6>
+                        <h2 class="mb-0">₹{{ financial_stats.total_paid|intcomma }}</h2>
+                    </div>
+                    <i class="bi bi-cash-coin display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">
+                    {{ financial_stats.collection_rate|floatformat:1 }}% collected
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Pending Applications</h6>
+                        <h2 class="mb-0">{{ pending_applications }}</h2>
+                    </div>
+                    <i class="bi bi-clock-history display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">
+                    {{ new_today }} new today
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-1">Pending Dues</h6>
+                        <h2 class="mb-0">₹{{ financial_stats.total_due|intcomma }}</h2>
+                    </div>
+                    <i class="bi bi-exclamation-triangle display-4 opacity-50"></i>
+                </div>
+                <small class="d-block mt-2">
+                    From {{ fee_due_alerts|length }} students
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Payment Form -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Quick Payment</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'sswdashboard:process_quick_payment' %}">
+                    {% csrf_token %}
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <input type="text" name="student_id" class="form-control" placeholder="Student ID" required>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" name="amount" class="form-control" placeholder="Amount" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">Pay</button>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <select name="payment_method" class="form-control">
+                                <option value="cash">Cash</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                                <option value="online_payment">Online</option>
+                                <option value="upi">UPI</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" name="description" class="form-control" placeholder="Description">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Today's Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col">
+                        <h3>{{ todays_summary.admissions }}</h3>
+                        <small class="text-muted">Admissions</small>
+                    </div>
+                    <div class="col">
+                        <h3>{{ todays_summary.payments }}</h3>
+                        <small class="text-muted">Payments</small>
+                    </div>
+                    <div class="col">
+                        <h3>₹{{ todays_summary.collection|intcomma }}</h3>
+                        <small class="text-muted">Collection</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <!-- Recent Admissions -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-person-plus"></i> Recent Admissions</h5>
+                <a href="{% url 'sswdashboard:student_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for student in recent_admissions %}
+                    <a href="{% url 'sswdashboard:student_detail' student.id %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ student.full_name }}</h6>
+                            <small class="text-muted">{{ student.created_at|timesince }} ago</small>
+                        </div>
+                        <small class="text-muted">
+                            {{ student.student_id }} | {{ student.course }}
+                            <span class="badge {% if student.status == 'pending' %}status-pending{% elif student.status == 'approved' %}status-approved{% elif student.status == 'enrolled' %}status-enrolled{% else %}bg-secondary{% endif %} float-end">
+                                {{ student.get_status_display }}
+                            </span>
+                        </small>
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-3 text-muted">
+                        No recent admissions
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Payments -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-cash-stack"></i> Recent Payments</h5>
+                <a href="{% url 'sswdashboard:payment_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for payment in recent_payments %}
+                    <a href="{% url 'sswdashboard:payment_detail' payment.id %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">₹{{ payment.amount|intcomma }}</h6>
+                            <small class="text-muted">{{ payment.payment_date|date:"M d, H:i" }}</small>
+                        </div>
+                        <small class="text-muted">
+                            {{ payment.student.full_name }} | {{ payment.get_payment_method_display }}
+                            <span class="badge {% if payment.status == 'pending' %}payment-status-pending{% elif payment.status == 'completed' %}payment-status-completed{% else %}bg-secondary{% endif %} float-end">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </small>
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-3 text-muted">
+                        No recent payments
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fee Due Alerts -->
+{% if fee_due_alerts %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Fee Due Alerts</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Course</th>
+                                <th>Total Fee</th>
+                                <th>Paid</th>
+                                <th>Due</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in fee_due_alerts %}
+                            <tr>
+                                <td>
+                                    <strong>{{ student.full_name }}</strong><br>
+                                    <small class="text-muted">{{ student.student_id }}</small>
+                                </td>
+                                <td>{{ student.course }}</td>
+                                <td>₹{{ student.total_fee|intcomma }}</td>
+                                <td>₹{{ student.paid_amount|intcomma }}</td>
+                                <td><span class="badge bg-danger">₹{{ student.due_amount|intcomma }}</span></td>
+                                <td>
+                                    <a href="{% url 'sswdashboard:add_payment_for_student' student.id %}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-cash"></i> Collect
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+// Update dashboard stats every 60 seconds
+setInterval(function() {
+    $.ajax({
+        url: "{% url 'sswdashboard:ajax_dashboard_metrics' %}",
+        success: function(data) {
+            // Update stats dynamically
+            console.log('Stats updated:', data);
+        }
+    });
+}, 60000);
+</script>
+{% endblock %}
+{% endblock %}

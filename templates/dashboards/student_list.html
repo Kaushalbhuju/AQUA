@@ -363,14 +363,14 @@
         <div class="stats">
             <div class="stat-card stat-total">
                 <h3>Total Candidates</h3>
-                <div class="stat-number">{{ students|length }}</div>
+                <div class="stat-number">{{ total_count }}</div>
                 <p>All applications</p>
             </div>
             <div class="stat-card stat-pending" onclick="showTab('pending')">
                 <h3>Pending Review</h3>
                 <div class="stat-number">
                     {% with students|length as total %}
-                        {{ students|dictsort:"status"|length }}
+                        {{ pending_count }}
                     {% endwith %}
                 </div>
                 <p>Awaiting decision</p>
@@ -379,7 +379,7 @@
                 <h3>Approved</h3>
                 <div class="stat-number">
                     {% with students|dictsort:"status"|length as total %}
-                        {{ students|dictsort:"status"|length }}
+                        {{ approved_count }}
                     {% endwith %}
                 </div>
                 <p>Successful applications</p>
@@ -388,7 +388,7 @@
                 <h3>Declined</h3>
                 <div class="stat-number">
                     {% with students|dictsort:"status"|length as total %}
-                        {{ students|dictsort:"status"|length }}
+                        {{ declined_count }}
                     {% endwith %}
                 </div>
                 <p>Unsuccessful applications</p>
@@ -527,110 +527,91 @@
     </div>
 
     <script>
-        // Tab functionality
+        // -----------------------------
+        // TAB SWITCHING
+        // -----------------------------
         function showTab(tabName) {
             // Hide all tab contents
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+    
             // Remove active class from all tabs
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
-            // Show selected tab content
+    
+            // Show selected tab
             document.getElementById(tabName + '-tab').classList.add('active');
-            
-            // Add active class to clicked tab
+    
+            // Activate selected button
             event.target.classList.add('active');
-            
-            // Update counts
-            updateStatusCounts();
-            
-            // Filter students for status tabs
-            if (tabName !== 'all') {
-                filterStudentsByStatus(tabName);
-            }
+    
+            filterByStatus(tabName);
         }
-
-        // Search functionality
+    
+        // -----------------------------
+        // FILTER BY STATUS
+        // -----------------------------
+        function filterByStatus(status) {
+            const allStudents = document.querySelectorAll('.student-item');
+    
+            // Containers for filtered students
+            const pendingBox = document.getElementById('pending-students');
+            const approvedBox = document.getElementById('approved-students');
+            const declinedBox = document.getElementById('declined-students');
+    
+            pendingBox.innerHTML = '';
+            approvedBox.innerHTML = '';
+            declinedBox.innerHTML = '';
+    
+            let pending = 0, approved = 0, declined = 0;
+    
+            allStudents.forEach(student => {
+                const s = student.getAttribute('data-status');
+    
+                if (s === 'pending') {
+                    pending++;
+                    pendingBox.appendChild(student.cloneNode(true));
+                }
+                if (s === 'approved') {
+                    approved++;
+                    approvedBox.appendChild(student.cloneNode(true));
+                }
+                if (s === 'declined') {
+                    declined++;
+                    declinedBox.appendChild(student.cloneNode(true));
+                }
+            });
+    
+            document.getElementById('pending-count').innerText = pending;
+            document.getElementById('approved-count').innerText = approved;
+            document.getElementById('declined-count').innerText = declined;
+        }
+    
+        // -----------------------------
+        // SEARCH FUNCTIONALITY
+        // -----------------------------
         function filterStudents() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const students = document.querySelectorAll('.student-item');
-            
-            students.forEach(student => {
-                const studentText = student.textContent.toLowerCase();
-                if (studentText.includes(searchTerm)) {
-                    student.style.display = 'block';
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const studentCards = document.querySelectorAll('.student-item');
+    
+            studentCards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+    
+                if (text.includes(searchText)) {
+                    card.style.display = "block";
                 } else {
-                    student.style.display = 'none';
+                    card.style.display = "none";
                 }
             });
         }
-
-        // Filter by status
-        function filterStudentsByStatus(status) {
-            const students = document.querySelectorAll('.student-item');
-            const container = document.getElementById(status + '-students');
-            
-            let html = '';
-            let count = 0;
-            
-            students.forEach(student => {
-                if (student.dataset.status === status) {
-                    if (student.style.display !== 'none') {
-                        html += student.outerHTML;
-                        count++;
-                    }
-                }
-            });
-            
-            container.innerHTML = html || '<div class="no-students"><h3>No ' + status + ' students found</h3><p>No students with ' + status + ' status.</p></div>';
-            
-            // Update tab count
-            document.getElementById(status + '-count').textContent = count;
-        }
-
-        // Update status counts
-        function updateStatusCounts() {
-            const students = document.querySelectorAll('.student-item');
-            const counts = { pending: 0, approved: 0, declined: 0 };
-            
-            students.forEach(student => {
-                if (student.style.display !== 'none') {
-                    counts[student.dataset.status]++;
-                }
-            });
-            
-            document.getElementById('pending-count').textContent = counts.pending;
-            document.getElementById('approved-count').textContent = counts.approved;
-            document.getElementById('declined-count').textContent = counts.declined;
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            updateStatusCounts();
-            
-            // Add confirmation for actions
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('btn-approve')) {
-                    if (!confirm('Are you sure you want to approve this student?')) {
-                        e.preventDefault();
-                    }
-                }
-                if (e.target.classList.contains('btn-decline')) {
-                    if (!confirm('Are you sure you want to decline this student?')) {
-                        e.preventDefault();
-                    }
-                }
-            });
-        });
-
-        // Auto-refresh counts when searching
-        document.getElementById('searchInput').addEventListener('input', function() {
-            setTimeout(updateStatusCounts, 100);
-        });
+    
+        // Count students when page loads
+        window.onload = function() {
+            filterByStatus("all");
+        };
     </script>
+    
 </body>
 </html>

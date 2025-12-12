@@ -1,0 +1,228 @@
+{% extends 'sswadmission/base.html' %}
+{% load humanize %}
+
+{% block page_title %}Students{% endblock %}
+
+{% block page_actions %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="btn-group">
+            <a href="{% url 'sswdashboard:student_registration' %}" class="btn btn-success">
+                <i class="bi bi-person-plus"></i> New Student
+            </a>
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="bi bi-funnel"></i> Filters
+            </button>
+            <button class="btn btn-outline-secondary" id="exportBtn">
+                <i class="bi bi-download"></i> Export
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Filter Students</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="get" id="filterForm">
+                    <div class="mb-3">
+                        <label class="form-label">Search</label>
+                        <input type="text" name="search" class="form-control" value="{{ request.GET.search }}" placeholder="Name, ID, email, phone...">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-control">
+                                <option value="">All Statuses</option>
+                                {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Payment Status</label>
+                            <select name="payment_status" class="form-control">
+                                <option value="">All</option>
+                                <option value="fully_paid" {% if request.GET.payment_status == 'fully_paid' %}selected{% endif %}>Fully Paid</option>
+                                <option value="not_paid" {% if request.GET.payment_status == 'not_paid' %}selected{% endif %}>Not Paid</option>
+                                <option value="partially_paid" {% if request.GET.payment_status == 'partially_paid' %}selected{% endif %}>Partially Paid</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">From Date</label>
+                            <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">To Date</label>
+                            <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <a href="{% url 'sswdashboard:student_list' %}" class="btn btn-secondary">Clear</a>
+                <button type="submit" form="filterForm" class="btn btn-primary">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Summary -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Total Students</h6>
+                <h3>{{ total_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Filtered</h6>
+                <h3>{{ students|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Approved</h6>
+                <h3>{{ stats.approved }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Fully Paid</h6>
+                <h3>{{ stats.fully_paid }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Students Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover data-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Course</th>
+                        <th>Status</th>
+                        <th>Fee Status</th>
+                        <th>Amount Paid</th>
+                        <th>Due</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>
+                            <strong>{{ student.student_id }}</strong><br>
+                            <small class="text-muted">{{ student.phone }}</small>
+                        </td>
+                        <td>
+                            {{ student.full_name }}<br>
+                            <small class="text-muted">{{ student.email }}</small>
+                        </td>
+                        <td>{{ student.course|default:"-" }}</td>
+                        <td>
+                            <span class="badge {% if student.status == 'pending' %}status-pending{% elif student.status == 'approved' %}status-approved{% elif student.status == 'enrolled' %}status-enrolled{% elif student.status == 'declined' %}status-declined{% elif student.status == 'graduated' %}status-graduated{% endif %}">
+                                {{ student.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if student.total_fee > 0 %}
+                                {% if student.due_amount == 0 %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% elif student.paid_amount == 0 %}
+                                    <span class="badge bg-danger">Unpaid</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Partial</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">No Fee</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            ₹{{ student.paid_amount|intcomma }}<br>
+                            <small class="text-muted">
+                                {% if student.total_fee > 0 %}
+                                    {{ student.fee_paid_percentage|floatformat:0 }}%
+                                {% endif %}
+                            </small>
+                        </td>
+                        <td>
+                            {% if student.due_amount > 0 %}
+                                <span class="text-danger">₹{{ student.due_amount|intcomma }}</span>
+                            {% else %}
+                                <span class="text-success">₹0</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ student.created_at|date:"d M Y" }}<br>
+                            <small class="text-muted">{{ student.created_at|timesince }} ago</small>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'sswdashboard:student_detail' student.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'sswdashboard:update_student' student.id %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'sswdashboard:add_payment_for_student' student.id %}" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-cash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4">
+                            <i class="bi bi-people display-1 text-muted"></i>
+                            <h5 class="mt-3">No students found</h5>
+                            <p class="text-muted">Try changing your filters or add a new student</p>
+                            <a href="{% url 'sswdashboard:student_registration' %}" class="btn btn-primary">
+                                <i class="bi bi-person-plus"></i> Add First Student
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Export functionality
+    $('#exportBtn').click(function() {
+        if(confirm('Export all filtered students to CSV?')) {
+            // Build export URL with current filters
+            let params = new URLSearchParams(window.location.search);
+            window.location.href = '{% url "sswdashboard:student_list" %}?export=csv&' + params.toString();
+        }
+    });
+});
+</script>
+{% endblock %}

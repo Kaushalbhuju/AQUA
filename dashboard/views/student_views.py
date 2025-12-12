@@ -59,25 +59,42 @@ def student_registration(request):
             agent = agents.first()
 
     if request.method == 'POST':
+        print("=" * 50)
+        print("FORM SUBMISSION RECEIVED")
+        print("=" * 50)
+        print("POST data:", dict(request.POST))
+        print("FILES:", dict(request.FILES))
+        print("Agent:", agent)
+        
         form = StudentForm(request.POST, request.FILES, agent=agent)
+        
         if form.is_valid():
+            print("FORM IS VALID!")
+            print("Cleaned data:", form.cleaned_data)
             try:
                 student = form.save()
+                print(f"Student saved successfully: {student.student_id}")
                 
-                # Handle TB status from radio buttons
-                tb_status = request.POST.get('tb_status')
-                if tb_status:
-                    student.tb_status = tb_status
-                    student.save()
-
                 messages.success(request, f'Student {student.full_name} registered successfully with ID: {student.student_id}!')
                 return redirect('dashboard:registration_success', student_id=student.id)
             except Exception as e:
+                print(f"Error saving student: {str(e)}")
                 messages.error(request, f'Error saving student: {str(e)}')
         else:
+            print("=" * 50)
+            print("FORM IS INVALID")
+            print("=" * 50)
+            print("Form errors:", form.errors)
+            print("Form non-field errors:", form.non_field_errors())
+            print("=" * 50)
+            
+            for field_name, errors in form.errors.items():
+                print(f"Field: {field_name}, Errors: {errors}")
+            
             messages.error(request, 'Please correct the errors below.')
     else:
         form = StudentForm(agent=agent)
+        print("Form created for GET request")
     
     return render(request, 'dashboards/StudentRegistrationForm.html', {
         'form': form,
@@ -98,22 +115,22 @@ def agent_student_registration(request):
     agent = request.user.agent
     
     if request.method == 'POST':
+        print("Agent form submission")
+        print("POST data:", dict(request.POST))
+        
         form = StudentForm(request.POST, request.FILES, agent=agent)
         if form.is_valid():
+            print("Agent form is valid")
             try:
                 student = form.save()
                 
-                # Handle TB status from radio buttons
-                tb_status = request.POST.get('tb_status')
-                if tb_status:
-                    student.tb_status = tb_status
-                    student.save()
-
                 messages.success(request, f'Student {student.full_name} registered successfully with ID: {student.student_id}!')
                 return redirect('dashboard:agent_dashboard')
             except Exception as e:
+                print(f"Error saving student: {str(e)}")
                 messages.error(request, f'Error saving student: {str(e)}')
         else:
+            print("Agent form errors:", form.errors)
             messages.error(request, 'Please correct the errors below.')
     else:
         form = StudentForm(agent=agent)
@@ -260,9 +277,104 @@ def decline_student(request, student_id):
         return redirect('dashboard:recruitment_client_dashboard')
     return redirect('dashboard:decline_student_page', student_id=student_id)
 
+
+
+#Use Django ORM Counts in Your Template
+def all_candidates(request):
+    students = Student.objects.all()
+
+    total_count = students.count()
+    pending_count = students.filter(status='pending').count()
+    approved_count = students.filter(status='approved').count()
+    declined_count = students.filter(status='declined').count()
+
+    context = {
+        "students": students,
+        "total_count": total_count,
+        "pending_count": pending_count,
+        "approved_count": approved_count,
+        "declined_count": declined_count,
+    }
+    return render(request, "your_template.html", context)
+
+
 # -----------------------
 # Simple Pages
 # -----------------------
 @login_required
 def biodata(request):
     return render(request, 'dashboards/biodata.html')
+
+# -----------------------
+# Debug View (for testing)
+# -----------------------
+def test_form_submission(request):
+    """Debug view to test form submission"""
+    if request.method == 'POST':
+        response_text = []
+        response_text.append("=" * 50)
+        response_text.append("TEST FORM SUBMISSION")
+        response_text.append("=" * 50)
+        response_text.append(f"POST data: {dict(request.POST)}")
+        response_text.append(f"FILES: {dict(request.FILES)}")
+        
+        # Test with minimal data
+        agent = Agent.objects.first()
+        if agent:
+            response_text.append(f"Using agent: {agent.agent_code}")
+            form = StudentForm(request.POST, request.FILES, agent=agent)
+            
+            if form.is_valid():
+                response_text.append("✓ Form is VALID!")
+                try:
+                    student = form.save()
+                    response_text.append(f"✓ Student saved: {student.student_id}")
+                except Exception as e:
+                    response_text.append(f"✗ Error saving: {str(e)}")
+            else:
+                response_text.append("✗ Form is INVALID")
+                response_text.append(f"Errors: {form.errors}")
+        else:
+            response_text.append("✗ No agent found!")
+        
+        response_text.append("=" * 50)
+        return HttpResponse("<br>".join(response_text))
+    
+    # GET request - show test form
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head><title>Test Form</title></head>
+    <body>
+        <h1>Test Form Submission</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrfmiddlewaretoken" value="TEST_TOKEN">
+            <p>Full Name: <input type="text" name="full_name" value="Test Student"></p>
+            <p>Email: <input type="email" name="email" value="test@example.com"></p>
+            <p>Phone: <input type="text" name="phone" value="1234567890"></p>
+            <p>Gender: 
+                <select name="gender">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </p>
+            <p>Date of Birth: <input type="date" name="date_of_birth" value="2000-01-01"></p>
+            <p>Permanent Address: <textarea name="permanent_address">Test Address</textarea></p>
+            <p>Marital Status: 
+                <select name="marital_status">
+                    <option value="single">Single</option>
+                    <option value="married">Married</option>
+                </select>
+            </p>
+            <p>TB Status: 
+                <input type="radio" name="tb_status" value="positive" id="tbPositive">
+                <label for="tbPositive">Positive</label>
+                <input type="radio" name="tb_status" value="negative" id="tbNegative" checked>
+                <label for="tbNegative">Negative</label>
+            </p>
+            <button type="submit">Test Submit</button>
+        </form>
+    </body>
+    </html>
+    """
+    return HttpResponse(html)

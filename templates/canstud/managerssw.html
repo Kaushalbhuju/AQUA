@@ -108,8 +108,8 @@
         <a href="{% url 'regcompany:company_list' %}" class="workflow-button">{% trans "COMPANY REGISTRATION" %}</a>
         <a href="{% url 'dashboard:student_registration' %}" class="workflow-button">{% trans "CANDIDATE REGISTRATION" %}</a>
         <a href="#" class="workflow-button">{% trans "COE & VISA RECORDS" %}</a>
-        <a href="#" class="workflow-button">{% trans "AGREEMENTS DOCUMENTS" %}</a>
-        <a href="#" class="workflow-button">{% trans "ADMISSION & FEE PAYMENT" %}</a>
+        <a href="{% url 'dashboard:contracts_2026' %}" class="workflow-button">{% trans "AGREEMENTS DOCUMENTS" %}</a>
+        <a href="{% url 'sswdashboard:professional_dashboard' %}" class="workflow-button">{% trans "ADMISSION & FEE PAYMENT" %}</a>
         <a href="#" class="workflow-button">{% trans "JOB DEMAND" %}</a>
         <a href="#" class="workflow-button">{% trans "LANGUAGE & SSW SKILL EXAM" %}</a>
         <a href="#" class="workflow-button">{% trans "INTERVIEW SCHEDULE" %}</a>

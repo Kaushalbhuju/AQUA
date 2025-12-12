@@ -409,6 +409,63 @@
             font-weight: bold;
         }
         
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Form-wide error summary */
+        .error-summary {
+            background: linear-gradient(135deg, #fdf2f2 0%, #fce4e4 100%);
+            border: 2px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .error-summary h3 {
+            color: #721c24;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .error-summary h3::before {
+            content: '⚠';
+            font-size: 1.2rem;
+        }
+        
+        .error-summary ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .error-summary li {
+            color: #721c24;
+            margin-bottom: 5px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .error-summary li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 20px 15px;
@@ -480,12 +537,44 @@
 </head>
 <body>
     <div class="container">
+        <!-- Messages Display -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
         <div class="header">
             <h1>AQUA EDUCATION AND TRAINING ACADEMY</h1>
             <h2>ADMISSION FORM FOR SSW AND WORKING</h2>
         </div>
 
         <div class="form-container">
+            <!-- Error Summary -->
+            {% if form.errors %}
+            <div class="error-summary">
+                <h3>Please correct the following errors:</h3>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>
+                                <strong>{{ field|capfirst }}:</strong> {{ error }}
+                            </li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% if form.non_field_errors %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+            
             <form method="POST" enctype="multipart/form-data" id="studentForm">
                 {% csrf_token %}
                 
@@ -497,15 +586,19 @@
                             <label for="id_agent_code">Agent Code *</label>
                             {{ form.agent_code }}
                             {% if form.agent_code.errors %}
-                            <div class="error-message">{{ form.agent_code.errors }}</div>
+                            <div class="error-message">
+                                {% for error in form.agent_code.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                             <small style="color: #666; margin-top: 5px; display: block;">
                                 This code is automatically filled from your agent account
                             </small>
                         </div>
                         <div class="form-group">
-                            <label for="id_student_id_preview">Student ID Preview</label>
-                            {{ form.student_id_preview }}
+                            <label>Student ID Preview</label>
+                            <input type="text" class="form-control readonly-field" value="Auto-generated after submission" readonly>
                             <small style="color: #666; margin-top: 5px; display: block;">
                                 This ID will be automatically assigned after submission
                             </small>
@@ -522,7 +615,11 @@
                             <label for="id_gender">Gender</label>
                             {{ form.gender }}
                             {% if form.gender.errors %}
-                            <div class="error-message">{{ form.gender.errors }}</div>
+                            <div class="error-message">
+                                {% for error in form.gender.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                         <div class="form-group">
@@ -536,7 +633,11 @@
                                 <img class="photo-preview" id="photoPreview" alt="Student Photo">
                             </div>
                             {% if form.photo.errors %}
-                            <div class="error-message">{{ form.photo.errors }}</div>
+                            <div class="error-message">
+                                {% for error in form.photo.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                     </div>
@@ -546,19 +647,34 @@
                             <label for="id_full_name">Full Name</label>
                             {{ form.full_name }}
                             {% if form.full_name.errors %}
-                            <div class="error-message">{{ form.full_name.errors }}</div>
+                            <div class="error-message">
+                                {% for error in form.full_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                         <div class="form-group required">
                             <label for="id_date_of_birth">Date of Birth</label>
                             {{ form.date_of_birth }}
                             {% if form.date_of_birth.errors %}
-                            <div class="error-message">{{ form.date_of_birth.errors }}</div>
+                            <div class="error-message">
+                                {% for error in form.date_of_birth.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_age">Age</label>
                             {{ form.age }}
+                            {% if form.age.errors %}
+                            <div class="error-message">
+                                {% for error in form.age.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -567,14 +683,22 @@
                             <label for="id_permanent_address">Address (Permanent)</label>
                             {{ form.permanent_address }}
                             {% if form.permanent_address.errors %}
-                            <div class="error-message">{{ form.permanent_address.errors }}</div>
+                            <div class="error-message">
+                                {% for error in form.permanent_address.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_present_address">Address (Present)</label>
                             {{ form.present_address }}
                             {% if form.present_address.errors %}
-                            <div class="error-message">{{ form.present_address.errors }}</div>
+                            <div class="error-message">
+                                {% for error in form.present_address.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                     </div>
@@ -584,16 +708,34 @@
                             <label for="id_marital_status">Marital Status</label>
                             {{ form.marital_status }}
                             {% if form.marital_status.errors %}
-                            <div class="error-message">{{ form.marital_status.errors }}</div>
+                            <div class="error-message">
+                                {% for error in form.marital_status.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_spouse_name">Spouse Name</label>
                             {{ form.spouse_name }}
+                            {% if form.spouse_name.errors %}
+                            <div class="error-message">
+                                {% for error in form.spouse_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_spouse_contact">Spouse Contact No.</label>
                             {{ form.spouse_contact }}
+                            {% if form.spouse_contact.errors %}
+                            <div class="error-message">
+                                {% for error in form.spouse_contact.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -601,14 +743,35 @@
                         <div class="form-group">
                             <label for="id_passport_no">Passport No.</label>
                             {{ form.passport_no }}
+                            {% if form.passport_no.errors %}
+                            <div class="error-message">
+                                {% for error in form.passport_no.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_passport_issue_date">Date of Issue</label>
                             {{ form.passport_issue_date }}
+                            {% if form.passport_issue_date.errors %}
+                            <div class="error-message">
+                                {% for error in form.passport_issue_date.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_passport_expiry_date">Date of Expired</label>
                             {{ form.passport_expiry_date }}
+                            {% if form.passport_expiry_date.errors %}
+                            <div class="error-message">
+                                {% for error in form.passport_expiry_date.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -616,14 +779,35 @@
                         <div class="form-group">
                             <label for="id_height">Height</label>
                             {{ form.height }}
+                            {% if form.height.errors %}
+                            <div class="error-message">
+                                {% for error in form.height.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_weight">Weight</label>
                             {{ form.weight }}
+                            {% if form.weight.errors %}
+                            <div class="error-message">
+                                {% for error in form.weight.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_blood_group">Blood Group</label>
                             {{ form.blood_group }}
+                            {% if form.blood_group.errors %}
+                            <div class="error-message">
+                                {% for error in form.blood_group.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -631,26 +815,60 @@
                         <div class="form-group">
                             <label for="id_medical_report">Medical Report</label>
                             {{ form.medical_report }}
-                        </div>
-                        <div class="form-group">
-                            <label>TB Status</label>
-                            <div class="checkbox-group">
-                                <input type="radio" id="tbPositive" name="tb_status" value="positive">
-                                <label for="tbPositive">Positive</label>
-                                <input type="radio" id="tbNegative" name="tb_status" value="negative" style="margin-left: 15px;">
-                                <label for="tbNegative">Negative</label>
+                            {% if form.medical_report.errors %}
+                            <div class="error-message">
+                                {% for error in form.medical_report.errors %}
+                                    {{ error }}
+                                {% endfor %}
                             </div>
+                            {% endif %}
+                        </div>
+                        <!-- Updated TB Status Field -->
+                        <div class="form-group">
+                            <label for="id_tb_status">TB Status</label>
+                            <div class="checkbox-group">
+                                <div>
+                                    {{ form.tb_status.0 }}  <!-- First radio button -->
+                                    <label for="{{ form.tb_status.0.id_for_label }}">Positive</label>
+                                </div>
+                                <div>
+                                    {{ form.tb_status.1 }}  <!-- Second radio button -->
+                                    <label for="{{ form.tb_status.1.id_for_label }}">Negative</label>
+                                </div>
+                            </div>
+                            {% if form.tb_status.errors %}
+                            <div class="error-message">
+                                {% for error in form.tb_status.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_visa_apply_record">Past Visa Apply Record</label>
                             {{ form.visa_apply_record }}
+                            {% if form.visa_apply_record.errors %}
+                            <div class="error-message">
+                                {% for error in form.visa_apply_record.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
+                    </div>
                     </div>
                     
                     <div class="form-row" id="visaDetailsContainer" style="display: none;">
                         <div class="form-group">
                             <label for="id_visa_details">Visa Apply if Yes (Apply No. & Result)</label>
                             {{ form.visa_details }}
+                            {% if form.visa_details.errors %}
+                            <div class="error-message">
+                                {% for error in form.visa_details.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -659,19 +877,28 @@
                             <label for="id_email">Email ID</label>
                             {{ form.email }}
                             {% if form.email.errors %}
-                            <div class="error-message">{{ form.email.errors }}</div>
+                            <div class="error-message">
+                                {% for error in form.email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                         <div class="form-group required">
                             <label for="id_phone">Phone No.</label>
                             {{ form.phone }}
                             {% if form.phone.errors %}
-                            <div class="error-message">{{ form.phone.errors }}</div>
+                            <div class="error-message">
+                                {% for error in form.phone.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
-                
+
+             
                 <!-- Educational History Section -->
                 <div class="form-section">
                     <div class="section-title">Educational History</div>
@@ -799,10 +1026,24 @@
                         <div class="form-group">
                             <label for="id_certificate_pass_year">Pass Year & Month</label>
                             {{ form.certificate_pass_year }}
+                            {% if form.certificate_pass_year.errors %}
+                            <div class="error-message">
+                                {% for error in form.certificate_pass_year.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_certificate_name">Name of Certificate</label>
                             {{ form.certificate_name }}
+                            {% if form.certificate_name.errors %}
+                            <div class="error-message">
+                                {% for error in form.certificate_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -810,10 +1051,24 @@
                         <div class="form-group">
                             <label for="id_language_join_year">Join Year and Month</label>
                             {{ form.language_join_year }}
+                            {% if form.language_join_year.errors %}
+                            <div class="error-message">
+                                {% for error in form.language_join_year.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_organization">Organization</label>
                             {{ form.organization }}
+                            {% if form.organization.errors %}
+                            <div class="error-message">
+                                {% for error in form.organization.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -821,14 +1076,35 @@
                         <div class="form-group">
                             <label for="id_driving_license">Driving License</label>
                             {{ form.driving_license }}
+                            {% if form.driving_license.errors %}
+                            <div class="error-message">
+                                {% for error in form.driving_license.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_license_pass_year">Pass Year & Month</label>
                             {{ form.license_pass_year }}
+                            {% if form.license_pass_year.errors %}
+                            <div class="error-message">
+                                {% for error in form.license_pass_year.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="form-group">
                             <label for="id_license_discretion">Discretion of License</label>
                             {{ form.license_discretion }}
+                            {% if form.license_discretion.errors %}
+                            <div class="error-message">
+                                {% for error in form.license_discretion.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -836,6 +1112,13 @@
                         <div class="form-group">
                             <label for="id_hobbies">Hobbies, Special skills, etc.</label>
                             {{ form.hobbies }}
+                            {% if form.hobbies.errors %}
+                            <div class="error-message">
+                                {% for error in form.hobbies.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -843,53 +1126,108 @@
                         <div class="form-group">
                             <label for="id_motivation">Motivation, Self-promotion</label>
                             {{ form.motivation }}
+                            {% if form.motivation.errors %}
+                            <div class="error-message">
+                                {% for error in form.motivation.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
                 
                 <!-- Documents Section -->
                 <div class="form-section">
-                    <div class="section-title">Student Documents</div>
+                    <div class="section-title">NEEDED DOCUMENT FOR ADMISSION</div>
                     
                     <div class="document-section">
                         <div class="document-item">
                             <div class="pdf-icon">📄</div>
-                            <div>Student BIO-DATA</div>
+                            <div>PASSPORT</div>
                             {{ form.bio_data_file }}
-                            <small style="color: #666; font-size: 12px;">PDF, Word, Images</small>
+                            {% if form.bio_data_file.errors %}
+                            <div class="error-message">
+                                {% for error in form.bio_data_file.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small style="color: #666; font-size: 12px; display: block; margin-top: 10px;">
+                                PDF, Word, Images<br>
+                                Please Submit Color Copy
+                            </small>
                         </div>
                         <div class="document-item">
                             <div class="pdf-icon">📄</div>
-                            <div>Student ID Information</div>
+                            <div>GRADUATION / TRANSCRIPT</div>
                             {{ form.id_info_file }}
-                            <small style="color: #666; font-size: 12px;">PDF, Word, Images</small>
+                            {% if form.id_info_file.errors %}
+                            <div class="error-message">
+                                {% for error in form.id_info_file.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small style="color: #666; font-size: 12px; display: block; margin-top: 10px;">
+                                PDF, Word, Images<br>
+                                Please Submit Color Copy
+                            </small>
                         </div>
                         <div class="document-item">
                             <div class="pdf-icon">📄</div>
-                            <div>Student Educational Doc</div>
+                            <div>CITIZENSHIP / DRIVING</div>
                             {{ form.educational_doc_file }}
-                            <small style="color: #666; font-size: 12px;">PDF, Word, Images</small>
+                            {% if form.educational_doc_file.errors %}
+                            <div class="error-message">
+                                {% for error in form.educational_doc_file.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small style="color: #666; font-size: 12px; display: block; margin-top: 10px;">
+                                PDF, Word, Images<br>
+                                Please Submit Color Copy
+                            </small>
                         </div>
                         <div class="document-item">
                             <div class="pdf-icon">📄</div>
-                            <div>Student Report</div>
+                            <div>MEDICAL REPORT</div>
                             {{ form.report_file }}
-                            <small style="color: #666; font-size: 12px;">PDF, Word, Images</small>
+                            {% if form.report_file.errors %}
+                            <div class="error-message">
+                                {% for error in form.report_file.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small style="color: #666; font-size: 12px; display: block; margin-top: 10px;">
+                                PDF, Word, Images<br>
+                                Please Submit Color Copy
+                            </small>
                         </div>
                         <div class="document-item">
                             <div class="pdf-icon">📄</div>
                             <div>Other PDF</div>
                             {{ form.other_file }}
-                            <small style="color: #666; font-size: 12px;">PDF, Word, Images</small>
+                            {% if form.other_file.errors %}
+                            <div class="error-message">
+                                {% for error in form.other_file.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <small style="color: #666; font-size: 12px; display: block; margin-top: 10px;">
+                                PDF, Word, Images<br>
+                                Please Submit Color Copy
+                            </small>
                         </div>
                     </div>
                 </div>
 
                 <div class="btn-container">
-                    <button type="submit" class="btn">Submit Registration</button>
-                    {% comment %} <a href="{% url 'dashboard:student_list' %}" class="btn" style="background-color: #95a5a6; margin-left: 10px;">
-                        View Students
-                    </a> {% endcomment %}
+                    <button type="submit" class="btn" id="submitBtn">Submit Registration</button>
+                    <button type="reset" class="btn" style="background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);">Reset Form</button>
                 </div>
             </form>
         </div>
@@ -900,69 +1238,146 @@
     </div>
 
     <script>
-        // Calculate age when date of birth is entered
-        document.getElementById('id_date_of_birth').addEventListener('change', function() {
-            const dob = new Date(this.value);
-            const today = new Date();
-            let age = today.getFullYear() - dob.getFullYear();
-            const monthDiff = today.getMonth() - dob.getMonth();
-            
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-                age--;
-            }
-            
-            document.getElementById('id_age').value = age;
-        });
+        // Debug logging
+        console.log('Form script loaded');
         
-        // Show/hide visa details based on selection
-        document.getElementById('id_visa_apply_record').addEventListener('change', function() {
-            const visaDetailsContainer = document.getElementById('visaDetailsContainer');
-            if (this.value === 'yes') {
-                visaDetailsContainer.style.display = 'flex';
-            } else {
-                visaDetailsContainer.style.display = 'none';
-            }
-        });
-        
-        // Photo upload preview
-        document.getElementById('id_photo').addEventListener('change', function(e) {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const photoContainer = document.getElementById('photoContainer');
-                    const photoPreview = document.getElementById('photoPreview');
-                    const photoPlaceholder = photoContainer.querySelector('.photo-placeholder');
-                    
-                    photoPlaceholder.style.display = 'none';
-                    photoPreview.src = e.target.result;
-                    photoPreview.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        // Click on photo container to trigger file input
-        document.getElementById('photoContainer').addEventListener('click', function() {
-            document.getElementById('id_photo').click();
-        });
-        
-        // Add error class to fields with errors
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded');
+            
+            // Highlight fields with errors
             const errorFields = document.querySelectorAll('.errorlist');
             errorFields.forEach(function(errorField) {
-                const input = errorField.closest('.form-group').querySelector('input, select, textarea');
-                if (input) {
-                    input.classList.add('error');
+                const formGroup = errorField.closest('.form-group');
+                if (formGroup) {
+                    const input = formGroup.querySelector('input, select, textarea');
+                    if (input) {
+                        input.classList.add('error');
+                        console.log('Added error class to field:', input.id || input.name);
+                    }
                 }
             });
             
-            // Initialize visa details visibility
-            const visaRecord = document.getElementById('id_visa_apply_record');
-            if (visaRecord) {
-                visaRecord.dispatchEvent(new Event('change'));
+            // Initialize visa details visibility based on existing value
+            const visaRecordField = document.getElementById('id_visa_apply_record');
+            if (visaRecordField) {
+                // Set initial visibility
+                toggleVisaDetails(visaRecordField.value);
+                
+                // Add change listener
+                visaRecordField.addEventListener('change', function() {
+                    toggleVisaDetails(this.value);
+                });
             }
         });
+        
+        // Calculate age when date of birth is entered
+        const dobField = document.getElementById('id_date_of_birth');
+        if (dobField) {
+            dobField.addEventListener('change', function() {
+                try {
+                    const dob = new Date(this.value);
+                    if (isNaN(dob.getTime())) return;
+                    
+                    const today = new Date();
+                    let age = today.getFullYear() - dob.getFullYear();
+                    const monthDiff = today.getMonth() - dob.getMonth();
+                    
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                        age--;
+                    }
+                    
+                    const ageField = document.getElementById('id_age');
+                    if (ageField) {
+                        ageField.value = age;
+                    }
+                } catch (error) {
+                    console.error('Error calculating age:', error);
+                }
+            });
+        }
+        
+        function toggleVisaDetails(value) {
+            const visaDetailsContainer = document.getElementById('visaDetailsContainer');
+            if (visaDetailsContainer) {
+                visaDetailsContainer.style.display = value === 'yes' ? 'flex' : 'none';
+            }
+        }
+        
+        // Photo upload preview
+        const photoField = document.getElementById('id_photo');
+        if (photoField) {
+            photoField.addEventListener('change', function(e) {
+                const file = this.files[0];
+                if (file) {
+                    // Check file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size should be less than 5MB');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // Check file type
+                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('Please upload a valid image file (JPEG, PNG, GIF)');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const photoContainer = document.getElementById('photoContainer');
+                        const photoPreview = document.getElementById('photoPreview');
+                        const photoPlaceholder = photoContainer.querySelector('.photo-placeholder');
+                        
+                        if (photoPlaceholder) photoPlaceholder.style.display = 'none';
+                        if (photoPreview) {
+                            photoPreview.src = e.target.result;
+                            photoPreview.style.display = 'block';
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Click on photo container to trigger file input
+        const photoContainer = document.getElementById('photoContainer');
+        if (photoContainer && photoField) {
+            photoContainer.addEventListener('click', function() {
+                photoField.click();
+            });
+        }
+        
+        // SIMPLE FORM SUBMISSION HANDLER
+        const studentForm = document.getElementById('studentForm');
+        if (studentForm) {
+            studentForm.addEventListener('submit', function(e) {
+                console.log('Form submit event triggered');
+                
+                // Show loading state
+                const submitBtn = this.querySelector('#submitBtn');
+                if (submitBtn) {
+                    const originalText = submitBtn.textContent;
+                    submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+                    submitBtn.disabled = true;
+                    
+                    // Re-enable button after 10 seconds if something goes wrong
+                    setTimeout(() => {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                        console.log('Submit button re-enabled (timeout)');
+                    }, 10000);
+                }
+                
+                // Form will submit normally - let Django handle validation
+                console.log('Form is submitting...');
+                return true;
+            });
+        } else {
+            console.error('Form element not found!');
+        }
     </script>
 </body>
 </html>

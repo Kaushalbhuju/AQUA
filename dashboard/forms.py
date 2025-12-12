@@ -33,6 +33,26 @@ class StudentForm(forms.ModelForm):
         })
     )
     
+    # TB Status field
+    tb_status = forms.ChoiceField(
+        choices=[('positive', 'Positive'), ('negative', 'Negative')],
+        required=False,
+        widget=forms.RadioSelect(),
+        initial='negative'
+    )
+    
+    # Stage field - ADD THIS
+    stage = forms.CharField(
+    initial='candidate_info',
+    widget=forms.HiddenInput()
+)
+
+    experience = forms.IntegerField(
+    initial=0,
+    widget=forms.HiddenInput()
+)
+    
+    
     # Educational history fields
     school_primary_school = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
     admission_year_primary_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
@@ -100,6 +120,7 @@ class StudentForm(forms.ModelForm):
         # Import here to avoid circular imports
         from dashboard.models import Student
         model = Student
+        # Remove stage and experience from exclude since we're defining them explicitly
         exclude = ['status', 'reviewed_at', 'review_notes', 'candidate', 'agent', 'student_id']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -152,6 +173,7 @@ class StudentForm(forms.ModelForm):
         required_fields = [
             'full_name', 'date_of_birth', 'permanent_address', 
             'marital_status', 'email', 'phone', 'gender'
+              # Add these to required fields
         ]
         
         for field_name in required_fields:
@@ -159,6 +181,14 @@ class StudentForm(forms.ModelForm):
         
         # Set age field as readonly
         self.fields['age'].widget.attrs['readonly'] = True
+        
+        # Customize tb_status widget for inline display
+        self.fields['tb_status'].widget.attrs.update({'class': 'form-check-input'})
+        
+        # Set initial values for stage and experience
+        self.fields['stage'].required = False
+        self.fields['experience'].required = False
+      
     
     def clean_email(self):
         """Ensure email uniqueness within the same agent"""
@@ -189,6 +219,14 @@ class StudentForm(forms.ModelForm):
             student.agent = self.agent
             # Generate student ID
             student.student_id = self.fields['student_id_preview'].initial
+        
+        # Save TB status from form field
+        tb_status = self.cleaned_data.get('tb_status')
+        if tb_status:
+            student.tb_status = tb_status
+        student.stage = 'candidate_info'  # Default stage for new students
+        student.experience = 0  # Default experience
+    
         
         if commit:
             student.save()
@@ -258,7 +296,7 @@ class StudentForm(forms.ModelForm):
                     document_type=doc_type,
                     document_file=document_file
                 )
-# Add this to the end of forms.py
+
 class StudentRegistrationForm(StudentForm):
     """Enhanced student registration form with agent validation"""
     

@@ -4,39 +4,6 @@ from candidate_portal.forms import AgentAuthenticationForm
 from candidate_portal.models import Agent
 from dashboard.models import Student
 
-def agent_login(request):
-    """Agent login for dashboard access"""
-    if request.method == 'POST':
-        form = AgentAuthenticationForm(request.POST)
-        if form.is_valid():
-            agent = form.cleaned_data['agent']
-            
-            # Store agent in session - FIXED: use pin_code instead of pincode
-            request.session['agent_id'] = agent.id
-            request.session['agent_code'] = agent.agent_code
-            request.session['agent_name'] = agent.name
-            request.session['agent_pin'] = agent.pin_code 
-             # : pin_code not pincode
-            
-            messages.success(request, f'Welcome to your dashboard, {agent.name}!')
-            return redirect('dashboard:agent_dashboard')
-        else:
-            messages.error(request, 'Invalid agent code or PIN.')
-    else:
-        form = AgentAuthenticationForm()
-    
-    return render(request, 'candidate_portal/agent_login.html', {'form': form})
-
-def agent_logout(request):
-    """Logout agent from dashboard"""
-    session_keys = ['agent_id', 'agent_code', 'agent_name', 'agent_pin']
-    for key in session_keys:
-        if key in request.session:
-            del request.session[key]
-    
-    messages.info(request, 'You have been logged out.')
-    return redirect('dashboard:agent_login')
-
 def agent_dashboard(request):
     """Agent dashboard showing only their candidates"""
     # Check if agent is logged in
@@ -50,6 +17,10 @@ def agent_dashboard(request):
         # Get ONLY this agent's students
         students = Student.objects.filter(agent=agent).select_related('candidate')
         
+        # ADD THIS: Get contract
+        from candidate_portal.models import Contract
+        contract = Contract.objects.filter(agent=agent).order_by('-start_date').first()
+        
         context = {
             'agent': agent,
             'agent_code': request.session.get('agent_code', ''),
@@ -58,7 +29,9 @@ def agent_dashboard(request):
             'students': students,
             'total_students': students.count(),
             'remaining_slots': agent.max_candidates - agent.current_candidate_count,
-            'page_title': f'Agent Dashboard - {agent.agent_code}'
+            'page_title': f'Agent Dashboard - {agent.agent_code}',
+            'contract': contract,  # ADD THIS
+            'candidates': agent.candidates.filter(is_active=True),  # ADD THIS for template compatibility
         }
         
         return render(request, 'candidate_portal/agent_dashboard.html', context)
@@ -66,7 +39,6 @@ def agent_dashboard(request):
     except Agent.DoesNotExist:
         messages.error(request, 'Agent not found.')
         return redirect('dashboard:agent_login')
-
 def agent_student_detail(request, student_id):
     """Agent view for individual student details"""
     if 'agent_id' not in request.session:

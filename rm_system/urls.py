@@ -11,17 +11,21 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('i18n/', include('django.conf.urls.i18n')),
     
-    # Account-related URLs
-    path('', include('accounts.urls')),        # Includes ALL accounts URLs
-    path('register/', include('accounts.urls')),
+    # Account URLs - ONLY ONCE
+    path('', include('accounts.urls')),
     
-    # Other app URLsA
+    # Agent Portal URLs - All agent functionality here
+    path('agent/', include('candidate_portal.urls', namespace='agent_portal')),
+    
+    # Other app URLs
     path('dashboard/', include('dashboard.urls')),
     path('manager/', include('manager.urls')),
     path('company/', include('company.urls')),
     path('regcompany/', include('regcompany.urls')),
-    path('portal/', include('candidate_portal.urls')),
     path('staff/', include('staff.urls')),
+    path('sswdash/', include('sswdash.urls')),
+    path('sswadmission/', include('sswadmission.urls')),
+    path('appointment/', include('appointment.urls')),
 ]
 
 if settings.DEBUG:

@@ -2,222 +2,164 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page_title }}</title>
+    <title>{{ page_title|default:"Agent Dashboard" }}</title>
     <style>
-        /* ===== Global Styles ===== */
         body {
-            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-            background: #ecf0f1;
+            font-family: "Segoe UI", Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            color: #2c3e50;
+            background: #f4f6f9;
+            color: #333;
         }
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px;
-        }
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            color: #34495e;
-        }
-        h2 {
-            font-size: 1.4rem;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-
-        /* ===== Card Layout ===== */
-        .card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            transition: transform 0.2s ease;
-        }
-        .card:hover {
-            transform: translateY(-3px);
-        }
-        .card-header {
-            font-size: 1.3rem;
-            font-weight: 600;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        /* ===== Credentials ===== */
-        .credential-item {
-            margin-bottom: 15px;
-            padding: 12px;
-            background: #f9f9f9;
-            border-radius: 6px;
-            border-left: 4px solid #3498db;
-        }
-        .credential-label {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        .credential-value {
-            color: #27ae60;
-            font-family: monospace;
-            font-size: 1.1rem;
-        }
-
-        /* ===== Buttons ===== */
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: 600;
-            transition: background 0.2s ease;
-        }
-        .btn-primary {
-            background: #3498db;
+        .header {
+            background: #007bff;
             color: white;
+            padding: 20px 30px;
+            border-bottom: 4px solid #0056b3;
+            position: relative;
         }
-        .btn-primary:hover {
-            background: #2980b9;
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 14px;
+        }
+        .contract-info {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 12px;
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .container {
+            padding: 20px 30px;
+        }
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            color: #007bff;
+        }
+        .btn {
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            font-size: 14px;
         }
         .btn-danger {
-            background: #e74c3c;
+            background: #dc3545;
             color: white;
         }
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-        .btn-link {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .btn-link:hover {
-            text-decoration: underline;
-        }
-
-        /* ===== Table ===== */
-        .table-responsive {
-            overflow-x: auto;
-        }
-        .students-table {
+        table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
         }
-        .students-table th, .students-table td {
-            padding: 12px;
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
             text-align: left;
-            border-bottom: 1px solid #ddd;
         }
-        .students-table th {
-            background: #34495e;
-            color: white;
+        th {
+            background: #f1f3f5;
             font-weight: 600;
         }
-        .students-table tr:hover {
-            background: #f2f6fa;
+        tr:nth-child(even) {
+            background: #fafafa;
         }
-
-        /* ===== Status Badges ===== */
-        .badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        .badge-approved { background: #d4edda; color: #155724; }
-        .badge-declined { background: #f8d7da; color: #721c24; }
-        .badge-pending { background: #fff3cd; color: #856404; }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
+    <div class="header">
         <h1>Agent Dashboard</h1>
+        <p>Welcome, {{ agent.name }} ({{ agent.agent_code }})</p>
 
+        <!-- Contract Info (small red badge) -->
+        {% if contract %}
+            <div class="contract-info">
+                Active: {{ contract.start_date|date:"M d, Y" }} → {{ contract.end_date|date:"M d, Y" }}
+            </div>
+        {% else %}
+            <div class="contract-info">
+                ❌ No Contract Found
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="container">
         <!-- Access Credentials -->
         <div class="card">
-            <h2 class="card-header">Access Credentials</h2>
-            <div class="credential-item">
-                <div class="credential-label">Agent Code:</div>
-                <div class="credential-value">{{ agent_code }}</div>
-            </div>
-            <div class="credential-item">
-                <div class="credential-label">Agent Name:</div>
-                <div class="credential-value">{{ agent_name }}</div>
-            </div>
-            <div class="credential-item">
-                <div class="credential-label">PIN Code:</div>
-                <div class="credential-value">{{ agent_pin }}</div>
-            </div>
-            <div class="credential-item">
-                <div class="credential-label">Remaining Slots:</div>
-                <div class="credential-value">{{ remaining_slots }} / {{ agent.max_candidates }}</div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div style="margin-bottom: 30px;">
-            <a href="{% url 'dashboard:agent_student_registration' %}" class="btn btn-primary">
-                ➕ Register New Student
-            </a>
-            <a href="{% url 'dashboard:agent_logout' %}" class="btn btn-danger" style="margin-left: 10px;">
-                ⏻ Logout
-            </a>
+            <h2>Access Credentials</h2>
+            <p><strong>Agent Code:</strong> {{ agent.agent_code }}</p>
+            <p><strong>Agent Name:</strong> {{ agent.name }}</p>
+            <p><strong>PIN Code:</strong> {{ agent.pin_code }}</p>
+            <p><strong>Remaining Slots:</strong> {{ remaining_slots }} / {{ agent.max_candidates }}</p>
         </div>
 
         <!-- Statistics -->
         <div class="card">
             <h2>Statistics</h2>
             <p><strong>Total Students:</strong> {{ total_students }}</p>
+            <p><strong>Total Candidates:</strong> {{ total_candidates }}</p>
             <p><strong>Remaining Slots:</strong> {{ remaining_slots }}</p>
+            <p><strong>Usage Rate:</strong> 
+                {% if agent.max_candidates > 0 %}
+                    {% widthratio agent.current_candidate_count agent.max_candidates 100 %}%
+                {% else %}
+                    0%
+                {% endif %}
+            </p>
         </div>
 
-        <!-- Students List -->
+        <!-- Students Table -->
+        {% if students %}
         <div class="card">
-            <h2>Your Students</h2>
-            {% if students %}
-                <div class="table-responsive">
-                    <table class="students-table">
-                        <thead>
-                            <tr>
-                                <th>Student ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student in students %}
-                            <tr>
-                                <td>{{ student.student_id }}</td>
-                                <td>{{ student.full_name }}</td>
-                                <td>{{ student.email }}</td>
-                                <td>
-                                    <span class="badge 
-                                        {% if student.status == 'approved' %}badge-approved
-                                        {% elif student.status == 'declined' %}badge-declined
-                                        {% else %}badge-pending{% endif %}">
-                                        {{ student.status|title }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="{% url 'dashboard:agent_student_detail' student.id %}" class="btn-link">
-                                        View Details
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <p>No students registered yet.</p>
-            {% endif %}
+            <h2>Registered Students ({{ students.count }})</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.full_name }}</td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ student.phone|default:"-" }}</td>
+                        <td>{{ student.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Logout -->
+        <div class="card">
+            <h2>Session</h2>
+            <a href="{% url 'candidate_portal:agent_logout' %}" class="btn btn-danger">🚪 Logout</a>
         </div>
     </div>
 </body>

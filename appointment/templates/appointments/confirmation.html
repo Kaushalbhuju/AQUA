@@ -1,0 +1,198 @@
+{% extends "base_appointment.html" %}
+{% load static %}
+
+{% block title %}Appointment Confirmed{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Success Card -->
+            <div class="card border-success shadow-lg">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <div class="display-1 mb-3">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h1 class="card-title mb-0">Appointment Confirmed!</h1>
+                </div>
+                
+                <div class="card-body p-5">
+                    {% if appointment %}
+                    <!-- Confirmation Details -->
+                    <div class="text-center mb-5">
+                        <h3 class="text-success mb-3">Your appointment has been successfully scheduled</h3>
+                        <p class="lead text-muted">Please save your confirmation details below</p>
+                    </div>
+                    
+                    <!-- Confirmation Card -->
+                    <div class="card border-primary mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-ticket-alt me-2"></i>Confirmation Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Confirmation Code</h6>
+                                    <h2 class="text-primary fw-bold">{{ appointment.confirmation_code }}</h2>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <h6 class="text-muted">Booking Date</h6>
+                                    <h5>{{ appointment.created_at|date:"F j, Y" }}</h5>
+                                    <small class="text-muted">{{ appointment.created_at|time:"g:i A" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Appointment Details -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Appointment Time</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="display-4 text-primary mb-2">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <h3 class="fw-bold">{{ appointment.date|date:"l, F j, Y" }}</h3>
+                                    <h2 class="text-success">{{ appointment.time|time:"g:i A" }}</h2>
+                                    <p class="text-muted mb-0">Duration: {{ slot_duration }} minutes</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>Your Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Name:</strong></td>
+                                            <td>{{ appointment.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Email:</strong></td>
+                                            <td>{{ appointment.email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Phone:</strong></td>
+                                            <td>{{ appointment.phone }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Company:</strong></td>
+                                            <td>{{ appointment.company_name }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Additional Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Purpose:</strong> {{ appointment.get_appointment_aim_display }}</p>
+                                    <p><strong>Position:</strong> {{ appointment.position }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge {% if appointment.is_confirmed %}bg-success{% else %}bg-warning{% endif %}">
+                                            {% if appointment.is_confirmed %}Confirmed{% else %}Pending Confirmation{% endif %}
+                                        </span>
+                                    </p>
+                                    <p><strong>Address:</strong> {{ appointment.address|linebreaks }}</p>
+                                </div>
+                            </div>
+                            
+                            {% if appointment.message %}
+                            <div class="mt-3">
+                                <strong>Your Message:</strong>
+                                <div class="alert alert-light mt-2">{{ appointment.message|linebreaks }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Next Steps -->
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-list-check me-2"></i>Next Steps</h5>
+                        <ul class="mb-0">
+                            <li>You will receive a confirmation email shortly</li>
+                            <li>Save your confirmation code for future reference</li>
+                            <li>Arrive 10 minutes before your scheduled time</li>
+                            <li>Bring a valid ID and this confirmation</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-5">
+                        <a href="{% url 'available_slots' %}" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-calendar-plus me-2"></i>Book Another
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-primary btn-lg px-5">
+                            <i class="fas fa-print me-2"></i>Print Confirmation
+                        </button>
+                        <a href="/" class="btn btn-outline-secondary btn-lg px-5">
+                            <i class="fas fa-home me-2"></i>Home
+                        </a>
+                    </div>
+                    
+                    {% else %}
+                    <!-- No Appointment Found -->
+                    <div class="text-center py-5">
+                        <div class="display-1 text-warning mb-4">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h2 class="mb-3">Appointment Not Found</h2>
+                        <p class="lead text-muted mb-4">We couldn't find the appointment details you're looking for.</p>
+                        <div class="d-grid gap-2 col-md-6 mx-auto">
+                            <a href="{% url 'available_slots' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calendar-alt me-2"></i>View Available Slots
+                            </a>
+                            <a href="{% url 'book_appointment' %}" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-plus-circle me-2"></i>Book New Appointment
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Footer Note -->
+                <div class="card-footer bg-light text-center py-3">
+                    <small class="text-muted">
+                        <i class="fas fa-phone-alt me-1"></i> Need help? Call us at +1 (555) 123-4567 or 
+                        <a href="mailto:support@appointments.com">email support</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Auto-print option (optional)
+// setTimeout(function() {
+//     if (confirm('Would you like to print your confirmation?')) {
+//         window.print();
+//     }
+// }, 2000);
+
+// Copy confirmation code to clipboard
+function copyConfirmationCode() {
+    const code = '{{ appointment.confirmation_code }}';
+    navigator.clipboard.writeText(code).then(() => {
+        alert('Confirmation code copied to clipboard!');
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}
