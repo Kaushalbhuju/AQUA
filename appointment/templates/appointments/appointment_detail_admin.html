@@ -1,0 +1,401 @@
+{% extends "base_appointment.html" %}
+{% load static %}
+
+{% block title %}Appointment Details - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .detail-card:hover {
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        min-width: 150px;
+    }
+    
+    .info-value {
+        color: #212529;
+        word-break: break-word;
+    }
+    
+    .status-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline:before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #007bff, #28a745);
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-dot {
+        position: absolute;
+        left: -33px;
+        top: 5px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 0 0 3px;
+    }
+    
+    .action-btn {
+        min-width: 120px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold">
+                <i class="fas fa-calendar-check text-primary me-3"></i>Appointment Details
+            </h1>
+            <p class="lead text-muted">Complete information for appointment #{{ appointment.id }}</p>
+        </div>
+        <div class="text-end">
+            <span class="badge {% if appointment.is_confirmed %}bg-success{% else %}bg-warning{% endif %} status-badge">
+                <i class="fas {% if appointment.is_confirmed %}fa-check-circle{% else %}fa-clock{% endif %} me-2"></i>
+                {% if appointment.is_confirmed %}Confirmed{% else %}Pending Confirmation{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Confirmation Alert -->
+    <div class="alert alert-info d-flex align-items-center mb-4">
+        <i class="fas fa-info-circle fa-2x me-3"></i>
+        <div>
+            <h5 class="alert-heading mb-1">Confirmation Code: {{ appointment.confirmation_code }}</h5>
+            <p class="mb-0">Use this code to reference this appointment.</p>
+        </div>
+    </div>
+
+    <!-- Main Details -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Personal Information -->
+            <div class="card detail-card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>Personal Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Full Name:</span>
+                                <span class="info-value ms-2">{{ appointment.name }}</span>
+                            </div>
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Email:</span>
+                                <span class="info-value ms-2">{{ appointment.email }}</span>
+                            </div>
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Phone:</span>
+                                <span class="info-value ms-2">{{ appointment.phone }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Address:</span>
+                                <span class="info-value ms-2">{{ appointment.address|linebreaks }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional Information -->
+            <div class="card detail-card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-briefcase me-2"></i>Professional Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Company:</span>
+                                <span class="info-value ms-2">{{ appointment.company_name }}</span>
+                            </div>
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Position:</span>
+                                <span class="info-value ms-2">{{ appointment.position }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Appointment ID:</span>
+                                <span class="info-value ms-2">{{ appointment.id }}</span>
+                            </div>
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Confirmation Code:</span>
+                                <span class="info-value ms-2">{{ appointment.confirmation_code }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointment Details -->
+            <div class="card detail-card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Appointment Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Date:</span>
+                                <span class="info-value ms-2">{{ appointment.date|date:"l, F j, Y" }}</span>
+                            </div>
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Time:</span>
+                                <span class="info-value ms-2">{{ appointment.time|time:"g:i A" }}</span>
+                            </div>
+                            {% if appointment.appointment_slot %}
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Duration:</span>
+                                <span class="info-value ms-2">
+                                    {% with duration=appointment.appointment_slot.get_duration %}
+                                        {{ duration }} minute{{ duration|pluralize }}
+                                    {% endwith %}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Purpose:</span>
+                                <span class="info-value ms-2">
+                                    <span class="badge bg-info">{{ appointment.get_appointment_aim_display }}</span>
+                                </span>
+                            </div>
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Status:</span>
+                                <span class="info-value ms-2">
+                                    <span class="badge {% if appointment.is_confirmed %}bg-success{% else %}bg-warning{% endif %}">
+                                        {% if appointment.is_confirmed %}Confirmed{% else %}Pending{% endif %}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="d-flex mb-2">
+                                <span class="info-label">Slot:</span>
+                                <span class="info-value ms-2">
+                                    {% if appointment.appointment_slot %}
+                                        {{ appointment.appointment_slot.start_time|time:"g:i A" }} - {{ appointment.appointment_slot.end_time|time:"g:i A" }}
+                                    {% else %}
+                                        <span class="text-muted">No slot assigned</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Message -->
+            {% if appointment.message %}
+            <div class="card detail-card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comment-dots me-2"></i>Additional Message
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-light">
+                        {{ appointment.message|linebreaks }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Timeline -->
+            <div class="card detail-card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Timeline
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-dot" style="box-shadow: 0 0 0 3px #007bff;"></div>
+                            <div>
+                                <h6 class="mb-1">Appointment Created</h6>
+                                <small class="text-muted">{{ appointment.created_at|date:"M d, Y g:i A" }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-dot" style="box-shadow: 0 0 0 3px {% if appointment.is_confirmed %}#28a745{% else %}#ffc107{% endif %};"></div>
+                            <div>
+                                <h6 class="mb-1">Status: {% if appointment.is_confirmed %}Confirmed{% else %}Pending{% endif %}</h6>
+                                <small class="text-muted">
+                                    {% if appointment.is_confirmed %}
+                                        Confirmed on {{ appointment.updated_at|date:"M d, Y g:i A" }}
+                                    {% else %}
+                                        Awaiting confirmation
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-dot" style="box-shadow: 0 0 0 3px #17a2b8;"></div>
+                            <div>
+                                <h6 class="mb-1">Appointment Scheduled</h6>
+                                <small class="text-muted">
+                                    {{ appointment.date|date:"M d, Y" }} at {{ appointment.time|time:"g:i A" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card detail-card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <!-- Confirm Button -->
+                        {% if not appointment.is_confirmed %}
+                        <a href="{% url 'confirm_appointment' appointment.id %}" 
+                           class="btn btn-success btn-lg action-btn"
+                           onclick="return confirm('Confirm appointment #{{ appointment.id }}?')">
+                            <i class="fas fa-check-circle me-2"></i>Confirm Appointment
+                        </a>
+                        {% else %}
+                        <button class="btn btn-secondary btn-lg action-btn" disabled>
+                            <i class="fas fa-check-circle me-2"></i>Already Confirmed
+                        </button>
+                        {% endif %}
+                        
+                        <!-- Cancel Button -->
+                        <a href="{% url 'cancel_appointment' appointment.id %}" 
+                           class="btn btn-danger btn-lg action-btn"
+                           onclick="return confirm('Are you sure you want to cancel appointment #{{ appointment.id }}? This action cannot be undone.')">
+                            <i class="fas fa-times-circle me-2"></i>Cancel Appointment
+                        </a>
+                        
+                        <!-- Edit in Admin -->
+                        <a href="/admin/appointment/appointment/{{ appointment.id }}/change/" 
+                           target="_blank" class="btn btn-primary btn-lg action-btn">
+                            <i class="fas fa-external-link-alt me-2"></i>Edit in Admin Panel
+                        </a>
+                        
+                        <!-- Back to Dashboard -->
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-lg action-btn">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Appointments -->
+            {% if related_appointments %}
+            <div class="card detail-card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-link me-2"></i>Related Appointments
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Same company: <strong>{{ appointment.company_name }}</strong></p>
+                    <div class="list-group">
+                        {% for rel in related_appointments %}
+                        <a href="{% url 'appointment_detail_admin' rel.id %}" 
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ rel.name }}</h6>
+                                    <small class="text-muted">{{ rel.date|date:"M d" }} at {{ rel.time|time:"g:i A" }}</small>
+                                </div>
+                                <div>
+                                    <span class="badge {% if rel.is_confirmed %}bg-success{% else %}bg-warning{% endif %}">
+                                        {% if rel.is_confirmed %}C{% else %}P{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add confirmation dialogs
+    document.addEventListener('DOMContentLoaded', function() {
+        // Confirm button confirmation
+        const confirmBtn = document.querySelector('a[href*="confirm_appointment"]');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function(e) {
+                if (!confirm('Are you sure you want to confirm this appointment?')) {
+                    e.preventDefault();
+                }
+            });
+        }
+        
+        // Cancel button confirmation
+        const cancelBtn = document.querySelector('a[href*="cancel_appointment"]');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(e) {
+                if (!confirm('Are you absolutely sure you want to cancel this appointment? This action cannot be undone.')) {
+                    e.preventDefault();
+                }
+            });
+        }
+        
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

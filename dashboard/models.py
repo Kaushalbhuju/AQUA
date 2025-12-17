@@ -193,3 +193,10 @@ class StudentDocument(models.Model):
     
     def __str__(self):
         return f"{self.student.full_name} - {self.get_document_type_display()}"
+    
+ # Add get_display methods
+    def get_gender_display(self):
+        return dict(self._meta.get_field('gender').choices).get(self.gender, self.gender)
+    
+    def get_marital_status_display(self):
+        return dict(self._meta.get_field('marital_status').choices).get(self.marital_status, self.marital_status)

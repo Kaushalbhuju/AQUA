@@ -1,3 +1,4 @@
+from tkinter import Image
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -5,7 +6,13 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import date
 from django.template.loader import get_template
-from xhtml2pdf import pisa
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+import os
 
 from dashboard.models import Student, EducationalHistory, WorkExperience, StudentDocument, Agent
 from dashboard.forms import StudentForm
@@ -192,21 +199,474 @@ def student_application_detail(request, student_id):
 
 @login_required
 def generate_student_pdf(request, student_id):
-    student = get_object_or_404(
-        Student.objects.prefetch_related('education_history', 'work_experience', 'documents'),
-        id=student_id
-    )
-    template_path = 'dashboards/student_pdf_template.html'
-    context = {'student': student}
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'filename="student_{student.student_id}.pdf"'
-    template = get_template(template_path)
-    html = template.render(context)
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    if pisa_status.err:
-        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    """
+    Generate PDF using ReportLab with all student data
+    """
+    try:
+        # Get student with all related data
+        student = get_object_or_404(
+            Student.objects.select_related('agent').prefetch_related(
+                'education_history', 'work_experience'
+            ),
+            id=student_id
+        )
+        
+        # Create response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="student_{student.student_id}_application.pdf"'
+        
+        # Create PDF buffer
+        buffer = BytesIO()
+        
+        # Create document with A4 size
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=20,
+            leftMargin=20,
+            topMargin=20,
+            bottomMargin=20
+        )
+        
+        # Content container - MUST BE CREATED BEFORE ADDING ANY ELEMENTS
+        elements = []
+        
+        # Styles
+        styles = getSampleStyleSheet()
+        
+        # Custom styles
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=16,
+            alignment=1,  # Center
+            spaceAfter=5,
+            textColor=colors.black
+        )
+        
+        header_style = ParagraphStyle(
+            'CustomHeader',
+            parent=styles['Heading2'],
+            fontSize=14,
+            alignment=1,  # Center
+            spaceAfter=10,
+            textColor=colors.black
+        )
+        
+        section_style = ParagraphStyle(
+            'SectionTitle',
+            parent=styles['Heading3'],
+            fontSize=12,
+            textColor=colors.black,
+            spaceAfter=8,
+            spaceBefore=10
+        )
+        
+        # ============================================
+        # HEADER SECTION
+        # ============================================
+        elements.append(Paragraph("AQUA EDUCATION AND TRAINING ACADEMY", title_style))
+        elements.append(Paragraph("Lazimpat-02, Kathmandu, Nepal", styles['Normal']))
+        elements.append(Spacer(1, 5))
+        elements.append(Paragraph("CO TO: ZEISSHO HOLDINGS / SUKIYA JAPAN / AEON GROUP / TORVU GROUP / TORVUSYUKAI JAPAN", 
+                                 ParagraphStyle(name='Recipients', parent=styles['Normal'], fontSize=9)))
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph("ADMISSION FORM FOR SSW AND WORKING", header_style))
+        elements.append(Spacer(1, 15))
+        
+        # ============================================
+        # SECTION WITH PHOTO AND BASIC INFO (SIDE BY SIDE)
+        # ============================================
+        elements.append(Paragraph("1. BASIC INFORMATION WITH PHOTO", section_style))
+        
+        # Create a table that will have photo on right and info on left
+        from reportlab.platypus import Image
+        
+        # Create the data for the table: 2 columns, multiple rows
+        photo_info_data = []
+        
+        # Add student photo if available
+        photo_cell = None
+        if student.photo:
+            try:
+                # Try to open the photo file
+                photo_path = student.photo.path
+                if os.path.exists(photo_path):
+                    photo_cell = Image(photo_path, width=1.5*inch, height=2*inch)
+                else:
+                    photo_cell = Paragraph("PHOTO<br/>(Not available)", styles['Normal'])
+            except Exception as photo_error:
+                photo_cell = Paragraph("PHOTO<br/>(Error loading)", styles['Normal'])
+        else:
+            photo_cell = Paragraph("PHOTO<br/>(Not uploaded)", styles['Normal'])
+        
+        # Create a 2-column layout table
+        # Column 1: Information, Column 2: Photo
+        
+        # Row 1: Student ID and Photo (spanning multiple rows)
+        basic_info_with_photo = [
+            # Column 0: Information (6 rows)
+            [
+                ['Student ID NO:', student.student_id or 'N/A'],
+                ['Full Name:', student.full_name or 'N/A'],
+                ['Date of Birth:', str(student.date_of_birth) if student.date_of_birth else 'N/A'],
+                ['Age:', str(student.age) if student.age else 'N/A'],
+                ['Gender:', student.get_gender_display() if hasattr(student, 'get_gender_display') else 'N/A'],
+                ['Marital Status:', student.get_marital_status_display() if hasattr(student, 'get_marital_status_display') else 'N/A']
+            ],
+            # Column 1: Photo (will span all 6 rows)
+            photo_cell
+        ]
+        
+        # We need to create a custom table structure
+        # Since we can't easily mix Paragraphs and Images in simple Table, let's create a nested table
+        
+        # First, create the info table (6 rows, 2 columns)
+        info_table_data = [
+            ['Student ID NO:', student.student_id or 'N/A'],
+            ['Full Name:', student.full_name or 'N/A'],
+            ['Date of Birth:', str(student.date_of_birth) if student.date_of_birth else 'N/A'],
+            ['Age:', str(student.age) if student.age else 'N/A'],
+            ['Gender:', student.get_gender_display() if hasattr(student, 'get_gender_display') else 'N/A'],
+            ['Marital Status:', student.get_marital_status_display() if hasattr(student, 'get_marital_status_display') else 'N/A']
+        ]
+        
+        info_table = Table(info_table_data, colWidths=[1.5*inch, 3*inch])
+        info_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        # Now create a main table with 2 columns: info_table and photo
+        main_layout_data = [[info_table, photo_cell]]
+        main_layout_table = Table(main_layout_data, colWidths=[4.5*inch, 1.5*inch])
+        main_layout_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+        ]))
+        
+        elements.append(main_layout_table)
+        elements.append(Spacer(1, 10))
+        
+        # ============================================
+        # SECTION 2: CONTACT INFORMATION
+        # ============================================
+        elements.append(Paragraph("2. CONTACT INFORMATION", section_style))
+        
+        contact_data = [
+            ['Email:', student.email or 'N/A'],
+            ['Phone:', student.phone or 'N/A'],
+        ]
+        
+        contact_table = Table(contact_data, colWidths=[1.5*inch, 4*inch])
+        contact_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        elements.append(contact_table)
+        elements.append(Spacer(1, 10))
+        
+        # ============================================
+        # SECTION 3: ADDRESS INFORMATION
+        # ============================================
+        elements.append(Paragraph("3. ADDRESS INFORMATION", section_style))
+        
+        address_data = [
+            ['Permanent Address:', student.permanent_address or 'N/A'],
+            ['Present Address:', student.present_address or 'N/A'],
+        ]
+        
+        address_table = Table(address_data, colWidths=[1.5*inch, 4*inch])
+        address_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        elements.append(address_table)
+        elements.append(Spacer(1, 10))
+        
+        # ============================================
+        # SECTION 4: PASSPORT INFORMATION
+        # ============================================
+        elements.append(Paragraph("4. PASSPORT INFORMATION", section_style))
+        
+        passport_data = [
+            ['Passport No.:', student.passport_no or 'N/A'],
+            ['Date of Issue:', str(student.passport_issue_date) if student.passport_issue_date else 'N/A'],
+            ['Date of Expiry:', str(student.passport_expiry_date) if student.passport_expiry_date else 'N/A'],
+        ]
+        
+        passport_table = Table(passport_data, colWidths=[1.5*inch, 4*inch])
+        passport_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        elements.append(passport_table)
+        elements.append(Spacer(1, 10))
+        
+        # ============================================
+        # SECTION 5: PHYSICAL INFORMATION
+        # ============================================
+        elements.append(Paragraph("5. PHYSICAL INFORMATION", section_style))
+        
+        physical_data = [
+            ['Height:', f"{student.height or 'N/A'} cm"],
+            ['Weight:', f"{student.weight or 'N/A'} kg"],
+            ['Blood Group:', student.blood_group or 'N/A'],
+            ['Eye Lens (Right):', getattr(student, 'eye_lens_right', 'N/A')],
+            ['Eye Lens (Left):', getattr(student, 'eye_lens_left', 'N/A')],
+        ]
+        
+        physical_table = Table(physical_data, colWidths=[1.5*inch, 4*inch])
+        physical_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        elements.append(physical_table)
+        elements.append(Spacer(1, 10))
+        
+        # ============================================
+        # SECTION 6: VISA INFORMATION
+        # ============================================
+        elements.append(Paragraph("6. VISA INFORMATION", section_style))
+        
+        visa_data = [
+            ['Past Visa Apply Record:', getattr(student, 'visa_apply_record', 'N/A')],
+            ['Visa Result (if applied):', getattr(student, 'visa_result', 'N/A')],
+        ]
+        
+        visa_table = Table(visa_data, colWidths=[1.5*inch, 4*inch])
+        visa_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        elements.append(visa_table)
+        elements.append(Spacer(1, 10))
+        
+        # ============================================
+        # SECTION 7: FAMILY INFORMATION
+        # ============================================
+        elements.append(Paragraph("7. FAMILY INFORMATION", section_style))
+        
+        family_data = [
+            ['Spouse Name:', student.spouse_name or 'N/A'],
+            ['Spouse Contact:', student.spouse_contact or 'N/A'],
+        ]
+        
+        family_table = Table(family_data, colWidths=[1.5*inch, 4*inch])
+        family_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        elements.append(family_table)
+        elements.append(Spacer(1, 15))
+        
+        # ============================================
+        # SECTION 8: EDUCATIONAL HISTORY (TABLE FORMAT)
+        # ============================================
+        elements.append(Paragraph("8. EDUCATIONAL HISTORY", header_style))
+        
+        # Create education table
+        edu_headers = [['Level', 'School Name', 'Admission', 'Graduation', 'Years']]
+        edu_data = edu_headers.copy()
+        
+        if hasattr(student, 'education_history') and student.education_history.exists():
+            for edu in student.education_history.all():
+                # Safely get education data
+                admission_info = ''
+                if edu.admission_year:
+                    admission_info = str(edu.admission_year)
+                    if edu.admission_month:
+                        admission_info += f" {edu.admission_month}"
+                
+                graduation_info = ''
+                if edu.graduation_year:
+                    graduation_info = str(edu.graduation_year)
+                    if edu.graduation_month:
+                        graduation_info += f" {edu.graduation_month}"
+                
+                edu_data.append([
+                    edu.pass_level or 'N/A',
+                    edu.school_name or 'N/A',
+                    admission_info or 'N/A',
+                    graduation_info or 'N/A',
+                    str(edu.enrolled_years) if edu.enrolled_years else 'N/A'
+                ])
+        else:
+            edu_data.append(['No education records found', '', '', '', ''])
+        
+        # Create education table
+        edu_table = Table(edu_data, colWidths=[1.5*inch, 2.5*inch, 1*inch, 1*inch, 0.8*inch])
+        edu_table.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+        
+        elements.append(edu_table)
+        elements.append(Spacer(1, 15))
+        
+        # ============================================
+        # SECTION 9: WORK EXPERIENCE (TABLE FORMAT)
+        # ============================================
+        elements.append(Paragraph("9. WORK EXPERIENCE", header_style))
+        
+        # Create work table
+        work_headers = [['Type of Work', 'Company Name', 'Join Date', 'Resign Date', 'Years']]
+        work_data = work_headers.copy()
+        
+        if hasattr(student, 'work_experience') and student.work_experience.exists():
+            for work in student.work_experience.all():
+                work_data.append([
+                    work.work_type or 'N/A',
+                    work.company_name or 'N/A',
+                    str(work.join_date) if work.join_date else 'N/A',
+                    str(work.resign_date) if work.resign_date else 'N/A',
+                    str(work.working_years) if work.working_years else 'N/A'
+                ])
+        else:
+            work_data.append(['No work experience found', '', '', '', ''])
+        
+        # Create work table
+        work_table = Table(work_data, colWidths=[1.5*inch, 2*inch, 1*inch, 1*inch, 0.8*inch])
+        work_table.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+        
+        elements.append(work_table)
+        elements.append(Spacer(1, 15))
+        
+        # ============================================
+        # SECTION 10: ADDITIONAL INFORMATION
+        # ============================================
+        elements.append(Paragraph("10. ADDITIONAL INFORMATION", section_style))
+        
+        # Helper function to safely get agent name
+        def get_agent_name(agent):
+            if not agent:
+                return 'N/A'
+            # Try different possible field names
+            for field_name in ['agent_name', 'name', 'full_name', 'agent_code', 'code']:
+                if hasattr(agent, field_name):
+                    value = getattr(agent, field_name)
+                    if value:
+                        return str(value)
+            return 'Agent #' + str(agent.id) if hasattr(agent, 'id') else 'N/A'
+        
+        # Safely get all additional fields
+        additional_data = [
+            ['A-CODE:', getattr(student, 'a_code', 'ABB-0011')],
+            ['TB Status:', getattr(student, 'tb_status', 'N/A')],
+            ['Medical Report:', getattr(student, 'medical_report', 'N/A')],
+            ['Status:', getattr(student, 'status', 'N/A')],
+            ['Agent:', get_agent_name(student.agent)],
+        ]
+        
+        # Add created_at if it exists
+        if hasattr(student, 'created_at') and student.created_at:
+            additional_data.append(['Registration Date:', student.created_at.strftime('%Y-%m-%d')])
+        
+        additional_table = Table(additional_data, colWidths=[1.5*inch, 4*inch])
+        additional_table.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        elements.append(additional_table)
+        elements.append(Spacer(1, 15))
+        
+        # ============================================
+        # SECTION 11: AGREEMENT
+        # ============================================
+        elements.append(Paragraph("AGREEMENT", header_style))
+        
+        agreement_text = """
+        I hereby agree to study the Japanese language at the Aqua Education And Training Academy while strictly complying with all rules and regulations. 
+        After going to Japan, I promise to follow all Japanese rules and the immigration law. 
+        In the event that I fail to company rules and law of Japan, I'm agree to accept the all penalties in according with Japanese rules and Immigration Law.
+        """
+        
+        elements.append(Paragraph(agreement_text, styles['Normal']))
+        elements.append(Spacer(1, 15))
+        
+        # ============================================
+        # SECTION 12: REQUIRED DOCUMENTS
+        # ============================================
+        elements.append(Paragraph("REQUIRED DOCUMENTS FOR ADMISSION", section_style))
+        
+        documents_data = [
+            ['1. PASSPORT', 'Color Copy'],
+            ['2. GRADUATION / TRANSCRIPT', 'Color Copy'],
+            ['3. CITIZENSHIP / DRIVING LICENSE', 'Color Copy'],
+            ['4. MEDICAL REPORT', 'Color Copy'],
+        ]
+        
+        documents_table = Table(documents_data, colWidths=[3*inch, 2*inch])
+        documents_table.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        
+        elements.append(documents_table)
+        elements.append(Spacer(1, 10))
+        
+        # ============================================
+        # FOOTER
+        # ============================================
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph(
+            "Copyright © Aqua Group, All Rights Reserved",
+            ParagraphStyle(name='Footer', parent=styles['Normal'], fontSize=8, alignment=1, textColor=colors.grey)
+        ))
+        
+        # Add page number
+        elements.append(Paragraph(
+            f"Page 1 of 1 • Generated on: {date.today().strftime('%Y-%m-%d %H:%M')}",
+            ParagraphStyle(name='PageInfo', parent=styles['Normal'], fontSize=7, alignment=2, textColor=colors.grey)
+        ))
+        
+        # ============================================
+        # BUILD PDF
+        # ============================================
+        try:
+            doc.build(elements)
+            pdf = buffer.getvalue()
+            buffer.close()
+            
+            response.write(pdf)
+            return response
+            
+        except Exception as build_error:
+            # Fallback to simple text if table building fails
+            return generate_simple_pdf_fallback(student)
+            
+    except Exception as e:
+        import traceback
+        error_msg = f"Error generating PDF: {str(e)}\n\n{traceback.format_exc()}"
+        return HttpResponse(error_msg, status=500)
     return response
-
 # -----------------------
 # Update Student Status
 # -----------------------
@@ -224,7 +684,7 @@ def update_student_status(request, student_id):
             student.save()
             messages.success(request, f'Student {student.full_name} has been {action}d.')
         return redirect('dashboard:recruitment_client_dashboard')
-    return redirect('dashboard:recruitment_client_dashboard')
+    
 
 # -----------------------
 # Approve / Decline Student
@@ -277,9 +737,7 @@ def decline_student(request, student_id):
         return redirect('dashboard:recruitment_client_dashboard')
     return redirect('dashboard:decline_student_page', student_id=student_id)
 
-
-
-#Use Django ORM Counts in Your Template
+# Use Django ORM Counts in Your Template
 def all_candidates(request):
     students = Student.objects.all()
 
@@ -296,7 +754,6 @@ def all_candidates(request):
         "declined_count": declined_count,
     }
     return render(request, "your_template.html", context)
-
 
 # -----------------------
 # Simple Pages

@@ -3,89 +3,598 @@
 <head>
     <meta charset="utf-8">
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
-        .section { margin-bottom: 20px; }
-        .section-title { background-color: #f0f0f0; padding: 8px; font-weight: bold; margin-bottom: 10px; }
-        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .info-item { margin-bottom: 8px; }
-        .label { font-weight: bold; color: #555; }
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f5f5f5; }
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.3;
+            color: #000;
+            padding: 20px;
+            background-color: white;
+        }
+        
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .academy-name {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+        
+        .address {
+            font-size: 10px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .co-to {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: left;
+            padding-left: 10px;
+        }
+        
+        .form-title {
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        
+        /* Main table styling */
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            border: 1px solid #000;
+        }
+        
+        .main-table th,
+        .main-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            vertical-align: top;
+            font-size: 10px;
+        }
+        
+        .main-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: left;
+        }
+        
+        .section-title {
+            background-color: #e0e0e0 !important;
+            font-weight: bold;
+            text-align: center !important;
+            font-size: 12px;
+            padding: 6px;
+        }
+        
+        .sub-section-title {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            text-align: left;
+            padding: 4px 8px;
+        }
+        
+        /* Photo cell styling */
+        .photo-cell {
+            width: 80px;
+            height: 106px;
+            padding: 5px !important;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .photo-frame {
+            width: 70px;
+            height: 90px;
+            border: 1px solid #000;
+            margin: 0 auto;
+            background-color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .student-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .photo-label {
+            font-size: 8px;
+            margin-top: 3px;
+            color: #666;
+        }
+        
+        /* Form sections */
+        .form-section {
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        
+        .section-header {
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0 10px 0;
+            text-decoration: underline;
+            text-transform: uppercase;
+        }
+        
+        /* Education and Experience tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 10px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .data-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        /* Wide tables for education/experience */
+        .wide-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 10px;
+        }
+        
+        .wide-table th,
+        .wide-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            text-align: center;
+        }
+        
+        .wide-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        /* Agreement section */
+        .agreement {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #000;
+            font-size: 10px;
+            line-height: 1.4;
+            text-align: justify;
+        }
+        
+        /* Needed documents section */
+        .documents-section {
+            margin: 20px 0;
+            border: 1px solid #000;
+            padding: 10px;
+        }
+        
+        .documents-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+        
+        .document-item {
+            border: 1px solid #000;
+            padding: 8px 5px;
+            font-size: 9px;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 9px;
+            color: #333;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+        
+        /* Field styling - FIXED FOR REPORTLAB */
+        .field-value {
+            min-height: 16px;
+            padding: 2px 4px;
+            white-space: pre-wrap; /* Preserve formatting */
+        }
+        
+        /* Special fix for calculation columns */
+        .calc-field {
+            font-family: 'Courier New', monospace; /* Fixed width for numbers */
+            text-align: right;
+            padding-right: 10px;
+        }
+        
+        /* Empty fields with safe defaults */
+        .empty-field {
+            min-height: 15px;
+            border-bottom: 1px dotted #ccc;
+        }
+        
+        /* Force numeric display for years */
+        .year-field {
+            font-weight: bold;
+            color: #000;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                padding: 10px;
+                font-size: 10px;
+            }
+            
+            .main-table,
+            .data-table,
+            .wide-table {
+                page-break-inside: avoid;
+            }
+        }
+        
+        /* Ensure all table cells have content */
+        td:empty:before {
+            content: "-";
+            color: #999;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>STUDENT APPLICATION</h1>
-        <h2>{{ student.full_name }} - {{ student.student_id }}</h2>
-        <p>Application Date: {{ student.created_at|date:"F j, Y" }}</p>
+    <!-- Header -->
+    <div class="header-section">
+        <div class="academy-name">AQUA EDUCATION AND TRAINING ACADEMY</div>
+        <div class="address">Lazimpat-02, Kathmandu, Nepal</div>
+        <div class="co-to">CO TO: ZEISSHO HOLDINGS / SUKIYA JAPAN / AEON GROUP / TORVU GROUP / TORVUSYUKAI JAPAN</div>
+        <div class="form-title">ADMISSION FORM FOR SSW AND WORKING</div>
     </div>
 
-    <div class="section">
-        <div class="section-title">PERSONAL INFORMATION</div>
-        <div class="info-grid">
-            <div class="info-item"><span class="label">Student ID:</span> {{ student.student_id }}</div>
-            <div class="info-item"><span class="label">Full Name:</span> {{ student.full_name }}</div>
-            <div class="info-item"><span class="label">Gender:</span> {{ student.get_gender_display }}</div>
-            <div class="info-item"><span class="label">Date of Birth:</span> {{ student.date_of_birth }}</div>
-            <div class="info-item"><span class="label">Age:</span> {{ student.age }}</div>
-            <div class="info-item"><span class="label">Marital Status:</span> {{ student.get_marital_status_display }}</div>
-            <div class="info-item"><span class="label">Email:</span> {{ student.email }}</div>
-            <div class="info-item"><span class="label">Phone:</span> {{ student.phone }}</div>
+    <!-- Main Information Table -->
+    <table class="main-table">
+        <!-- Row 1 -->
+        <tr>
+            <th width="15%">Student ID NO</th>
+            <td width="15%" class="field-value">{{ student.student_id }}</td>
+            <th width="10%">A–CODE</th>
+            <td width="15%" class="field-value">{{ student.a_code|default:"ABB-0011" }}</td>
+            <th width="10%">Gender</th>
+            <td width="15%" class="field-value">{{ student.get_gender_display }}</td>
+            <td rowspan="4" class="photo-cell">
+                <div class="photo-frame">
+                    {% if student.photo %}
+                        <img src="{{ student.photo.url }}" alt="Student Photo" class="student-photo">
+                    {% else %}
+                        <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 8px;">
+                            PHOTO
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="photo-label">3cm × 4cm</div>
+            </td>
+        </tr>
+        
+        <!-- Row 2 -->
+        <tr>
+            <th>Full Name</th>
+            <td colspan="3" class="field-value">{{ student.full_name|default:"-" }}</td>
+            <th>Date of Birth</th>
+            <td class="field-value">{{ student.date_of_birth|default:"-" }}</td>
+        </tr>
+        
+        <!-- Row 3 -->
+        <tr>
+            <th rowspan="2">Full Address</th>
+            <td rowspan="2" colspan="3" class="field-value">
+                Permanent: {{ student.permanent_address|default:"-" }}<br>
+                Present: {{ student.present_address|default:"-" }}
+            </td>
+            <th>Age</th>
+            <td class="field-value">{{ student.age|default:"-" }}</td>
+        </tr>
+        
+        <!-- Row 4 -->
+        <tr>
+            <th>Marital Status</th>
+            <td class="field-value">{{ student.get_marital_status_display|default:"-" }}</td>
+        </tr>
+        
+        <!-- Row 5: Passport Information -->
+        <tr>
+            <th>Passport No.</th>
+            <td class="field-value">{{ student.passport_no|default:"-" }}</td>
+            <th>Date of Issue</th>
+            <td class="field-value">{{ student.passport_issue_date|default:"-" }}</td>
+            <th>Date of Expired</th>
+            <td colspan="2" class="field-value">{{ student.passport_expiry_date|default:"-" }}</td>
+        </tr>
+        
+        <!-- Row 6: Personal Information -->
+        <tr>
+            <td colspan="7" class="sub-section-title">Personal Information</td>
+        </tr>
+        <tr>
+            <td class="field-value">Height: {{ student.height|default:"-" }} cm</td>
+            <td class="field-value">Weight: {{ student.weight|default:"-" }} kg</td>
+            <td colspan="2" class="field-value">
+                Eye Lense: R {{ student.eye_lens_right|default:"-" }} / L {{ student.eye_lens_left|default:"-" }}
+            </td>
+            <td class="field-value">Blood Group: {{ student.blood_group|default:"-" }}</td>
+            <td colspan="2" class="field-value">
+                Past Visa Apply: {{ student.past_visa_apply|yesno:"Yes,No" }}<br>
+                {% if student.past_visa_apply %}
+                {{ student.visa_apply_record|default:"" }}
+                {% endif %}
+            </td>
+        </tr>
+        
+        <!-- Row 7: Contact Information -->
+        <tr>
+            <th>Email ID</th>
+            <td colspan="3" class="field-value">{{ student.email|default:"-" }}</td>
+            <th>Phone No.</th>
+            <td colspan="2" class="field-value">{{ student.phone|default:"-" }}</td>
+        </tr>
+        
+        <!-- Row 8: Family Records -->
+        <tr>
+            <td colspan="7" class="sub-section-title">Family Records</td>
+        </tr>
+        <tr>
+            <th>Spouse Name</th>
+            <td class="field-value">{{ student.spouse_name|default:"-" }}</td>
+            <th>Contact No.</th>
+            <td colspan="4" class="field-value">{{ student.spouse_contact|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <!-- EDUCATIONAL HISTORY -->
+    <div class="section-header">EDUCATIONAL HISTORY</div>
+    <table class="wide-table">
+        <thead>
+            <tr>
+                <th width="25%">Pass Level</th>
+                <th width="25%">Name of School</th>
+                <th colspan="4">Admission & Graduation</th>
+                <th width="12%">Enrolled Years</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th></th>
+                <th colspan="2">Admission</th>
+                <th colspan="2">Graduation</th>
+                <th></th>
+            </tr>
+            <tr>
+                <th></th>
+                <th></th>
+                <th>Year</th>
+                <th>Month</th>
+                <th>Year</th>
+                <th>Month</th>
+                <th>Years</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for edu in student.education_history.all|slice:":7" %}
+            <tr>
+                <td>{{ edu.pass_level|default:"-" }}</td>
+                <td>{{ edu.school_name|default:"-" }}</td>
+                <td class="calc-field">{{ edu.admission_year|default:"-" }}</td>
+                <td>{{ edu.admission_month|default:"-" }}</td>
+                <td class="calc-field">{{ edu.graduation_year|default:"-" }}</td>
+                <td>{{ edu.graduation_month|default:"-" }}</td>
+                <td class="calc-field">{{ edu.enrolled_years|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <!-- Show empty rows if no education records -->
+            {% for i in "1234567" %}
+            <tr>
+                <td class="empty-field">-</td>
+                <td class="empty-field">-</td>
+                <td class="empty-field calc-field">-</td>
+                <td class="empty-field">-</td>
+                <td class="empty-field calc-field">-</td>
+                <td class="empty-field">-</td>
+                <td class="empty-field calc-field">-</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- WORKING EXPERIENCE -->
+    <div class="section-header">WORKING EXPERIENCE</div>
+    <table class="wide-table">
+        <thead>
+            <tr>
+                <th width="25%">Type of Work</th>
+                <th width="35%">Name of Working Company</th>
+                <th colspan="4">Date of Join & Resign</th>
+                <th width="12%">Working Years</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th></th>
+                <th colspan="2">Join</th>
+                <th colspan="2">Resign</th>
+                <th></th>
+            </tr>
+            <tr>
+                <th></th>
+                <th></th>
+                <th>Year</th>
+                <th>Month</th>
+                <th>Year</th>
+                <th>Month</th>
+                <th>Years</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for work in student.work_experience.all|slice:":3" %}
+            <tr>
+                <td>{{ work.work_type|default:"-" }}</td>
+                <td>{{ work.company_name|default:"-" }}</td>
+                <td class="calc-field">{{ work.join_year|default:"-" }}</td>
+                <td>{{ work.join_month|default:"-" }}</td>
+                <td class="calc-field">{{ work.resign_year|default:"-" }}</td>
+                <td>{{ work.resign_month|default:"-" }}</td>
+                <td class="calc-field">{{ work.working_years|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <!-- Show empty rows if no work experience -->
+            {% for i in "123" %}
+            <tr>
+                <td class="empty-field">-</td>
+                <td class="empty-field">-</td>
+                <td class="empty-field calc-field">-</td>
+                <td class="empty-field">-</td>
+                <td class="empty-field calc-field">-</td>
+                <td class="empty-field">-</td>
+                <td class="empty-field calc-field">-</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- LANGUAGE AND SKILLS PASSED CERTIFICATE -->
+    <div class="section-header">LANGUAGE AND SKILLS PASSED CERTIFICATE</div>
+    <table class="wide-table">
+        <thead>
+            <tr>
+                <th width="25%">Pass Year & Month</th>
+                <th width="25%">Name of Pass Exam</th>
+                <th width="25%">Join Year and Month</th>
+                <th width="25%">Organization</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cert in student.certificates.all|slice:":3" %}
+            <tr>
+                <td>{{ cert.pass_year|default:"" }} {{ cert.pass_month|default:"" }}</td>
+                <td>{{ cert.exam_name|default:"-" }}</td>
+                <td>{{ cert.join_year|default:"" }} {{ cert.join_month|default:"" }}</td>
+                <td>{{ cert.organization|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <!-- Show empty rows if no certificates -->
+            {% for i in "123" %}
+            <tr>
+                <td class="empty-field">-</td>
+                <td class="empty-field">-</td>
+                <td class="empty-field">-</td>
+                <td class="empty-field">-</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+        <!-- DRIVING LICENSE -->
+        <div>
+            <table class="main-table">
+                <tr>
+                    <td colspan="2" class="sub-section-title">DRIVING LICENSE</td>
+                </tr>
+                <tr>
+                    <th width="50%">Pass Year & Month</th>
+                    <td class="field-value">
+                        {% if student.driving_license %}
+                        {{ student.driving_license_year|default:"" }} {{ student.driving_license_month|default:"" }}
+                        {% else %}-{% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Type of License</th>
+                    <td class="field-value">{{ student.license_type|default:"-" }}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <!-- Additional Information -->
+        <div>
+            <table class="main-table" style="height: 100%;">
+                <tr>
+                    <th>Hobbies, Special skills, etc.</th>
+                </tr>
+                <tr>
+                    <td style="height: 40px;" class="field-value">{{ student.hobbies|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <th>Motivation, Self-promotion</th>
+                </tr>
+                <tr>
+                    <td style="height: 40px;" class="field-value">{{ student.motivation|default:"-" }}</td>
+                </tr>
+            </table>
         </div>
     </div>
 
-    <div class="section">
-        <div class="section-title">EDUCATIONAL HISTORY</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Level</th>
-                    <th>School Name</th>
-                    <th>Admission</th>
-                    <th>Graduation</th>
-                    <th>Years</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for edu in student.education_history.all %}
-                <tr>
-                    <td>{{ edu.pass_level }}</td>
-                    <td>{{ edu.school_name }}</td>
-                    <td>{{ edu.admission_year }} {{ edu.admission_month }}</td>
-                    <td>{{ edu.graduation_year }} {{ edu.graduation_month }}</td>
-                    <td>{{ edu.enrolled_years }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Agreement Section -->
+    <div class="agreement">
+        I hereby agree to study the Japanese language at the Aqua Education And Training Academy while strictly complying with all rules and regulations. After going to Japan, I promise to follow all Japanese rules and the immigration law. In the event that I fail to company rules and law of Japan, I'm agree to accept the all penalties in according with Japanese rules and Immigration Law.
     </div>
 
-    <div class="section">
-        <div class="section-title">WORK EXPERIENCE</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Work Type</th>
-                    <th>Company</th>
-                    <th>Join Date</th>
-                    <th>Resign Date</th>
-                    <th>Years</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for work in student.work_experience.all %}
-                <tr>
-                    <td>{{ work.work_type }}</td>
-                    <td>{{ work.company_name }}</td>
-                    <td>{{ work.join_date }}</td>
-                    <td>{{ work.resign_date }}</td>
-                    <td>{{ work.working_years }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Needed Documents Section -->
+    <div class="documents-section">
+        <div class="documents-title">NEEDED DOCUMENT FOR ADMISSION</div>
+        <div class="documents-grid">
+            <div class="document-item">
+                <strong>PASSPORT</strong><br>
+                Please Submit Color Copy
+            </div>
+            <div class="document-item">
+                <strong>GRADUATION / TRANSCRIPT</strong><br>
+                Please Submit Color Copy
+            </div>
+            <div class="document-item">
+                <strong>CITIZENSHIP / DRIVING</strong><br>
+                Please Submit Color Copy
+            </div>
+            <div class="document-item">
+                <strong>MEDICAL REPORT</strong><br>
+                Please Submit Color Copy
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Copyright © Aqua Group, All Rights Reserved
     </div>
 </body>
 </html>

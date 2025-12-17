@@ -40,8 +40,8 @@
             <h2>Registration Successful!</h2>
             <p>Student <strong>{{ student.full_name }}</strong> has been registered successfully with ID: <strong>{{ student.student_id }}</strong></p>
             <div>
-                <a href="{% url 'student_registration' %}" class="btn">Register Another Student</a>
-                <a href="{% url 'student_list' %}" class="btn btn-secondary">View All Students</a>
+                <a href="{% url 'dashboard:student_registration' %}" class="btn">Register Another Student</a>
+                <a href="{% url 'dashboard:student_list' %}" class="btn btn-secondary">View All Students</a>
             </div>
         </div>
     </div>

@@ -1,0 +1,77 @@
+{% extends "base_appointment" %}
+{% load static %}
+
+{% block title %}Delete Slot{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Delete Time Slot
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-circle me-2"></i>Warning
+                        </h5>
+                        <p class="mb-0">
+                            You are about to delete a time slot. This action cannot be undone.
+                        </p>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5>Slot Details</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Date:</strong> {{ slot.start_time|date:"F j, Y" }}</p>
+                                    <p><strong>Start Time:</strong> {{ slot.start_time|time:"g:i A" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>End Time:</strong> {{ slot.end_time|time:"g:i A" }}</p>
+                                    <p><strong>Capacity:</strong> {{ slot.max_capacity }}</p>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge {% if slot.is_available %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if slot.is_available %}Available{% else %}Unavailable{% endif %}
+                                </span>
+                                <span class="badge bg-info ms-2">
+                                    {{ slot.booked_count }} booked
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if slot.booked_count > 0 %}
+                    <div class="alert alert-danger">
+                        <h6>
+                            <i class="fas fa-users me-2"></i>Warning: {{ slot.booked_count }} appointment(s) booked
+                        </h6>
+                        <p class="mb-0">
+                            Deleting this slot will also cancel all appointments booked for this time slot.
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'slot_management' %}" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Delete Slot
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

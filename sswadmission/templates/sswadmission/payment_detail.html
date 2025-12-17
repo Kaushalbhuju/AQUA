@@ -1,0 +1,642 @@
+{% extends 'sswadmission/base.html' %}
+{% load humanize %}
+
+{% block title %}Payment Details - {{ payment.payment_id }}{% endblock %}
+
+{% block page_title %}Payment Details{% endblock %}
+{% load custom_filters %}
+
+
+
+{% block page_actions %}
+<div class="btn-group">
+        <i class="bi bi-arrow-left"></i> All Payments
+    </a>
+    <a href="{% url 'sswdashboard:generate_receipt' payment.id %}" class="btn btn-success" target="_blank">
+        <i class="bi bi-receipt"></i> Generate Receipt
+    </a>
+    {% if payment.status == 'pending' and request.user|has_perm:'sswadmission.change_feepayment' %}
+
+    <div class="btn-group">
+        <button type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="bi bi-shield-check"></i> Verify Payment
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#verifyModal">
+                    <i class="bi bi-check-circle text-success"></i> Approve Payment
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    <i class="bi bi-x-circle text-danger"></i> Reject Payment
+                </a>
+            </li>
+        </ul>
+    </div>
+    {% endif %}
+    <a href="{% url 'sswdashboard:student_detail' payment.student.id %}" class="btn btn-info">
+        <i class="bi bi-person"></i> View Student
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Payment Summary -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-cash-stack"></i> Payment Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="display-1 mb-3">
+                        {% if payment.status == 'completed' %}
+                            <i class="bi bi-check-circle text-success"></i>
+                        {% elif payment.status == 'pending' %}
+                            <i class="bi bi-clock-history text-warning"></i>
+                        {% elif payment.status == 'failed' %}
+                            <i class="bi bi-x-circle text-danger"></i>
+                        {% else %}
+                            <i class="bi bi-currency-dollar text-info"></i>
+                        {% endif %}
+                    </div>
+                    <h2 class="text-success">₹{{ payment.amount|intcomma }}</h2>
+                    <span class="badge {% if payment.status == 'completed' %}payment-status-completed{% elif payment.status == 'pending' %}payment-status-pending{% elif payment.status == 'failed' %}payment-status-failed{% else %}bg-secondary{% endif %} fs-6">
+                        {{ payment.get_status_display }}
+                    </span>
+                </div>
+                
+                <table class="table table-sm">
+                    <tr>
+                        <th>Payment ID:</th>
+                        <td>{{ payment.payment_id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Receipt No:</th>
+                        <td>{{ payment.receipt_number|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date:</th>
+                        <td>{{ payment.payment_date|date:"d M Y, h:i A" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Method:</th>
+                        <td>
+                            <span class="badge bg-secondary">
+                                {{ payment.get_payment_method_display }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Verification Status -->
+        {% if payment.verified_by %}
+        <div class="card mt-4 border-success">
+            <div class="card-header bg-success text-white py-2">
+                <h6 class="mb-0"><i class="bi bi-shield-check"></i> Verification Status</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-1">
+                    <strong>Verified by:</strong> {{ payment.verified_by.get_full_name|default:payment.verified_by.username }}
+                </p>
+                <p class="mb-0">
+                    <strong>Verified at:</strong> {{ payment.verified_at|date:"d M Y, h:i A" }}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Student Information -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-circle"></i> Student Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i class="bi bi-person display-6 text-white"></i>
+                    </div>
+                    <h4 class="mt-3">{{ payment.student.full_name }}</h4>
+                    <p class="text-muted">{{ payment.student.student_id }}</p>
+                    <span class="badge {% if payment.student.status == 'pending' %}status-pending{% elif payment.student.status == 'approved' %}status-approved{% elif payment.student.status == 'enrolled' %}status-enrolled{% elif payment.student.status == 'declined' %}status-declined{% elif payment.student.status == 'graduated' %}status-graduated{% endif %}">
+                        {{ payment.student.get_status_display }}
+                    </span>
+                </div>
+                
+                <table class="table table-sm">
+                    <tr>
+                        <th>Email:</th>
+                        <td>{{ payment.student.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Phone:</th>
+                        <td>{{ payment.student.phone }}</td>
+                    </tr>
+                    <tr>
+                        <th>Course:</th>
+                        <td>{{ payment.student.course|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Batch:</th>
+                        <td>{{ payment.student.batch|default:"-" }}</td>
+                    </tr>
+                </table>
+                
+                <!-- Fee Summary -->
+                <div class="mt-4">
+                    <h6>Fee Summary:</h6>
+                    <div class="row text-center">
+                        <div class="col">
+                            <small>Total</small>
+                            <h6 class="mb-0">₹{{ payment.student.total_fee|intcomma }}</h6>
+                        </div>
+                        <div class="col">
+                            <small>Paid</small>
+                            <h6 class="mb-0 text-success">₹{{ payment.student.paid_amount|intcomma }}</h6>
+                        </div>
+                        <div class="col">
+                            <small>Due</small>
+                            <h6 class="mb-0 text-danger">₹{{ payment.student.due_amount|intcomma }}</h6>
+                        </div>
+                    </div>
+                    <div class="progress mt-2" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ payment.student.fee_paid_percentage|default:0 }}%">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ payment.student.fee_paid_percentage|default:0|floatformat:1 }}% paid</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Transaction Details -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Transaction Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    {% if payment.transaction_id %}
+                    <tr>
+                        <th>Transaction ID:</th>
+                        <td>{{ payment.transaction_id }}</td>
+                    </tr>
+                    {% endif %}
+                    
+                    {% if payment.bank_name %}
+                    <tr>
+                        <th>Bank Name:</th>
+                        <td>{{ payment.bank_name }}</td>
+                    </tr>
+                    {% endif %}
+                    
+                    {% if payment.cheque_number %}
+                    <tr>
+                        <th>Cheque No:</th>
+                        <td>{{ payment.cheque_number }}</td>
+                    </tr>
+                    {% endif %}
+                    
+                    {% if payment.cheque_date %}
+                    <tr>
+                        <th>Cheque Date:</th>
+                        <td>{{ payment.cheque_date|date:"d M Y" }}</td>
+                    </tr>
+                    {% endif %}
+                    
+                    {% if payment.utr_number %}
+                    <tr>
+                        <th>UTR Number:</th>
+                        <td>{{ payment.utr_number }}</td>
+                    </tr>
+                    {% endif %}
+                    
+                    {% if payment.upi_id %}
+                    <tr>
+                        <th>UPI ID:</th>
+                        <td>{{ payment.upi_id }}</td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <th>Created By:</th>
+                        <td>{{ payment.created_by.get_full_name|default:payment.created_by.username }}</td>
+                    </tr>
+                    
+                    <tr>
+                        <th>Created At:</th>
+                        <td>{{ payment.created_at|date:"d M Y, h:i A" }}</td>
+                    </tr>
+                    
+                    <tr>
+                        <th>Last Updated:</th>
+                        <td>{{ payment.updated_at|date:"d M Y, h:i A" }}</td>
+                    </tr>
+                </table>
+                
+                <!-- Description & Notes -->
+                {% if payment.description or payment.notes %}
+                <div class="mt-4">
+                    {% if payment.description %}
+                    <h6>Description:</h6>
+                    <p class="text-muted">{{ payment.description }}</p>
+                    {% endif %}
+                    
+                    {% if payment.notes %}
+                    <h6>Notes:</h6>
+                    <p class="text-muted">{{ payment.notes }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment History for this Student -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Payments by {{ payment.student.full_name }}</h5>
+                <a href="{% url 'sswdashboard:student_detail' payment.student.id %}" class="btn btn-sm btn-outline-primary">
+                    View All Payments
+                </a>
+            </div>
+            <div class="card-body">
+                {% with recent_payments=payment.student.fee_payments.all|slice:":5" %}
+                {% if recent_payments %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Payment ID</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for recent_payment in recent_payments %}
+                            <tr {% if recent_payment.id == payment.id %}class="table-active"{% endif %}>
+                                <td>{{ recent_payment.payment_date|date:"d M Y" }}</td>
+                                <td>
+                                    {% if recent_payment.id == payment.id %}
+                                    <strong>{{ recent_payment.payment_id }}</strong>
+                                    {% else %}
+                                    <a href="{% url 'sswdashboard:payment_detail' recent_payment.id %}">
+                                        {{ recent_payment.payment_id }}
+                                    </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="{% if recent_payment.id == payment.id %}text-success fw-bold{% else %}text-success{% endif %}">
+                                        ₹{{ recent_payment.amount|intcomma }}
+                                    </span>
+                                </td>
+                                <td>{{ recent_payment.get_payment_method_display }}</td>
+                                <td>
+                                    <span class="badge {% if recent_payment.status == 'completed' %}payment-status-completed{% elif recent_payment.status == 'pending' %}payment-status-pending{% elif recent_payment.status == 'failed' %}payment-status-failed{% else %}bg-secondary{% endif %}">
+                                        {{ recent_payment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ recent_payment.description|truncatechars:30 }}</td>
+                                <td>
+                                    {% if recent_payment.id != payment.id %}
+                                    <a href="{% url 'sswdashboard:payment_detail' recent_payment.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-3 text-muted">
+                    <i class="bi bi-cash-stack display-6"></i>
+                    <p class="mt-2">No other payments found for this student</p>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Information -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-gear"></i> System Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <th width="40%">Payment ID:</th>
+                                <td>{{ payment.payment_id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Database ID:</th>
+                                <td>{{ payment.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Created By:</th>
+                                <td>
+                                    {{ payment.created_by.get_full_name|default:payment.created_by.username }}
+                                    ({{ payment.created_by.username }})
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Created At:</th>
+                                <td>{{ payment.created_at }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            {% if payment.verified_by %}
+                            <tr>
+                                <th width="40%">Verified By:</th>
+                                <td>
+                                    {{ payment.verified_by.get_full_name|default:payment.verified_by.username }}
+                                    ({{ payment.verified_by.username }})
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Verified At:</th>
+                                <td>{{ payment.verified_at }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>Last Updated:</th>
+                                <td>{{ payment.updated_at }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span class="badge {% if payment.status == 'completed' %}payment-status-completed{% elif payment.status == 'pending' %}payment-status-pending{% elif payment.status == 'failed' %}payment-status-failed{% else %}bg-secondary{% endif %}">
+                                        {{ payment.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Verification Modal -->
+{% if payment.status == 'pending' and can_verify %}
+<div class="modal fade" id="verifyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Approve Payment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'sswdashboard:verify_payment' payment.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="approve">
+                <div class="modal-body">
+                    <p>Are you sure you want to approve this payment?</p>
+                    <div class="alert alert-info">
+                        <strong>Payment Details:</strong><br>
+                        ID: {{ payment.payment_id }}<br>
+                        Amount: ₹{{ payment.amount|intcomma }}<br>
+                        Student: {{ payment.student.full_name }}<br>
+                        Method: {{ payment.get_payment_method_display }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="verifyNotes" class="form-label">Verification Notes (Optional)</label>
+                        <textarea class="form-control" id="verifyNotes" name="notes" rows="3" 
+                                  placeholder="Add any verification notes..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-lg"></i> Confirm Approval
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Rejection Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Reject Payment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'sswdashboard:verify_payment' payment.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reject">
+                <div class="modal-body">
+                    <p>Are you sure you want to reject this payment?</p>
+                    <div class="alert alert-warning">
+                        <strong>⚠ Warning:</strong> Rejecting this payment will mark it as failed.<br>
+                        The student's payment status will be updated accordingly.
+                    </div>
+                    <div class="mb-3">
+                        <label for="rejectNotes" class="form-label">Rejection Reason *</label>
+                        <textarea class="form-control" id="rejectNotes" name="notes" rows="3" required
+                                  placeholder="Please provide the reason for rejection..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-lg"></i> Confirm Rejection
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .table th {
+        width: 35%;
+    }
+    
+    .payment-status-completed {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .payment-status-pending {
+        background-color: #ffc107;
+        color: black;
+    }
+    
+    .payment-status-failed {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .table-active {
+        background-color: rgba(0, 123, 255, 0.1) !important;
+    }
+    
+    .card-header.bg-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .card-header.bg-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Print payment details
+    function printPayment() {
+        window.print();
+    }
+    
+    // Copy payment ID to clipboard
+    function copyPaymentId() {
+        const paymentId = '{{ payment.payment_id }}';
+        navigator.clipboard.writeText(paymentId).then(function() {
+            showAlert('Payment ID copied to clipboard!', 'success');
+        }, function(err) {
+            showAlert('Failed to copy: ' + err, 'danger');
+        });
+    }
+    
+    // Copy transaction ID to clipboard (if exists)
+    function copyTransactionId() {
+        const transactionId = '{{ payment.transaction_id|default:"" }}';
+        if (transactionId) {
+            navigator.clipboard.writeText(transactionId).then(function() {
+                showAlert('Transaction ID copied to clipboard!', 'success');
+            }, function(err) {
+                showAlert('Failed to copy: ' + err, 'danger');
+            });
+        } else {
+            showAlert('No transaction ID available', 'warning');
+        }
+    }
+    
+    // Show alert message
+    function showAlert(message, type) {
+        // Remove existing alerts
+        const existingAlerts = document.querySelectorAll('.custom-alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Create new alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show custom-alert`;
+        alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            <strong>${type.charAt(0).toUpperCase() + type.slice(1)}!</strong><br>
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 5000);
+    }
+    
+    // Add copy buttons dynamically
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add copy button for payment ID
+        const paymentIdCell = document.querySelector('td:contains("{{ payment.payment_id }}")');
+        if (paymentIdCell) {
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
+            copyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
+            copyBtn.onclick = copyPaymentId;
+            copyBtn.title = 'Copy Payment ID';
+            paymentIdCell.appendChild(copyBtn);
+        }
+        
+        // Add copy button for transaction ID if exists
+        if ('{{ payment.transaction_id }}') {
+            const transactionIdCells = document.querySelectorAll('td');
+            transactionIdCells.forEach(cell => {
+                if (cell.textContent.includes('{{ payment.transaction_id }}')) {
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
+                    copyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
+                    copyBtn.onclick = copyTransactionId;
+                    copyBtn.title = 'Copy Transaction ID';
+                    cell.appendChild(copyBtn);
+                }
+            });
+        }
+        
+        // Add print button to header
+        const headerActions = document.querySelector('.btn-group');
+        if (headerActions) {
+            const printBtn = document.createElement('button');
+            printBtn.className = 'btn btn-outline-info';
+            printBtn.innerHTML = '<i class="bi bi-printer"></i> Print';
+            printBtn.onclick = printPayment;
+            headerActions.appendChild(printBtn);
+        }
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+P to print
+        if (e.ctrlKey && e.key === 'p') {
+            e.preventDefault();
+            printPayment();
+        }
+        
+        // Ctrl+C to copy payment ID
+        if (e.ctrlKey && e.key === 'c') {
+            const activeElement = document.activeElement;
+            if (!activeElement || (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA')) {
+                copyPaymentId();
+            }
+        }
+        
+        // Escape to close modals
+        if (e.key === 'Escape') {
+            const modal = bootstrap.Modal.getInstance(document.querySelector('.modal.show'));
+            if (modal) {
+                modal.hide();
+            }
+        }
+    });
+</script>
+{% endblock %}

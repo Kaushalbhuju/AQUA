@@ -9,6 +9,8 @@ class AppointmentSlot(models.Model):
     is_available = models.BooleanField(default=True)
     max_capacity = models.IntegerField(default=1)
     booked_count = models.IntegerField(default=0)
+
+    
     
     class Meta:
         ordering = ['start_time']
@@ -27,6 +29,15 @@ class AppointmentSlot(models.Model):
     @property
     def formatted_time(self):
         return self.start_time.strftime("%H:%M")
+    
+        # In models.py, add this method to AppointmentSlot class
+@property
+def get_duration(self):
+    """Calculate duration in minutes"""
+    if self.start_time and self.end_time:
+        duration = self.end_time - self.start_time
+        return int(duration.total_seconds() / 60)
+    return 0
 
 class Appointment(models.Model):
     """Appointment booking model"""

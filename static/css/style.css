@@ -582,3 +582,75 @@ main {
 .mb-3 { margin-bottom: 1rem; }
 .ms-2 { margin-left: 0.5rem; }
 .w-100 { width: 100%; }
+
+/* Dashboard specific styles */
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.fixed-bottom {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+}
+
+.fixed-bottom .btn-group {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    border-radius: 50px;
+    padding: 5px;
+    background: white;
+}
+
+/* Calendar styles */
+.calendar-day {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.calendar-day:hover {
+    transform: scale(1.1);
+}
+
+/* Timeline */
+.timeline-dot {
+    z-index: 1;
+}
+
+/* Status badges */
+.badge-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+/* Table row actions */
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Responsive dashboard */
+@media (max-width: 768px) {
+    .fixed-bottom {
+        position: static;
+        margin-top: 20px;
+    }
+    
+    .fixed-bottom .btn-group {
+        flex-wrap: wrap;
+        justify-content: center;
+        border-radius: 10px;
+    }
+    
+    .fixed-bottom .btn {
+        margin: 2px;
+    }
+}

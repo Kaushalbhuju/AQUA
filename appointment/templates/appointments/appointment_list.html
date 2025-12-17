@@ -1,0 +1,164 @@
+{% extends "base_appointment.html" %}
+{% load static %}
+
+{% block title %}All Appointments{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold">
+                <i class="fas fa-list text-primary me-3"></i>All Appointments
+            </h1>
+            <p class="lead text-muted">View and manage all appointments</p>
+        </div>
+        <div>
+            <span class="badge bg-light text-dark fs-6 p-3">
+                <i class="fas fa-calendar-check me-2"></i>{{ total_count }} appointments
+            </span>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="fas fa-filter me-2 text-primary"></i>Filter Appointments
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="date_from" class="form-label">From Date</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" 
+                           value="{{ date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="date_to" class="form-label">To Date</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" 
+                           value="{{ date_to }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Status</option>
+                        <option value="confirmed" {% if status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                        <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           placeholder="Name, email, or company..." value="{{ search }}">
+                </div>
+                <div class="col-12">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Filter
+                        </button>
+                        <a href="{% url 'appointment_list' %}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-redo me-2"></i>Clear
+                        </a>
+                        <a href="{% url 'export_appointments' %}" class="btn btn-success ms-2">
+                            <i class="fas fa-file-export me-2"></i>Export
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="fas fa-table me-2 text-primary"></i>Appointments List
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if appointments %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Date & Time</th>
+                            <th>Company</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                            <td>
+                                <strong>#{{ appointment.id }}</strong><br>
+                                <small class="text-muted">{{ appointment.confirmation_code }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ appointment.name }}</strong><br>
+                                <small class="text-muted">{{ appointment.email }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ appointment.date|date:"M d, Y" }}</strong><br>
+                                <small class="text-muted">{{ appointment.time|time:"g:i A" }}</small>
+                            </td>
+                            <td>{{ appointment.company_name }}</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ appointment.get_appointment_aim_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if appointment.is_confirmed %}bg-success{% else %}bg-warning{% endif %}">
+                                    {% if appointment.is_confirmed %}Confirmed{% else %}Pending{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'appointment_detail_admin' appointment.id %}" 
+                                       class="btn btn-outline-primary" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'edit_appointment' appointment.id %}" 
+                                       class="btn btn-outline-success" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if not appointment.is_confirmed %}
+                                    <a href="{% url 'confirm_appointment' appointment.id %}" 
+                                       class="btn btn-outline-info" title="Confirm"
+                                       onclick="return confirm('Confirm appointment #{{ appointment.id }}?')">
+                                        <i class="fas fa-check"></i>
+                                    </a>
+                                    {% endif %}
+                                    <a href="{% url 'cancel_appointment' appointment.id %}" 
+                                       class="btn btn-outline-danger" title="Cancel"
+                                       onclick="return confirm('Cancel appointment #{{ appointment.id }}?')">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="text-muted">
+                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                    <h5>No appointments found</h5>
+                    <p>No appointments match your filters.</p>
+                    <a href="{% url 'appointment_list' %}" class="btn btn-primary">
+                        <i class="fas fa-redo me-2"></i>View All Appointments
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

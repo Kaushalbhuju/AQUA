@@ -416,11 +416,21 @@ def payment_list(request):
     
     return render(request, 'sswadmission/payment_list.html', context)
 
+# In your views.py, update the payment_detail function:
 @login_required
 def payment_detail(request, payment_id):
     """View payment details"""
     payment = get_object_or_404(FeePayment, id=payment_id)
-    return render(request, 'sswadmission/payment_detail.html', {'payment': payment})
+    
+    # Check user permissions
+    can_verify = request.user.has_perm('sswadmission.change_feepayment')
+    
+    context = {
+        'payment': payment,
+        'can_verify': can_verify,  # This is CRITICAL
+    }
+    
+    return render(request, 'sswadmission/payment_detail.html', context)
 
 @login_required
 def verify_payment(request, payment_id):
@@ -485,89 +495,187 @@ def payment_verification_queue(request):
 def generate_receipt(request, payment_id):
     """Generate payment receipt"""
     payment = get_object_or_404(FeePayment, id=payment_id)
-    
-    # Simple HTML receipt for now
-    html = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Receipt - {payment.receipt_number}</title>
-        <style>
-            body {{ font-family: Arial, sans-serif; margin: 40px; }}
-            .header {{ text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }}
-            .receipt-title {{ font-size: 24px; font-weight: bold; color: #333; }}
-            .details {{ margin: 20px 0; }}
-            .row {{ display: flex; margin: 10px 0; }}
-            .label {{ font-weight: bold; width: 200px; }}
-            .value {{ flex: 1; }}
-            .total {{ font-size: 18px; font-weight: bold; margin-top: 30px; padding-top: 20px; border-top: 2px solid #333; }}
-            .footer {{ margin-top: 50px; text-align: center; color: #666; font-size: 12px; }}
-            .stamp {{ position: absolute; right: 50px; top: 150px; border: 2px solid #333; padding: 10px; transform: rotate(15deg); }}
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <h1>EDUCATION INSTITUTE</h1>
-            <div class="receipt-title">PAYMENT RECEIPT</div>
-            <div>Official Fee Receipt</div>
+
+    # Your receipt content (used twice)
+    receipt_html = f"""
+    <div class="header">
+        <div><strong>GOVERMENT REGISTER NO: 376328/82/83</strong></div>
+        <h1>AQUA EDUCATION AND TRAINING ACADEMY PVT LTD</h1>
+        <h2>Lazimpat, Kathmandu Metropolitan City-02, Kathmandu, Nepal</h2>
+    </div>
+
+    <div class="sub-info">
+        Web: www.aquagroupnp.com | E-mail: ssw.edu.academy@gmail.com<br>
+        <strong>Receipt Number: {payment.receipt_number}</strong><br>
+        <strong>VAT NO: 622456452</strong>
+    </div>
+
+    <div class="title">CASH RECEIPT</div>
+
+    <table>
+        <tr>
+            <th>Received From</th>
+            <td>{payment.student.full_name}</td>
+        </tr>
+        <tr>
+            <td><strong>Course</strong></td>
+            <td><strong>{payment.student.course}</strong></td>
+        </tr>
+        <tr>
+            <td>Received Amount</td>
+            <td>Rs. {payment.amount}</td>
+        </tr>
+        <tr>
+            <td><strong>Description</strong></td>
+            <td><strong>{payment.description or ''}</strong></td>
+        </tr>
+        <tr>
+            <td><strong>Payment ID</strong></td>
+            <td><strong>{payment.payment_id}</strong></td>
+        </tr>
+        <tr>
+            <td><strong>Payment Method</strong></td>
+            <td><strong>{payment.get_payment_method_display()}</strong></td>
+        </tr>
+        <tr>
+            <td><strong>TOTAL RECEIVED AMOUNT IN NRP</strong></td>
+            <td><strong>Rs. {payment.amount}</strong></td>
+        </tr>
+    </table>
+
+    <div class="footer-section">
+        <div class="footer-block">
+            <strong>Received By</strong><br><br>
+            Account Department<br>
+            Aqua Education And Training Academy Pvt. Ltd<br>
+            Telephone: +977-01-000000
         </div>
-        
-        <div class="details">
-            <div class="row">
-                <div class="label">Receipt Number:</div>
-                <div class="value">{payment.receipt_number}</div>
-            </div>
-            <div class="row">
-                <div class="label">Payment ID:</div>
-                <div class="value">{payment.payment_id}</div>
-            </div>
-            <div class="row">
-                <div class="label">Date:</div>
-                <div class="value">{payment.payment_date.strftime('%d-%m-%Y %H:%M')}</div>
-            </div>
-            <div class="row">
-                <div class="label">Student Name:</div>
-                <div class="value">{payment.student.full_name}</div>
-            </div>
-            <div class="row">
-                <div class="label">Student ID:</div>
-                <div class="value">{payment.student.student_id}</div>
-            </div>
-            <div class="row">
-                <div class="label">Course:</div>
-                <div class="value">{payment.student.course}</div>
-            </div>
-            <div class="row">
-                <div class="label">Payment Method:</div>
-                <div class="value">{payment.get_payment_method_display()}</div>
-            </div>
-            <div class="row">
-                <div class="label">Transaction ID:</div>
-                <div class="value">{payment.transaction_id or 'N/A'}</div>
-            </div>
-            <div class="row">
-                <div class="label">Description:</div>
-                <div class="value">{payment.description or 'Fee Payment'}</div>
-            </div>
+
+        <div class="footer-block">
+            <strong>Received Date:</strong> {payment.payment_date.strftime('%d-%m-%Y')}<br><br>
+            <div class="signature-box">Received Sign & Stamp</div>
         </div>
-        
-        <div class="total">
-            Amount Paid: ₹{payment.amount}
-        </div>
-        
-        <div class="stamp">
-            PAID<br>
-            {payment.verified_at.strftime('%d-%m-%Y') if payment.verified_at else ''}
-        </div>
-        
-        <div class="footer">
-            <p>This is a computer generated receipt. No signature required.</p>
-            <p>Institute Address | Contact Information | Website</p>
-        </div>
-    </body>
-    </html>
+    </div>
     """
-    
+
+    # Full HTML with two copies
+    html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cash Receipt - {payment.receipt_number}</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            font-size: 14px;
+        }}
+
+        .print-button {{
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }}
+
+        @media print {{
+            .print-button {{ display: none; }}
+        }}
+
+        .receipt {{
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #000;
+        }}
+
+        .cut-line {{
+            text-align: center;
+            margin: 20px 0;
+            font-size: 12px;
+            color: #444;
+        }}
+
+        .header {{
+            text-align: center;
+            margin-bottom: 20px;
+        }}
+        .header h1 {{
+            margin: 0;
+            font-size: 22px;
+            font-weight: bold;
+        }}
+        .header h2 {{
+            margin: 5px 0;
+            font-size: 16px;
+        }}
+        .sub-info {{
+            text-align: center;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }}
+        .title {{
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-decoration: underline;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }}
+        table, th, td {{
+            border: 1px solid #000;
+        }}
+        th, td {{
+            padding: 10px;
+            text-align: left;
+        }}
+        .footer-section {{
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }}
+        .footer-block {{
+            width: 45%;
+            font-size: 14px;
+        }}
+        .signature-box {{
+            margin-top: 60px;
+            border-top: 1px solid #000;
+            width: 200px;
+            padding-top: 5px;
+            text-align: center;
+        }}
+    </style>
+</head>
+<body>
+
+<button class="print-button" onclick="window.print()">Print Receipt</button>
+
+<div class="receipt-wrapper">
+
+    <!-- COPY 1 -->
+    <div class="receipt">
+        {receipt_html}
+    </div>
+
+
+    <!-- COPY 2 -->
+    <div class="receipt">
+        {receipt_html}
+    </div>
+
+</div>
+
+</body>
+</html>
+"""
+
     return HttpResponse(html)
 
 # ========== INSTALLMENT MANAGEMENT ==========

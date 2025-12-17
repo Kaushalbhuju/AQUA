@@ -346,6 +346,8 @@ def generate_staff_bio_pdf(request, pk):
     ]))
     elements.append(address_table)
     elements.append(Spacer(1, 0.3*inch))
+
+   
     
     # Educational History
     if staff.education_history.exists():
@@ -374,6 +376,8 @@ def generate_staff_bio_pdf(request, pk):
         ]))
         elements.append(edu_table)
         elements.append(Spacer(1, 0.3*inch))
+    
+
     
     # Working Experience
     if staff.work_experience.exists():

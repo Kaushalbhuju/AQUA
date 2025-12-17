@@ -1,0 +1,287 @@
+<!-- E:\down\AQUA\appointment\templates\appointment\dashboard.html -->
+{% extends "base_appointment.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.3s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .btn-action {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Display Django messages -->
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold">
+                <i class="fas fa-tachometer-alt text-primary me-3"></i>Admin Dashboard
+            </h1>
+            <p class="lead text-muted">Manage appointments and view analytics</p>
+        </div>
+        <div>
+            <span class="badge bg-light text-dark fs-6 p-3">
+                <i class="fas fa-user-shield me-2"></i>Administrator
+            </span>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-start border-primary border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Appointments</h6>
+                            <h2 class="fw-bold">{{ stats.total_appointments }}</h2>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-day me-1"></i>{{ stats.appointments_today }} today
+                            </small>
+                        </div>
+                        <div class="text-primary fs-1">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-start border-success border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Confirmed</h6>
+                            <h2 class="fw-bold">{{ stats.confirmed_appointments }}</h2>
+                            <small class="text-muted">{{ stats.confirmed_percentage }}% of total</small>
+                        </div>
+                        <div class="text-success fs-1">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-start border-warning border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Pending</h6>
+                            <h2 class="fw-bold">{{ stats.pending_appointments }}</h2>
+                            <small class="text-muted">Need confirmation</small>
+                        </div>
+                        <div class="text-warning fs-1">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card border-start border-info border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Available Slots</h6>
+                            <h2 class="fw-bold">{{ stats.available_slots }}</h2>
+                            <small class="text-muted">{{ stats.booked_slots }} slots booked</small>
+                        </div>
+                        <div class="text-info fs-1">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Appointments Table -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2 text-primary"></i>Recent Appointments
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if recent_appointments %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Date & Time</th>
+                            <th>Company</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for appointment in recent_appointments %}
+                    <tr>
+                        <td>
+                            <strong>{{ appointment.name }}</strong><br>
+                            <small class="text-muted">{{ appointment.email }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ appointment.date|date:"M d, Y" }}</strong><br>
+                            <small class="text-muted">{{ appointment.time|time:"g:i A" }}</small>
+                        </td>
+                        <td>{{ appointment.company_name }}</td>
+                        <td>
+                            <span class="badge bg-info">
+                                {{ appointment.get_appointment_aim_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if appointment.is_confirmed %}bg-success{% else %}bg-warning{% endif %}">
+                                {% if appointment.is_confirmed %}Confirmed{% else %}Pending{% endif %}
+                            </span>
+                        </td>
+                       <!-- In the table actions column: -->
+<td>
+    <div class="btn-group btn-group-sm" role="group">
+        <!-- View Button -->
+        <a href="{% url 'appointment_detail_admin' appointment.id %}" 
+           class="btn btn-outline-primary" title="View Details">
+            <i class="fas fa-eye"></i>
+        </a>
+        
+        <!-- Confirm Button (only if not confirmed) -->
+        {% if not appointment.is_confirmed %}
+        <a href="{% url 'confirm_appointment' appointment.id %}" 
+           class="btn btn-outline-success" 
+           title="Confirm Appointment"
+           onclick="return confirm('Confirm appointment #{{ appointment.id }}?')">
+            <i class="fas fa-check"></i>
+        </a>
+        {% else %}
+        <button class="btn btn-success" disabled title="Already Confirmed">
+            <i class="fas fa-check"></i>
+        </button>
+        {% endif %}
+        
+        <!-- Cancel Button -->
+        <a href="{% url 'cancel_appointment' appointment.id %}" 
+           class="btn btn-outline-danger" 
+           title="Cancel Appointment"
+           onclick="return confirm('Cancel appointment #{{ appointment.id }}? This cannot be undone.')">
+            <i class="fas fa-times"></i>
+        </a>
+    </div>
+</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <div class="text-muted">
+                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                    <h5>No appointments found</h5>
+                    <p>No appointments have been booked yet.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Today's Appointments -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="fas fa-clock me-2 text-primary"></i>Today's Appointments
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if todays_appointments %}
+            <div class="list-group">
+                {% for appointment in todays_appointments %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ appointment.name }}</h6>
+                            <small class="text-muted">{{ appointment.company_name }} • {{ appointment.get_appointment_aim_display }}</small>
+                        </div>
+                        <div class="text-end">
+                            <h6 class="mb-0 text-primary">{{ appointment.time|time:"g:i A" }}</h6>
+                            {% if appointment.is_confirmed %}
+                            <span class="badge bg-success">Confirmed</span>
+                            {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <div class="text-muted">
+                    <i class="fas fa-coffee fa-3x mb-3"></i>
+                    <h5>No appointments today</h5>
+                    <p>Enjoy your day!</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-4 text-center">
+        <a href="{% url 'available_slots' %}" class="btn btn-primary me-2">
+            <i class="fas fa-calendar-alt me-1"></i> View Available Slots
+        </a>
+        <a href="{% url 'slot_management' %}" class="btn btn-success me-2">
+            <i class="fas fa-plus-circle me-1"></i> Manage Slots
+        </a>
+        <a href="{% url 'export_appointments' %}" class="btn btn-info">
+            <i class="fas fa-download me-1"></i> Export Data
+        </a>
+    </div>
+</div>
+
+<!-- Remove the modal HTML since we're not using it anymore -->
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Remove all JavaScript since we're using direct links -->
+<!-- Just keep this minimal script if needed for Bootstrap tooltips -->
+<script>
+    // Initialize Bootstrap tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}
