@@ -491,192 +491,306 @@ def payment_verification_queue(request):
     
     return render(request, 'sswadmission/payment_verification_queue.html', context)
 
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.utils.html import escape
+
 @login_required
 def generate_receipt(request, payment_id):
-    """Generate payment receipt"""
+    """Generate payment receipt with duplicate copy for printing"""
     payment = get_object_or_404(FeePayment, id=payment_id)
-
-    # Your receipt content (used twice)
-    receipt_html = f"""
-    <div class="header">
-        <div><strong>GOVERMENT REGISTER NO: 376328/82/83</strong></div>
-        <h1>AQUA EDUCATION AND TRAINING ACADEMY PVT LTD</h1>
-        <h2>Lazimpat, Kathmandu Metropolitan City-02, Kathmandu, Nepal</h2>
-    </div>
-
-    <div class="sub-info">
-        Web: www.aquagroupnp.com | E-mail: ssw.edu.academy@gmail.com<br>
-        <strong>Receipt Number: {payment.receipt_number}</strong><br>
-        <strong>VAT NO: 622456452</strong>
-    </div>
-
-    <div class="title">CASH RECEIPT</div>
-
-    <table>
-        <tr>
-            <th>Received From</th>
-            <td>{payment.student.full_name}</td>
-        </tr>
-        <tr>
-            <td><strong>Course</strong></td>
-            <td><strong>{payment.student.course}</strong></td>
-        </tr>
-        <tr>
-            <td>Received Amount</td>
-            <td>Rs. {payment.amount}</td>
-        </tr>
-        <tr>
-            <td><strong>Description</strong></td>
-            <td><strong>{payment.description or ''}</strong></td>
-        </tr>
-        <tr>
-            <td><strong>Payment ID</strong></td>
-            <td><strong>{payment.payment_id}</strong></td>
-        </tr>
-        <tr>
-            <td><strong>Payment Method</strong></td>
-            <td><strong>{payment.get_payment_method_display()}</strong></td>
-        </tr>
-        <tr>
-            <td><strong>TOTAL RECEIVED AMOUNT IN NRP</strong></td>
-            <td><strong>Rs. {payment.amount}</strong></td>
-        </tr>
-    </table>
-
-    <div class="footer-section">
-        <div class="footer-block">
-            <strong>Received By</strong><br><br>
-            Account Department<br>
-            Aqua Education And Training Academy Pvt. Ltd<br>
-            Telephone: +977-01-000000
+    
+    # Format data
+    context = {
+        'receipt_number': escape(payment.receipt_number),
+        'full_name': escape(payment.student.full_name),
+        'course': escape(payment.student.course),
+        'amount': f"{payment.amount:,.2f}",
+        'description': escape(payment.description or 'Course Fee'),
+        'payment_id': escape(payment.payment_id),
+        'payment_method': escape(payment.get_payment_method_display()),
+        'payment_date': payment.payment_date.strftime('%d-%m-%Y'),
+    }
+    
+    # Receipt template (single copy)
+    receipt_template = f"""
+    <div class="receipt-content">
+        <div class="header">
+            <div class="gov-reg"><strong>GOVERNMENT REGISTER NO: 376328/82/83</strong></div>
+            <h1>AQUA EDUCATION AND TRAINING ACADEMY PVT LTD</h1>
+            <p class="address">Lazimpat, Kathmandu Metropolitan City-02, Kathmandu, Nepal</p>
         </div>
 
-        <div class="footer-block">
-            <strong>Received Date:</strong> {payment.payment_date.strftime('%d-%m-%Y')}<br><br>
-            <div class="signature-box">Received Sign & Stamp</div>
+        <div class="sub-info">
+            <span>Web: www.aquagroupnp.com | E-mail: ssw.edu.academy@gmail.com</span><br>
+            <span><strong>Receipt No:</strong> {context['receipt_number']}</span><br>
+            <span><strong>VAT NO:</strong> 622456452</span>
+        </div>
+
+        <div class="receipt-title">CASH RECEIPT</div>
+
+        <table class="details-table">
+            <tbody>
+                <tr>
+                    <td class="label">Received From</td>
+                    <td class="value">{context['full_name']}</td>
+                </tr>
+                <tr>
+                    <td class="label">Course</td>
+                    <td class="value">{context['course']}</td>
+                </tr>
+                <tr>
+                    <td class="label">Received Amount</td>
+                    <td class="value">Rs. {context['amount']}</td>
+                </tr>
+                <tr>
+                    <td class="label">Description</td>
+                    <td class="value">{context['description']}</td>
+                </tr>
+                <tr>
+                    <td class="label">Payment ID</td>
+                    <td class="value">{context['payment_id']}</td>
+                </tr>
+                <tr>
+                    <td class="label">Payment Method</td>
+                    <td class="value">{context['payment_method']}</td>
+                </tr>
+                <tr>
+                    <td class="label"><strong>TOTAL RECEIVED (NRP)</strong></td>
+                    <td class="value"><strong>Rs. {context['amount']}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="footer-section">
+            <div class="footer-block">
+                <strong>Received By</strong><br>
+                <span class="department">Account Department</span><br>
+                <span>Aqua Education And Training Academy Pvt. Ltd</span><br>
+                <span>Telephone: +977-01-000000</span>
+            </div>
+
+            <div class="footer-block footer-right">
+                <div><strong>Received Date:</strong> {context['payment_date']}</div>
+                <div class="signature-box">
+                    <div class="sig-label">Received Sign & Stamp</div>
+                </div>
+            </div>
         </div>
     </div>
     """
 
-    # Full HTML with two copies
+    # Full HTML with two-copy layout
     html = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Cash Receipt - {payment.receipt_number}</title>
-    <style>
-        body {{
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            font-size: 14px;
-        }}
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cash Receipt - {context['receipt_number']}</title>
+        <style>
+            * {{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }}
 
-        .print-button {{
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }}
+            body {{
+                font-family: 'Segoe UI', Arial, sans-serif;
+                background: #f5f5f5;
+                padding: 10px;
+            }}
 
-        @media print {{
-            .print-button {{ display: none; }}
-        }}
+            .print-controls {{
+                text-align: center;
+                margin-bottom: 20px;
+            }}
 
-        .receipt {{
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 1px dashed #000;
-        }}
+            .print-button {{
+                padding: 10px 24px;
+                background: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 500;
+                transition: background 0.3s;
+            }}
 
-        .cut-line {{
-            text-align: center;
-            margin: 20px 0;
-            font-size: 12px;
-            color: #444;
-        }}
+            .print-button:hover {{
+                background: #0056b3;
+            }}
 
-        .header {{
-            text-align: center;
-            margin-bottom: 20px;
-        }}
-        .header h1 {{
-            margin: 0;
-            font-size: 22px;
-            font-weight: bold;
-        }}
-        .header h2 {{
-            margin: 5px 0;
-            font-size: 16px;
-        }}
-        .sub-info {{
-            text-align: center;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }}
-        .title {{
-            text-align: center;
-            font-size: 26px;
-            font-weight: bold;
-            margin: 20px 0;
-            text-decoration: underline;
-        }}
-        table {{
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }}
-        table, th, td {{
-            border: 1px solid #000;
-        }}
-        th, td {{
-            padding: 10px;
-            text-align: left;
-        }}
-        .footer-section {{
-            margin-top: 40px;
-            display: flex;
-            justify-content: space-between;
-        }}
-        .footer-block {{
-            width: 45%;
-            font-size: 14px;
-        }}
-        .signature-box {{
-            margin-top: 60px;
-            border-top: 1px solid #000;
-            width: 200px;
-            padding-top: 5px;
-            text-align: center;
-        }}
-    </style>
-</head>
-<body>
+            .print-button:active {{
+                transform: scale(0.98);
+            }}
 
-<button class="print-button" onclick="window.print()">Print Receipt</button>
+            @media print {{
+                body {{
+                    background: white;
+                    padding: 0;
+                }}
+                .print-controls {{
+                    display: none;
+                }}
+                .page-break {{
+                    page-break-after: always;
+                }}
+            }}
 
-<div class="receipt-wrapper">
+            .receipt-page {{
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                background: white;
+                padding: 20px;
+                max-width: 1000px;
+                margin: 0 auto;
+            }}
 
-    <!-- COPY 1 -->
-    <div class="receipt">
-        {receipt_html}
-    </div>
+            .receipt {{
+                padding: 20px;
+                border: 1px solid #ddd;
+                font-size: 13px;
+                line-height: 1.4;
+                page-break-inside: avoid;
+                background: white;
+            }}
 
+            .header {{
+                text-align: center;
+                margin-bottom: 15px;
+                border-bottom: 2px solid #000;
+                padding-bottom: 10px;
+            }}
 
-    <!-- COPY 2 -->
-    <div class="receipt">
-        {receipt_html}
-    </div>
+            .gov-reg {{
+                font-size: 11px;
+                margin-bottom: 5px;
+            }}
 
-</div>
+            .header h1 {{
+                font-size: 18px;
+                font-weight: bold;
+                margin: 5px 0;
+                letter-spacing: 0.5px;
+            }}
 
-</body>
-</html>
-"""
+            .address {{
+                font-size: 12px;
+                margin: 3px 0;
+            }}
 
-    return HttpResponse(html)
+            .sub-info {{
+                text-align: center;
+                font-size: 11px;
+                margin-bottom: 15px;
+                line-height: 1.6;
+            }}
+
+            .receipt-title {{
+                text-align: center;
+                font-size: 18px;
+                font-weight: bold;
+                margin: 12px 0;
+                text-decoration: underline;
+                letter-spacing: 1px;
+            }}
+
+            .details-table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin: 15px 0;
+            }}
+
+            .details-table td {{
+                border: 1px solid #000;
+                padding: 8px;
+            }}
+
+            .label {{
+                width: 45%;
+                background: #f9f9f9;
+                font-weight: 500;
+            }}
+
+            .value {{
+                width: 55%;
+                word-break: break-word;
+            }}
+
+            .footer-section {{
+                margin-top: 20px;
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+            }}
+
+            .footer-block {{
+                flex: 1;
+                font-size: 12px;
+            }}
+
+            .footer-right {{
+                text-align: right;
+            }}
+
+            .department {{
+                display: block;
+                margin: 3px 0;
+                font-weight: 500;
+            }}
+
+            .signature-box {{
+                margin-top: 35px;
+                border-top: 1px solid #000;
+                padding-top: 3px;
+                min-height: 50px;
+                display: flex;
+                align-items: flex-end;
+            }}
+
+            .sig-label {{
+                font-size: 11px;
+                text-align: center;
+                width: 100%;
+            }}
+
+            @media (max-width: 900px) {{
+                .receipt-page {{
+                    grid-template-columns: 1fr;
+                    gap: 30px;
+                }}
+            }}
+        </style>
+    </head>
+    <body>
+
+        <div class="print-controls">
+            <button class="print-button" onclick="window.print()">🖨️ Print Receipt</button>
+        </div>
+
+        <div class="receipt-page">
+            <!-- COPY 1 -->
+            <div class="receipt">
+                {receipt_template}
+            </div>
+
+            <!-- COPY 2 -->
+            <div class="receipt">
+                {receipt_template}
+            </div>
+        </div>
+
+    </body>
+    </html>
+    """
+
+    response = HttpResponse(html, content_type='text/html')
+    response['Content-Disposition'] = f'inline; filename="receipt_{context["receipt_number"]}.html"'
+    return response
 
 # ========== INSTALLMENT MANAGEMENT ==========
 

@@ -36,7 +36,7 @@ class Student(models.Model):
     address = models.TextField(blank=True)
     city = models.CharField(max_length=100, blank=True)
     state = models.CharField(max_length=100, blank=True)
-    country = models.CharField(max_length=100, default='India')
+    country = models.CharField(max_length=100, default='Nepal')
     pincode = models.CharField(max_length=10, blank=True)
     
     # Academic Information
@@ -168,7 +168,7 @@ class FeePayment(models.Model):
         ('online_payment', 'Online Payment'),
         ('cheque', 'Cheque'),
         ('card', 'Credit/Debit Card'),
-        ('upi', 'UPI'),
+        ('upi', 'Wallet'),
     ]
     
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='fee_payments')

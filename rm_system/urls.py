@@ -26,8 +26,13 @@ urlpatterns = [
     path('sswdash/', include('sswdash.urls')),
     path('sswadmission/', include('sswadmission.urls')),
     path('appointment/', include('appointment.urls')),
+    path('candidate/', include('candidate_portal.urls')),
+    path('', include('jobd_letter.urls')),
+    path('agreementdocx/', include('agreementdocx.urls')),
+    path('documents/', include('guarantee_letter.urls')),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    

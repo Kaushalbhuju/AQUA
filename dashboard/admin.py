@@ -5,11 +5,12 @@ from candidate_portal.models import Agent, Candidate
 
 
 @admin.register(Agent)
+
 class AgentAdmin(admin.ModelAdmin):
     list_display = ['agent_code', 'name', 'email', 'pin_code', 'max_candidates', 'current_candidate_count', 'is_active', 'created_at']
     list_filter = ['is_active', 'created_at']
     search_fields = ['agent_code', 'name', 'email']
-    readonly_fields = ['current_candidate_count', 'created_at']
+    readonly_fields = ['current_candidate_count', 'created_at', 'last_used']  # ADD 'last_used' HERE
     list_per_page = 20
     
     def get_readonly_fields(self, request, obj=None):
@@ -54,7 +55,6 @@ class AgentAdmin(admin.ModelAdmin):
             form.base_fields['agent_code'].required = False
             form.base_fields['pin_code'].required = False
         return form
-
 
 @admin.register(Candidate)
 class CandidateAdmin(admin.ModelAdmin):

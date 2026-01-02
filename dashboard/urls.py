@@ -16,10 +16,11 @@ from .views.portal_views import (
     PortalStudentRegistrationView, portal_registration_success
 )
 from .views.ssw_views import ( months_2026 )
-# REMOVE agent_views imports
+
 # from .views.agent_views import (
-#     agent_login, agent_logout, agent_dashboard, 
-#     agent_student_detail, agent_student_registration
+#     # agent_login, agent_logout, 
+#     # agent_dashboard, 
+#     # agent_student_detail, agent_student_registration
 # )
 
 app_name = 'dashboard'
@@ -63,7 +64,7 @@ urlpatterns = [
 
     # REMOVE Agent Dashboard Routes from here
     # path('agent/login/', agent_login, name='agent_login'),
-    # path('agent/logout/', agent_logout, name='agent_logout'),
+    # # path('agent/logout/', agent_logout, name='agent_logout'),
     # path('agent/dashboard/', agent_dashboard, name='agent_dashboard'),
     # path('agent/student/<int:student_id>/', agent_student_detail, name='agent_student_detail'),
     # path('agent/register-student/', agent_student_registration, name='agent_student_registration'),
@@ -75,6 +76,9 @@ urlpatterns = [
 
     # SSW specific views
     path('aggredcs/', months_2026, name='contracts_2026'),
+    
+   
+
    
     
 ]

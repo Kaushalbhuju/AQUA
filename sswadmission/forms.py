@@ -107,7 +107,7 @@ class StudentForm(forms.ModelForm):
             'country': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Country',
-                'value': 'India'
+                'value': 'Nepal'
             }),
             'pincode': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -243,7 +243,7 @@ class FeePaymentForm(forms.ModelForm):
             }),
             'upi_id': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'UPI ID'
+                'placeholder': 'Wallet ID'
             }),
             'description': forms.Textarea(attrs={
                 'class': 'form-control',

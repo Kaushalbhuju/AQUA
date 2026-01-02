@@ -11,17 +11,28 @@
         background-color: #f8f9fa;
       }
       .hero {
-        padding: 8rem 4rem;
+        padding: 12rem 6rem;
         text-align: center;
         background-color: #e9ecef;
-        border-bottom: 10px solid #dee2e6;
+        border-bottom: 30px solid #dee2e6;
       }
       .btn-group {
         margin-top: 8rem;
         display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 1rem;
+        flex-direction: column; /* stack vertically */
+        align-items: center;
+        gap: 2rem; /* more spacing between buttons */
+        width: 100%;
+        max-width: 800px; /* wider container */
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .btn-xxl {
+        padding: 2rem 4rem;   /* much bigger padding */
+        font-size: 2rem;      /* oversized text */
+        border-radius: 0.75rem;
+        width: 100%;          /* full width */
+        font-weight: bold;    /* bold text */
       }
     </style>
   </head>
@@ -36,8 +47,6 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">About</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
           </ul>
         </div>
       </div>
@@ -48,10 +57,9 @@
       <h1 class="display-5 fw-bold">Where are you going to?</h1>
       <p class="lead">Choose your visa category to proceed with registration and documentation.</p>
       <div class="btn-group">
-        <a href="{% url 'staff_ssw_working_visa' %}" class="btn btn-outline-primary btn-lg">SSW & Working Visa</a>
-        <a href="{% url 'staff_student_visa' %}" class="btn btn-outline-success btn-lg">Student Visa</a>
-        <a href="{% url 'dashboard' %}" class="btn btn-outline-success btn-lg">Appointments</a>
-
+        <a href="{% url 'staff_ssw_working_visa' %}" class="btn btn-outline-primary btn-xxl">SSW & Working Visa</a>
+        <a href="{% url 'staff_student_visa' %}" class="btn btn-outline-success btn-xxl">Student Visa</a>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-success btn-xxl">Appointments</a>
       </div>
     </div>
 

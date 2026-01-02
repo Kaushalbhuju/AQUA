@@ -21,7 +21,21 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 1rem;
+        gap: 1.5rem;
+      }
+      /* Super extra-large button */
+      .btn-xxl {
+        padding: 2rem 3rem;       /* Very large padding */
+        font-size: 2rem;          /* Huge text */
+        border-radius: 0.75rem;   /* Rounded corners */
+        min-width: 280px;         /* Wide buttons */
+        text-align: center;
+      }
+      /* Full width on small screens */
+      @media (max-width: 576px) {
+        .btn-group a {
+          flex: 1 1 100%;
+        }
       }
     </style>
   </head>
@@ -36,10 +50,9 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link active" href="{% url 'accounts:login_view' %}"> Logout</a>
+              <a class="nav-link active" href="{% url 'accounts:login_view' %}">Logout</a>
             </li>
           </ul>
-          
         </div>
       </div>
     </nav>
@@ -49,10 +62,10 @@
       <h1 class="display-5 fw-bold">Where are you going to?</h1>
       <p class="lead">Choose your visa category to proceed with registration and documentation.</p>
       <div class="btn-group">
-        <a href="{% url 'ssw_working_visa' %}" class="btn btn-outline-primary btn-lg">SSW & Working Visa</a>
-        <a href="{% url 'student_visa' %}" class="btn btn-outline-success btn-lg">Student Visa</a>
-        <a href="{% url 'staff_list' %}" class="btn btn-outline-warning btn-lg">Staff Registration</a>
-        <a href="#" class="btn btn-outline-info btn-lg">Dependent Visa</a>
+        <a href="{% url 'ssw_working_visa' %}" class="btn btn-outline-primary btn-xxl">SSW & Working Visa</a>
+        <a href="{% url 'student_visa' %}" class="btn btn-outline-success btn-xxl">Student Visa</a>
+        <a href="{% url 'staff_list' %}" class="btn btn-outline-warning btn-xxl">Staff Registration</a>
+        <a href="#" class="btn btn-outline-info btn-xxl">Dependent Visa</a>
       </div>
     </div>
 

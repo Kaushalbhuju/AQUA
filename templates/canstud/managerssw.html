@@ -6,7 +6,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SSW Workflow Interface</title>
+
   <style>
+    .logout-btn {
+      background-color: #d9534f;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .logout-btn:hover {
+      background-color: #c9302c;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
@@ -17,19 +31,30 @@
     header {
       background-color: #004e89;
       color: white;
-      padding: 1.5rem;
-      text-align: center;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center; /* keeps title centered */
+      position: relative;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 
     header h1 {
-        margin: 0;
-        font-size: 2rem;
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    /* Position logout button absolutely in top-left corner */
+    header .logout-btn {
+      position: absolute;
+      left: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
     }
 
     main {
       padding: 3rem 2rem;
-      max-width: 1400px; /* Increased max-width for bigger layout */
+      max-width: 1400px;
       margin: auto;
     }
 
@@ -48,7 +73,6 @@
 
     .button-grid {
       display: grid;
-      /* Increased minmax to 280px for wider buttons */
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
     }
@@ -58,24 +82,17 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      
       background-color: #ffffff;
-      border: 3px solid #0077b6; /* Thicker border */
+      border: 3px solid #0077b6;
       color: #0077b6;
-      
-      /* BULKINESS SETTINGS */
-      padding: 2rem 1.5rem; /* Larger padding */
-      min-height: 80px; /* Minimum height for consistency */
+      padding: 2rem 1.5rem;
+      min-height: 80px;
       border-radius: 12px;
-      
-      /* TEXT SETTINGS */
-      font-size: 1.2rem; /* Bigger text */
-      font-weight: 700; /* Bold */
+      font-size: 1.2rem;
+      font-weight: 700;
       text-decoration: none;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      
-      /* DEPTH */
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       transition: all 0.2s ease-in-out;
     }
@@ -83,7 +100,7 @@
     .workflow-button:hover {
       background-color: #0077b6;
       color: white;
-      transform: translateY(-5px); /* Lift effect */
+      transform: translateY(-5px);
       box-shadow: 0 10px 15px rgba(0, 78, 137, 0.3);
     }
 
@@ -98,6 +115,7 @@
 </head>
 <body>
   <header>
+    <a href="{% url 'accounts:login' %}" class="logout-btn">{% trans "Logout" %}</a>
     <h1>SSW Workflow Interface</h1>
   </header>
 
@@ -108,9 +126,9 @@
         <a href="{% url 'regcompany:company_list' %}" class="workflow-button">{% trans "COMPANY REGISTRATION" %}</a>
         <a href="{% url 'dashboard:student_registration' %}" class="workflow-button">{% trans "CANDIDATE REGISTRATION" %}</a>
         <a href="#" class="workflow-button">{% trans "COE & VISA RECORDS" %}</a>
-        <a href="{% url 'dashboard:contracts_2026' %}" class="workflow-button">{% trans "AGREEMENTS DOCUMENTS" %}</a>
+        <a href="{% url 'year_buttons' %}" class="workflow-button">{% trans "AGREEMENTS DOCUMENTS" %}</a>
         <a href="{% url 'sswdashboard:professional_dashboard' %}" class="workflow-button">{% trans "ADMISSION & FEE PAYMENT" %}</a>
-        <a href="#" class="workflow-button">{% trans "JOB DEMAND" %}</a>
+        <a href="{% url 'letter_list' %}" class="workflow-button">{% trans "JOB DEMAND" %}</a>
         <a href="#" class="workflow-button">{% trans "LANGUAGE & SSW SKILL EXAM" %}</a>
         <a href="#" class="workflow-button">{% trans "INTERVIEW SCHEDULE" %}</a>
       </div>
@@ -119,9 +137,9 @@
     <section>
       <h2>{% trans "Document Issue and Manage" %}</h2>
       <div class="button-grid">
-        <a href="#" class="workflow-button">{% trans "JOB GUARANTEE LETTER" %}</a>
+        <a href="{% url 'letter_list_list' %}" class="workflow-button">{% trans "JOB GUARANTEE LETTER" %}</a>
         <a href="#" class="workflow-button">{% trans "COMPANY APPLICATION FORM" %}</a>
-        <a href="#" class="workflow-button">{% trans "CANDIDATE BIO-DATA" %}</a>
+        <a href="{% url 'dashboard:student_list' %}" class="workflow-button">{% trans "CANDIDATE BIO-DATA" %}</a>
         <a href="#" class="workflow-button">{% trans "LANGUAGE LEARNING CERTIFICATE" %}</a>
         <a href="#" class="workflow-button">{% trans "SCAN DOCUMENTS" %}</a>
         <a href="#" class="workflow-button">{% trans "OTHER DOCUMENTS" %}</a>
@@ -134,3 +152,4 @@
   </footer>
 </body>
 </html>
+ 
