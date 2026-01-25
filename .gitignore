@@ -1,17 +1,15 @@
-# Ignore virtual environment
+# Virtual environments
+venv/
 venv38/
 
-# Python cache files
+# Python cache
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
 
-# SQLite database
-*.sqlite3
+# Django
+db.sqlite3
+media/
 
 # OS files
-*.DS_Store
-
-# Environment variables
-.env
+.DS_Store
+Thumbs.db
