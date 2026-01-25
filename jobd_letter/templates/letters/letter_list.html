@@ -1,0 +1,31 @@
+{% extends "baseb.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Job Demand Letters</h2>
+  <a href="{% url 'letter_upload' %}" class="btn btn-primary mb-3">Upload New Letter</a>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Uploaded By</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for letter in letters %}
+      <tr>
+        <td>{{ letter.title }}</td>
+        <td>{{ letter.uploaded_by }}</td>
+        <td>{{ letter.uploaded_at|date:"Y-m-d H:i" }}</td>
+        <td>
+          <a href="{% url 'letter_details' letter.pk %}" class="btn btn-info btn-sm">View</a>
+          <a href="{{ letter.pdf_file.url }}" class="btn btn-success btn-sm" target="_blank">Download</a>
+          <a href="{% url 'letter_delete' letter.pk %}" class="btn btn-danger btn-sm">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

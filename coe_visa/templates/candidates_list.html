@@ -1,0 +1,9 @@
+{% block content %}
+  <h2>LIST OF ALL CANDIDATES</h2>
+  <ul>
+    {% for visa in visas %}
+      <li>ID: {{ visa.student_id }} — {{ visa.full_name }} </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+

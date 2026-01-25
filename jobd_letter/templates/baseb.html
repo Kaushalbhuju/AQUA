@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar */
+        nav {
+            background: linear-gradient(90deg, #1c67b2, #15508a);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        nav a {
+            color: #fff;
+            margin-right: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        nav a:hover {
+            color: #ffd43b;
+        }
+        nav h1 {
+            flex: 1;
+            text-align: center;
+            color: #fff;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Buttons */
+        .btn-custom {
+            background: #1c67b2;
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            background: #15508a;
+            transform: scale(1.05);
+        }
+
+        /* Fade-in animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <div>
+            <a href="{% url 'letter_list' %}"><i class="bi bi-house-door"></i> Home</a>
+            <a href="{% url 'ssw_working_visa' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        </div>
+        <h1>JOB DEMAND</h1>
+    </nav>
+
+    <div class="container fade-in">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Extra JS -->
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener("click", function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute("href")).scrollIntoView({
+                    behavior: "smooth"
+                });
+            });
+        });
+
+        // Auto-dismiss alerts after 5s
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => {
+                alert.classList.add('fade');
+                setTimeout(() => alert.remove(), 500);
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

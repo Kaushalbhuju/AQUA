@@ -30,6 +30,9 @@ urlpatterns = [
     path('', include('jobd_letter.urls')),
     path('agreementdocx/', include('agreementdocx.urls')),
     path('documents/', include('guarantee_letter.urls')),
+    path('coe-visa/', include('coe_visa.urls')),
+    path('other-documents/', include('other_documents.urls')),
+
 ]
 
 if settings.DEBUG:

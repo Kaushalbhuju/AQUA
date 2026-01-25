@@ -1,0 +1,44 @@
+{% extends 'baseg.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Upload Letter - Job Guarantee Portal{% endblock %}
+{% block page_title %}Upload Job Guarantee Letter{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Upload New Letter</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Upload Letter
+                        </button>
+                        <a href="{% url 'guarantee_letter:dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Upload Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>Only PDF files are accepted</li>
+                    <li>Maximum file size: 10MB</li>
+                    <li>Ensure all information matches the PDF content</li>
+                    <li>Verify client information before uploading</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

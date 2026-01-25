@@ -1,0 +1,54 @@
+{% extends "basea.html" %}
+
+{% block title %}{{ form.instance.pk|yesno:"Update Agreement,Upload Agreement" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    h4.mb-0 { font-weight: 600; font-size: 20px; }
+    .card { border-radius: 10px; }
+    .card-header { border-top-left-radius: 10px; border-top-right-radius: 10px; }
+    .btn-success { background: #4CAF50; border: none; transition: background 0.3s ease; }
+    .btn-success:hover { background: #388e3c; }
+    .btn-outline-secondary:hover { background: #f0f0f0; }
+    .alert { font-size: 14px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    {{ form.instance.pk|yesno:"Update Agreement,Upload Agreement" }}
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.as_p }}
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-save"></i> Save
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

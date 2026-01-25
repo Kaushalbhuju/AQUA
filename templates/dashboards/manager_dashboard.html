@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -7,67 +8,135 @@
     <title>Visa Navigation Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
-      body {
-        background-color: #f8f9fa;
-      }
-      .hero {
-        padding: 4rem 2rem;
-        text-align: center;
-        background-color: #e9ecef;
-        border-bottom: 1px solid #dee2e6;
-      }
-      .btn-group {
-        margin-top: 2rem;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 1.5rem;
-      }
-      /* Super extra-large button */
-      .btn-xxl {
-        padding: 2rem 3rem;       /* Very large padding */
-        font-size: 2rem;          /* Huge text */
-        border-radius: 0.75rem;   /* Rounded corners */
-        min-width: 280px;         /* Wide buttons */
-        text-align: center;
-      }
-      /* Full width on small screens */
-      @media (max-width: 576px) {
-        .btn-group a {
-          flex: 1 1 100%;
-        }
-      }
+      /* Global body setup */
+
+body {
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* ensures footer sticks to bottom */
+}
+.navbar {
+  padding-top: 1.5rem;  /* increase top spacing */
+  padding-bottom: 1.5rem; /* increase bottom spacing */
+}
+.logout-btn {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+}
+.logout-btn:hover {
+  background-color: #c9302c;
+}
+
+
+/* Navbar custom dark blue */
+.bg-custom {
+  background-color: #004E89 !important;
+}
+
+/* Hero section */
+.hero {
+  padding: 6rem 4rem;
+  text-align: center;
+  background-color: #e9ecef;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Button group styling */
+.btn-group {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+/* Super extra-large button */
+.btn-xxl {
+  padding: 2rem 3rem;       /* Very large padding */
+  font-size: 2rem;          /* Huge text */
+  border-radius: 0.75rem;   /* Rounded corners */
+  min-width: 280px;         /* Wide buttons */
+  text-align: center;
+}
+
+/* Full width on small screens */
+@media (max-width: 576px) {
+  .btn-group a {
+    flex: 1 1 100%;
+  }
+}
+.footer {
+  background-color:rgb(255, 255, 255) !important; /* dark blue background */
+  border-top: 1px solidrgb(255, 255, 255);        /* subtle darker border */
+}
+
+.footer small,
+.footer a {
+  color:rgb(56, 59, 54) !important;            /* light text for contrast */
+}
+
+.footer a:hover {
+  color:rgb(66, 79, 86);                       /* aqua hover effect */
+  text-decoration: underline;
+}
+
+
+
     </style>
   </head>
   <body>
     <!-- Navigation Header -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Aqua Group</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-custom">
+      <div class="container-fluid d-flex justify-content-between align-items-center">
+        
+        <!-- Left: Logout -->
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
+          </li>
+        </ul>
+    
+        {% comment %} <!-- Center: Brand -->
+        <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
+          <h4>Aqua Group</h4>
+        </a> {% endcomment %}
+    
+        <!-- Right: optional links (empty for now) -->
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link active" href="{% url 'accounts:login_view' %}">Logout</a>
-            </li>
+            <!-- Add right-side items here if needed -->
           </ul>
         </div>
       </div>
     </nav>
 
     <!-- Hero Section -->
-    <div class="hero">
+    <div class="hero flex-grow-1">
       <h1 class="display-5 fw-bold">Where are you going to?</h1>
       <p class="lead">Choose your visa category to proceed with registration and documentation.</p>
       <div class="btn-group">
         <a href="{% url 'ssw_working_visa' %}" class="btn btn-outline-primary btn-xxl">SSW & Working Visa</a>
         <a href="{% url 'student_visa' %}" class="btn btn-outline-success btn-xxl">Student Visa</a>
         <a href="{% url 'staff_list' %}" class="btn btn-outline-warning btn-xxl">Staff Registration</a>
-        <a href="#" class="btn btn-outline-info btn-xxl">Dependent Visa</a>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-info btn-xxl">Appointments</a>
       </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3">
+      <div class="container text-center">
+        <small class="text-muted">
+          &copy; {{ now|date:"Y" }} {% trans "Aqua Group" %}. {% trans "All Rights Reserved." %}
+        </small>
+      </div>
+    </footer>
+  
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   </body>

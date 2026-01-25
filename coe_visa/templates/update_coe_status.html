@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update COE Status</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+        h1 { margin-bottom: 20px; color: #2c3e50; }
+        .student-info { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-back { background: #95a5a6; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Update COE Status</h1>
+        
+        <div class="student-info">
+            <strong>Student:</strong> {{ student.full_name }}<br>
+            <strong>ID:</strong> {{ student.student_id }}
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>COE Status:</label>
+                <select name="status">
+                    <option value="not_started" {% if coe_tracking.status == 'not_started' %}selected{% endif %}>
+                        Not Started
+                    </option>
+                    <option value="processing" {% if coe_tracking.status == 'processing' %}selected{% endif %}>
+                        Processing
+                    </option>
+                    <option value="approved" {% if coe_tracking.status == 'approved' %}selected{% endif %}>
+                        Approved
+                    </option>
+                    <option value="issued" {% if coe_tracking.status == 'issued' %}selected{% endif %}>
+                        Issued
+                    </option>
+                    <option value="delivered" {% if coe_tracking.status == 'delivered' %}selected{% endif %}>
+                        Delivered
+                    </option>
+                    <option value="rejected" {% if coe_tracking.status == 'rejected' %}selected{% endif %}>
+                        Rejected
+                    </option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>COE Number:</label>
+                <input type="text" name="coe_number" value="{{ coe_tracking.coe_number|default:'' }}">
+            </div>
+            
+            <div class="form-group">
+                <label>Applied Date:</label>
+                <input type="date" name="applied_date" value="{{ coe_tracking.applied_date|date:'Y-m-d'|default:'' }}">
+            </div>
+            
+            <div class="form-group">
+                <label>Issued Date:</label>
+                <input type="date" name="issued_date" value="{{ coe_tracking.issued_date|date:'Y-m-d'|default:'' }}">
+            </div>
+            
+            <div class="form-group">
+                <label>Notes:</label>
+                <textarea name="notes" rows="3">{{ coe_tracking.notes|default:'' }}</textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit">Update COE Status</button>
+            <a href="{% url 'coe_visa:seoandvisa_dashboard' %}" class="btn-back">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>

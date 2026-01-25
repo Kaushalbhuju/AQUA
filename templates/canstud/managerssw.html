@@ -24,7 +24,7 @@
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      background-color: #f9f9f9;
+      background-color:rgb(236, 234, 234);
       color: #333;
     }
 
@@ -107,7 +107,7 @@
     footer {
       text-align: center;
       padding: 2rem;
-      background-color: #e0e0e0;
+      background-color:rgb(250, 249, 249);
       font-size: 1rem;
       margin-top: auto;
     }
@@ -125,7 +125,7 @@
       <div class="button-grid">
         <a href="{% url 'regcompany:company_list' %}" class="workflow-button">{% trans "COMPANY REGISTRATION" %}</a>
         <a href="{% url 'dashboard:student_registration' %}" class="workflow-button">{% trans "CANDIDATE REGISTRATION" %}</a>
-        <a href="#" class="workflow-button">{% trans "COE & VISA RECORDS" %}</a>
+        <a href="{% url 'coe_visa:seoandvisa_dashboard' %}" class="workflow-button">{% trans "COE & VISA RECORDS" %}</a>
         <a href="{% url 'year_buttons' %}" class="workflow-button">{% trans "AGREEMENTS DOCUMENTS" %}</a>
         <a href="{% url 'sswdashboard:professional_dashboard' %}" class="workflow-button">{% trans "ADMISSION & FEE PAYMENT" %}</a>
         <a href="{% url 'letter_list' %}" class="workflow-button">{% trans "JOB DEMAND" %}</a>
@@ -137,12 +137,12 @@
     <section>
       <h2>{% trans "Document Issue and Manage" %}</h2>
       <div class="button-grid">
-        <a href="{% url 'letter_list_list' %}" class="workflow-button">{% trans "JOB GUARANTEE LETTER" %}</a>
+        <a href="{% url 'guarantee_letter:letter_list_list' %}" class="workflow-button">{% trans "JOB GUARANTEE LETTER" %}</a>
         <a href="#" class="workflow-button">{% trans "COMPANY APPLICATION FORM" %}</a>
         <a href="{% url 'dashboard:student_list' %}" class="workflow-button">{% trans "CANDIDATE BIO-DATA" %}</a>
         <a href="#" class="workflow-button">{% trans "LANGUAGE LEARNING CERTIFICATE" %}</a>
         <a href="#" class="workflow-button">{% trans "SCAN DOCUMENTS" %}</a>
-        <a href="#" class="workflow-button">{% trans "OTHER DOCUMENTS" %}</a>
+        <a href="{% url 'document_list' %}" class="workflow-button">{% trans "OTHER DOCUMENTS" %}</a>
       </div>
     </section>
   </main>

@@ -1,0 +1,26 @@
+{% extends 'baseg.html' %}
+
+{% block title %}Delete Letter{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Delete Letter</h4>
+            </div>
+            <div class="card-body">
+                <p class="alert alert-warning">Warning: This action cannot be undone!</p>
+                <p><strong>Letter #:</strong> {{ letter.letter_number }}</p>
+                <p><strong>Client:</strong> {{ letter.client.name }}</p>
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <a href="{% url 'guarantee_letter:letter_detail' letter.pk %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

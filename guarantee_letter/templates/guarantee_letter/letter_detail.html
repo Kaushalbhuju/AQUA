@@ -1,0 +1,218 @@
+{% extends 'baseg.html' %}
+
+{% block title %}{{ letter.letter_number }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>{{ letter.letter_number }}</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'guarantee_letter:letter_list_list' %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Letter Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Letter Number:</strong> {{ letter.letter_number }}</p>
+                        <p><strong>Source:</strong> {{ letter.get_source_display }}</p>
+                        <p><strong>Status:</strong> 
+                            <span class="badge bg-{% if letter.status == 'draft' %}secondary{% elif letter.status == 'issued' %}success{% elif letter.status == 'verified' %}primary{% elif letter.status == 'expired' %}warning{% elif letter.status == 'cancelled' %}danger{% else %}info{% endif %}">
+                                {{ letter.get_status_display }}
+                            </span>
+                        </p>
+                        <p><strong>Type:</strong> {{ letter.get_letter_type_display }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Issue Date:</strong> {{ letter.issue_date|date:"Y-m-d" }}</p>
+                        <p><strong>Start Date:</strong> {{ letter.start_date|date:"Y-m-d"|default:"Not set" }}</p>
+                        <p><strong>Expiry Date:</strong> {{ letter.expiry_date|date:"Y-m-d"|default:"Not set" }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Client Information</h6>
+                        <p><strong>Client:</strong> {{ letter.client.name }}</p>
+                        <p><strong>Email:</strong> {{ letter.client.email }}</p>
+                        <p><strong>Phone:</strong> {{ letter.client.phone|default:"Not provided" }}</p>
+                        <p><strong>Passport:</strong> {{ letter.client.passport_number|default:"Not provided" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Candidate Information</h6>
+                        <p><strong>Name:</strong> {{ letter.candidate_name }}</p>
+                        <p><strong>Email:</strong> {{ letter.candidate_email }}</p>
+                        <p><strong>Phone:</strong> {{ letter.candidate_phone|default:"Not provided" }}</p>
+                        <p><strong>Passport:</strong> {{ letter.passport_number|default:"Not provided" }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h6>Job Details</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Job Title:</strong> {{ letter.job_title }}</p>
+                                <p><strong>Company:</strong> {{ letter.company_name|default:"Not specified" }}</p>
+                                <p><strong>Department:</strong> {{ letter.department|default:"Not specified" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Salary:</strong> 
+                                    {% if letter.salary_amount %}
+                                        {{ letter.salary_amount }} {{ letter.salary_currency }}
+                                    {% else %}
+                                        Not specified
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if letter.content %}
+                <hr>
+                <div class="mb-3">
+                    <h6>Letter Content</h6>
+                    <div class="border p-3 bg-light mt-2">
+                        {{ letter.content|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if letter.remarks %}
+                <hr>
+                <div class="mb-3">
+                    <h6>Remarks</h6>
+                    <p class="mb-0">{{ letter.remarks|linebreaks }}</p>
+                </div>
+                {% endif %}
+
+                {% if letter.notes %}
+                <hr>
+                <div class="mb-3">
+                    <h6>Internal Notes</h6>
+                    <p class="mb-0 text-muted">{{ letter.notes|linebreaks }}</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer text-muted">
+                <small>
+                    Created: {{ letter.date_created|date:"Y-m-d H:i" }} | 
+                    Last updated: {{ letter.date_updated|date:"Y-m-d H:i" }}
+                    {% if letter.issued_by %}
+                    | Issued by: {{ letter.issued_by.get_full_name|default:letter.issued_by.username }}
+                    {% endif %}
+                    {% if letter.uploaded_by %}
+                    | Uploaded by: {{ letter.uploaded_by.get_full_name|default:letter.uploaded_by.username }}
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        {% if logs %}
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Activity Log</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for log in logs %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ log.get_action_display }}</h6>
+                            <small>{{ log.created_at|timesince }} ago</small>
+                        </div>
+                        <p class="mb-1">{{ log.details }}</p>
+                        <small>
+                            {% if log.user %}
+                            By: {{ log.user.get_full_name|default:log.user.username }}
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Actions</h5>
+            </div>
+            <div class="card-body">
+                {% if letter.status == 'draft' %}
+                    <a href="{% url 'guarantee_letter:edit_letter' letter.pk %}" class="btn btn-warning w-100 mb-2">
+                        <i class="fas fa-edit"></i> Edit Letter
+                    </a>
+                {% endif %}
+
+                <a href="{% url 'guarantee_letter:download_letter' letter.pk %}" class="btn btn-primary w-100 mb-2">
+                    <i class="fas fa-download"></i> Download PDF
+                </a>
+
+                <!-- Status Update Form -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Update Status</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'guarantee_letter:update_status' letter.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-2">
+                                <select name="status" class="form-select form-select-sm">
+                                    {% for value, label in letter.STATUS_CHOICES %}
+                                    <option value="{{ value }}" {% if letter.status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <textarea name="remarks" class="form-control form-control-sm" rows="2" 
+                                          placeholder="Remarks (optional)"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Update Status</button>
+                        </form>
+                    </div>
+                </div>
+
+                {% if letter.status == 'draft' %}
+                    <a href="{% url 'guarantee_letter:delete_letter' letter.pk %}" class="btn btn-danger w-100"
+                       onclick="return confirm('Are you sure you want to delete this letter?');">
+                        <i class="fas fa-trash"></i> Delete Letter
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Info Card -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Quick Info</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Source:</strong> {{ letter.get_source_display }}</p>
+                <p class="mb-1"><strong>Template:</strong> {{ letter.template.name|default:"None" }}</p>
+                <p class="mb-1"><strong>Confirmed:</strong> {% if letter.is_confirmed %}Yes{% else %}No{% endif %}</p>
+                {% if letter.confirmation_date %}
+                <p class="mb-0"><strong>Confirmation Date:</strong> {{ letter.confirmation_date|date:"Y-m-d" }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

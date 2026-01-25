@@ -1,0 +1,36 @@
+{% extends 'baseg.html' %}
+
+{% block title %}{{ action }} Letter{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2>{{ action }} Job Guarantee Letter</h2>
+        
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            
+            <div class="card">
+                <div class="card-body">
+                    {% for field in form %}
+                        <div class="mb-3">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {{ field.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">{{ action }}</button>
+                <a href="{% url 'guarantee_letter:letter_list_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO & Visa - Approved Candidates</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body { 
+            background: #f8f9fa; 
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 20px;
+        }
+        
+        .header { 
+            background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+            color: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .stats { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 30px; 
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border-left: 5px solid #27ae60;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #27ae60;
+        }
+        
+        .stat-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .student-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        .table-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 2px solid #e9ecef;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            font-weight: 700;
+            color: #2c3e50;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+        }
+        
+        .table-row {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .table-row:hover {
+            background: #f8f9fa;
+        }
+        
+        .table-row:last-child {
+            border-bottom: none;
+        }
+        
+        .student-name {
+            font-weight: 600;
+            color: #1a2332;
+            font-size: 1.1em;
+        }
+        
+        .student-id {
+            color: #3498db;
+            font-weight: 600;
+            font-size: 1em;
+            font-family: monospace;
+        }
+        
+        .no-students {
+            text-align: center;
+            padding: 60px 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            color: #95a5a6;
+        }
+        
+        .no-students h3 {
+            font-size: 1.6em;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-weight: 700;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn { 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            color: white; 
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .back-btn {
+            background: #3498db;
+        }
+        
+        .back-btn:hover {
+            background: #2980b9;
+        }
+        
+        .export-btn {
+            background: #27ae60;
+        }
+        
+        .export-btn:hover {
+            background: #1e8449;
+        }
+        
+        .print-btn {
+            background: #7f8c8d;
+        }
+        
+        .print-btn:hover {
+            background: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.6em;
+            }
+            
+            .table-header, .table-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>SEO & Visa - Approved Candidates</h1>
+            <p>List of all approved candidates with their full names and IDs</p>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats">
+            <div class="stat-number">{{ approved_count }}</div>
+            <div class="stat-label">Approved Candidates</div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{% url 'dashboard:student_list' %}" class="btn back-btn">← Back to All Candidates</a>
+            <button onclick="window.print()" class="btn print-btn">🖨️ Print List</button>
+            <button onclick="exportToCSV()" class="btn export-btn">📥 Export as CSV</button>
+        </div>
+
+        <!-- Student List -->
+        {% if students %}
+        <div class="student-table">
+            <div class="table-header">
+                <div>Full Name</div>
+                <div>Student ID</div>
+            </div>
+            
+            {% for student in students %}
+            <div class="table-row">
+                <div class="student-name">{{ student.full_name }}</div>
+                <div class="student-id">{{ student.student_id }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-students">
+            <h3>No Approved Candidates</h3>
+            <p>There are no approved candidates at the moment.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Export to CSV function
+        function exportToCSV() {
+            const rows = [
+                ['Full Name', 'Student ID'], // Header row
+                ...{{ students|safe }}.map(student => [student.full_name, student.student_id])
+            ];
+            
+            const csvContent = rows.map(row => 
+                row.map(cell => `"${cell}"`).join(',')
+            ).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'approved_candidates.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Alternative simple export (if the above doesn't work)
+        function simpleExport() {
+            let csv = 'Full Name,Student ID\n';
+            
+            // Manually collect data from table
+            document.querySelectorAll('.table-row').forEach(row => {
+                const name = row.querySelector('.student-name').textContent;
+                const id = row.querySelector('.student-id').textContent;
+                csv += `"${name}","${id}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'approved_candidates.csv';
+            link.click();
+        }
+    </script>
+</body>
+</html>

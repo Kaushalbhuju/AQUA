@@ -1,4 +1,6 @@
 {% load static %}
+{% load i18n %}
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -10,8 +12,31 @@
       body {
         background-color: #f8f9fa;
       }
+      .navbar {
+        padding-top: 1.5rem;  /* increase top spacing */
+        padding-bottom: 1.5rem; /* increase bottom spacing */
+      }
+      .logout-btn {
+        background-color: #d9534f;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+      .logout-btn:hover {
+        background-color: #c9302c;
+      }
+      
+      
+      /* Navbar custom dark blue */
+      .bg-custom {
+        background-color: #004E89 !important;
+      }
+      
       .hero {
-        padding: 12rem 6rem;
+        padding: 4rem 4rem;
         text-align: center;
         background-color: #e9ecef;
         border-bottom: 30px solid #dee2e6;
@@ -34,24 +59,48 @@
         width: 100%;          /* full width */
         font-weight: bold;    /* bold text */
       }
+      .footer {
+        background-color:rgb(255, 255, 255) !important; /* dark blue background */
+        border-top: 1px solidrgb(255, 255, 255);        /* subtle darker border */
+      }
+      
+      .footer small,
+      .footer a {
+        color:rgb(56, 59, 54) !important;            /* light text for contrast */
+      }
+      
+      .footer a:hover {
+        color:rgb(66, 79, 86);                       /* aqua hover effect */
+        text-decoration: underline;
+      }
+      
     </style>
   </head>
   <body>
     <!-- Navigation Header -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Aqua Group</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-custom">
+      <div class="container-fluid d-flex justify-content-between align-items-center">
+        
+        <!-- Left: Logout -->
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
+          </li>
+        </ul>
+    
+        
+        <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
+          <h4>RECRUITMENT MANAGEMENT CONTROLLING SYSTEM</h4>
+        </a> 
+    
+        <!-- Right: optional links (empty for now) -->
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+            <!-- Add right-side items here if needed -->
           </ul>
         </div>
       </div>
     </nav>
-
     <!-- Hero Section -->
     <div class="hero">
       <h1 class="display-5 fw-bold">Where are you going to?</h1>
@@ -62,6 +111,16 @@
         <a href="{% url 'dashboard' %}" class="btn btn-outline-success btn-xxl">Appointments</a>
       </div>
     </div>
+
+
+      <!-- Footer -->
+      <footer class="footer mt-auto py-3">
+        <div class="container text-center">
+          <small class="text-muted">
+            &copy; {{ now|date:"Y" }} {% trans "Aqua Group" %}. {% trans "All Rights Reserved." %}
+          </small>
+        </div>
+      </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   </body>

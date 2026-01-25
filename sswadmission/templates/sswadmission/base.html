@@ -180,9 +180,17 @@
             <h2 class="mb-0">{% block page_title %}Dashboard{% endblock %}</h2>
             <div>
                 <span class="badge bg-secondary">{{ request.user.get_role_display|default:"Administrator" }}</span>
-                <a href="{% url 'admin:logout' %}" class="btn btn-outline-danger btn-sm ms-2">
-                    <i class="bi bi-box-arrow-right"></i> Logout
+                {% if request.user.is_authenticated and request.user.role == 'manager' %}
+                <a href="{% url 'ssw_working_visa' %}" class="btn btn-outline-danger btn-sm ms-2">
+                    <i class="bi bi-box-arrow-right"></i> Back to Dashboard
                 </a>
+                {% endif %}
+
+                {% if request.user.is_authenticated and request.user.role == 'staff' %}
+                <a href="{% url 'staff_ssw_working_visa' %}" class="btn btn-outline-danger btn-sm ms-2">
+                    <i class="bi bi-box-arrow-right"></i> Back to Dashboard
+                </a>
+                {% endif %}
             </div>
         </div>
 
@@ -221,16 +229,39 @@
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     
     <script>
-        // Initialize DataTables
-        $(document).ready(function() {
-            $('.data-table').DataTable({
-                pageLength: 25,
-                responsive: true,
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search..."
+        // Global DataTables settings
+        window.dataTablesSettings = {
+            pageLength: 25,
+            responsive: true,
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search..."
+            }
+        };
+        
+        // Safe DataTables initialization function
+        function initDataTables() {
+            $('.data-table').each(function() {
+                var table = $(this);
+                
+                // Skip if already initialized
+                if ($.fn.DataTable.isDataTable(table)) {
+                    return;
                 }
+                
+                // Get custom settings from data attributes
+                var settings = $.extend({}, window.dataTablesSettings, {
+                    pageLength: table.data('page-length') || window.dataTablesSettings.pageLength,
+                    order: table.data('order') ? JSON.parse(table.data('order')) : undefined
+                });
+                
+                table.DataTable(settings);
             });
+        }
+        
+        // Initialize on document ready
+        $(document).ready(function() {
+            initDataTables();
         });
         
         // Auto-dismiss alerts after 5 seconds

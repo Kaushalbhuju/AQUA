@@ -1,0 +1,159 @@
+<!-- guarantee_letter/templates/guarantee_letter/dashboard.html -->
+{% extends 'baseg.html' %}
+
+{% block title %}Dashboard - Job Guarantee System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>Dashboard</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="btn-group" role="group">
+            <a href="{% url 'guarantee_letter:create_letter' %}" class="btn btn-success">
+                <i class="bi bi-file-earmark-plus"></i> Create New
+            </a>
+            <a href="{% url 'guarantee_letter:upload_letter' %}" class="btn btn-primary">
+                <i class="bi bi-upload"></i> Upload PDF
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row">
+    <div class="col-md-3">
+        <div class="card stat-card total">
+            <div class="card-body text-center">
+                <h3>{{ total_letters }}</h3>
+                <p>Total Letters</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card uploaded">
+            <div class="card-body text-center">
+                <h3>{{ uploaded_letters }}</h3>
+                <p>Uploaded</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card created">
+            <div class="card-body text-center">
+                <h3>{{ created_letters }}</h3>
+                <p>Created</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card draft">
+            <div class="card-body text-center">
+                <h3>{{ draft_letters }}</h3>
+                <p>Draft</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Letters -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Letters</h5>
+                <a href="{% url 'guarantee_letter:letter_list_list' %}" class="btn btn-sm btn-outline-primary">
+                    View All <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Letter #</th>
+                                <th>Type</th>
+                                <th>Candidate</th>
+                                <th>Client</th>
+                                <th>Job Title</th>
+                                <th>Issued Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for letter in recent_letters %}
+                                <tr>
+                                    <td><strong>{{ letter.letter_number }}</strong></td>
+                                    <td>
+                                        <span class="badge {% if letter.source == 'uploaded' %}bg-primary{% else %}bg-success{% endif %}">
+                                            {{ letter.get_source_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-medium">{{ letter.candidate_name }}</div>
+                                        <small class="text-muted">{{ letter.candidate_email }}</small>
+                                    </td>
+                                    <td>{{ letter.client.name }}</td>
+                                    <td>{{ letter.job_title }}</td>
+                                    <td>{{ letter.issue_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if letter.status == 'draft' %}
+                                            <span class="badge bg-secondary">Draft</span>
+                                        {% elif letter.status == 'issued' %}
+                                            <span class="badge bg-success">Issued</span>
+                                        {% elif letter.status == 'verified' %}
+                                            <span class="badge bg-primary">Verified</span>
+                                        {% elif letter.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge bg-dark">{{ letter.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'guarantee_letter:letter_detail' letter.pk %}" class="btn btn-outline-info" title="View">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'guarantee_letter:download_letter' letter.pk %}" class="btn btn-outline-success" title="Download">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                            <h5 class="mt-3">No letters found</h5>
+                                            <p>Create your first job guarantee letter or upload a PDF.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.stat-card {
+    border-radius: 10px;
+    color: white;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.stat-card.total { background: linear-gradient(135deg, #3498db, #2980b9); }
+.stat-card.uploaded { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.stat-card.created { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+.stat-card.draft { background: linear-gradient(135deg, #f39c12, #e67e22); }
+.stat-card h3 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.stat-card p { margin-bottom: 0; opacity: 0.9; }
+</style>
+{% endblock %}

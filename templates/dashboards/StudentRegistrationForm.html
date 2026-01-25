@@ -6,9 +6,9 @@
     <title>Student Registration Form - AQUA Academy</title>
     <style>
         :root {
-            --primary-color:rgb(148, 156, 199);
-            --secondary-color:rgb(159, 105, 213);
-            --accent-color: #ffa366;
+            --primary-color:rgb(185, 202, 219);
+            --secondary-color:rgb(86, 91, 196);
+            --accent-color:rgb(35, 132, 217);
             --success-color: #28a745;
             --danger-color: #dc3545;
             --warning-color: #ffc107;
@@ -1039,7 +1039,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Candidate Photo</label>
+                            <label class="form-label required">Candidate Photo</label>
                             <div class="photo-upload-container">
                                 <div class="photo-upload-area" id="photoUploadArea">
                                     <div class="photo-icon">📷</div>
@@ -1087,7 +1087,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="id_age" class="form-label">Age</label>
+                            <label for="id_age" class="form-label required">Age</label>
                             {{ form.age }}
                             <div class="helper-text">Auto-calculated from date of birth</div>
                             {% if form.age.errors %}
@@ -1117,7 +1117,7 @@
                             {{ form.present_address }}
                             <div class="helper-text">Leave blank if same as permanent address</div>
                             {% if form.present_address.errors %}
-                            <div="field-error">
+                            <div class="field-error">
                                 <span>⚠️</span>
                                 {{ form.present_address.errors.0 }}
                             </div>
@@ -1173,7 +1173,7 @@
                         
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="id_passport_no" class="form-label">Passport No.</label>
+                                <label for="id_passport_no" class="form-label required">Passport No.</label>
                                 {{ form.passport_no }}
                                 {% if form.passport_no.errors %}
                                 <div class="field-error">
@@ -1184,7 +1184,7 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="id_passport_issue_date" class="form-label">Date of Issue</label>
+                                <label for="id_passport_issue_date" class="form-label required">Date of Issue</label>
                                 {{ form.passport_issue_date }}
                                 {% if form.passport_issue_date.errors %}
                                 <div class="field-error">
@@ -1195,7 +1195,7 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="id_passport_expiry_date" class="form-label">Date of Expiry</label>
+                                <label for="id_passport_expiry_date" class="form-label required">Date of Expiry</label>
                                 {{ form.passport_expiry_date }}
                                 {% if form.passport_expiry_date.errors %}
                                 <div class="field-error">
@@ -1219,7 +1219,7 @@
                         
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="id_height" class="form-label">Height</label>
+                                <label for="id_height" class="form-label required">Height</label>
                                 {{ form.height }}
                                 <div class="helper-text">In centimeters (cm)</div>
                                 {% if form.height.errors %}
@@ -1231,7 +1231,7 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="id_weight" class="form-label">Weight</label>
+                                <label for="id_weight" class="form-label required">Weight</label>
                                 {{ form.weight }}
                                 <div class="helper-text">In kilograms (kg)</div>
                                 {% if form.weight.errors %}
@@ -1243,7 +1243,7 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="id_blood_group" class="form-label">Blood Group</label>
+                                <label for="id_blood_group" class="form-label required">Blood Group</label>
                                 {{ form.blood_group }}
                                 {% if form.blood_group.errors %}
                                 <div class="field-error">
@@ -1253,11 +1253,47 @@
                                 {% endif %}
                             </div>
                         </div>
+                          <!-- Eye Lens Information -->
+    <div class="form-row">
+        <div class="form-group">
+            <label for="id_eye_lens_right" class="form-label required">Eye Lens - Right</label>
+            {{ form.eye_lens_right }}
+            <div class="helper-text">Right eye lens measurement (if applicable)</div>
+            {% if form.eye_lens_right.errors %}
+            <div class="field-error">
+                <span>⚠️</span>
+                {{ form.eye_lens_right.errors.0 }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_eye_lens_left" class="form-label required">Eye Lens - Left</label>
+            {{ form.eye_lens_left }}
+            <div class="helper-text">Left eye lens measurement (if applicable)</div>
+            {% if form.eye_lens_left.errors %}
+            <div class="field-error">
+                <span>⚠️</span>
+                {{ form.eye_lens_left.errors.0 }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="id_medical_report" class="form-label">Medical Report</label>
-                                {{ form.medical_report }}
+                                <label for="id_medical_report" class="form-label ">Medical Report</label>
+                                <!-- Create a custom file upload area for medical report -->
+                                <div class="document-card" style="margin-bottom: 15px;" data-doc="medical_report">
+                                    <div class="document-icon">⚕️</div>
+                                    <div class="document-title">MEDICAL REPORT PDF</div>
+                                    <input type="file" id="id_medical_report" name="medical_report" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
+                                    <div class="document-requirements">
+                                        PDF preferred, also accepts Word, Images<br>
+                                        Please Submit Color Copy
+                                    </div>
+                                    <div class="document-file-info" id="medical-report-file-info"></div>
+                                </div>
                                 {% if form.medical_report.errors %}
                                 <div class="field-error">
                                     <span>⚠️</span>
@@ -1267,7 +1303,7 @@
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label">TB Status</label>
+                                <label class="form-label required">TB Status</label>
                                 <div class="radio-group">
                                     <div class="radio-option">
                                         <input type="radio" id="tb_positive" name="tb_status" value="positive">
@@ -1290,7 +1326,7 @@
                         <!-- Visa Information -->
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="id_visa_apply_record" class="form-label">Past Visa Apply Record</label>
+                                <label for="id_visa_apply_record" class="form-label required">Past Visa Apply Record</label>
                                 <select id="id_visa_apply_record" name="visa_apply_record" class="form-control">
                                     <option value="">Select Option</option>
                                     <option value="yes">Yes</option>
@@ -1305,7 +1341,7 @@
                             </div>
                             
                             <div class="form-group" id="visaDetailsContainer" style="display: none;">
-                                <label for="id_visa_details" class="form-label">Visa Details (if Yes)</label>
+                                <label for="id_visa_details" class="form-label required">Visa Details (if Yes)</label>
                                 {{ form.visa_details }}
                                 <div class="helper-text">Apply No. & Result</div>
                                 {% if form.visa_details.errors %}
@@ -1591,7 +1627,7 @@
                     <!-- Hobbies & Motivation -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="id_hobbies" class="form-label">Hobbies & Special Skills</label>
+                            <label for="id_hobbies" class="form-label required">Hobbies & Special Skills</label>
                             {{ form.hobbies }}
                             <div class="helper-text">List your hobbies and special skills</div>
                             {% if form.hobbies.errors %}
@@ -1603,7 +1639,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="id_motivation" class="form-label">Motivation & Self-Promotion</label>
+                            <label for="id_motivation" class="form-label required">Motivation & Self-Promotion</label>
                             {{ form.motivation }}
                             <div class="helper-text">Describe your motivation for this program</div>
                             {% if form.motivation.errors %}
@@ -1642,7 +1678,7 @@
                         
                         <div class="document-card" data-doc="graduation">
                             <div class="document-icon">🎓</div>
-                            <div class="document-title">GRADUATION / TRANSCRIPT</div>
+                            <div class="document-title">CITIZENSHIP / DRIVING</div>
                             <input type="file" id="id_id_info_file" name="id_info_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
                             <div class="document-requirements">
                                 PDF, Word, Images<br>
@@ -1653,7 +1689,7 @@
                         
                         <div class="document-card" data-doc="citizenship">
                             <div class="document-icon">🏠</div>
-                            <div class="document-title">CITIZENSHIP / DRIVING</div>
+                            <div class="document-title">GRADUATION / TRANSCRIPT</div>
                             <input type="file" id="id_educational_doc_file" name="educational_doc_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
                             <div class="document-requirements">
                                 PDF, Word, Images<br>
@@ -1748,7 +1784,7 @@
                 </div>
                 <div class="nav-buttons">
                     <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Submit Registration</button>
-                    <button type="reset" class="btn btn-reset">Reset Form</button>
+                    {% comment %} <button type="reset" class="btn btn-reset">Reset Form</button> {% endcomment %}
                 </div>
             </div>
             
@@ -1945,6 +1981,51 @@
                         reader.readAsDataURL(file);
                     }
                 }
+            }
+
+            // Medical report file upload
+            const medicalReportCard = document.querySelector('.document-card[data-doc="medical_report"]');
+            if (medicalReportCard) {
+                const medicalReportInput = medicalReportCard.querySelector('input[type="file"]');
+                
+                medicalReportCard.addEventListener('click', () => medicalReportInput.click());
+                
+                medicalReportInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        const file = this.files[0];
+                        const fileInfo = medicalReportCard.querySelector('.document-file-info');
+                        
+                        // Update file info
+                        fileInfo.textContent = `✓ ${file.name} (${formatFileSize(file.size)})`;
+                        medicalReportCard.classList.add('has-file');
+                    }
+                });
+                
+                // Drag & drop for medical report
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    medicalReportCard.addEventListener(eventName, preventDefaults, false);
+                });
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    medicalReportCard.addEventListener(eventName, function() {
+                        medicalReportCard.classList.add('dragover');
+                    }, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    medicalReportCard.addEventListener(eventName, function() {
+                        medicalReportCard.classList.remove('dragover');
+                    }, false);
+                });
+
+                medicalReportCard.addEventListener('drop', function(e) {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    if (files.length > 0) {
+                        medicalReportInput.files = files;
+                        medicalReportInput.dispatchEvent(new Event('change'));
+                    }
+                }, false);
             }
 
             // Document upload functionality

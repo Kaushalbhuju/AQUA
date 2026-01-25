@@ -1,0 +1,41 @@
+{% extends "baseb.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ letter.title }}</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Metadata -->
+                    <p><strong>Description:</strong> {{ letter.description|default:"No description provided." }}</p>
+                    <p><strong>Uploaded By:</strong> {{ letter.uploaded_by }}</p>
+                    <p><strong>Uploaded At:</strong> {{ letter.uploaded_at|date:"Y-m-d H:i" }}</p>
+
+                    <!-- PDF Preview -->
+                    <div class="mt-4">
+                        <h5 class="fw-bold">Preview</h5>
+                        <div class="border rounded shadow-sm p-2 bg-light">
+                            <object data="{{ letter.pdf_file.url }}" type="application/pdf" width="100%" height="600">
+                                <p class="text-muted">
+                                    Your browser does not support inline PDF preview.  
+                                    <a href="{{ letter.pdf_file.url }}" class="btn btn-outline-primary btn-sm">Download PDF</a>
+                                </p>
+                            </object>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-4 d-flex justify-content-between">
+                        <a href="{{ letter.pdf_file.url }}" class="btn btn-success" target="_blank">Open in New Tab</a>
+                        <a href="{% url 'letter_list' %}" class="btn btn-secondary">Back to List</a>
+                        <a href="{% url 'letter_delete' letter.pk %}" class="btn btn-danger">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

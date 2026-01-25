@@ -76,6 +76,8 @@ urlpatterns = [
 
     # SSW specific views
     path('aggredcs/', months_2026, name='contracts_2026'),
+
+     path('student/<int:student_id>/pdf/', generate_student_pdf, name='generate_student_pdf'),
     
    
 

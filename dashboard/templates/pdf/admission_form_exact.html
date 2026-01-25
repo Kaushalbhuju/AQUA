@@ -1,0 +1,119 @@
+<!-- admission_form_pdf.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admission Form - {{ student.full_name }}</title>
+    <style>
+        /* All the CSS styles from the previous template */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.2;
+            color: black;
+            width: 210mm;
+            height: 297mm;
+        }
+        
+        /* ... rest of the CSS styles ... */
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1 class="academy-name">AQUA EDUCATION AND TRAINING ACADEMY</h1>
+            <p class="academy-address">Lazimpat-O2, Kathmandu, Nepal</p>
+            
+            <div class="cc-to">
+                <div>CC TO,</div>
+                <div>ZENSHO HOLDINGS / SUKIYA JAPAN / AEON GROUP / TOKYU GROUP / TOKYUSYUKAI JAPAN</div>
+            </div>
+            
+            <h2 class="form-title">ADMISSION FORM FOR SSW AND WORKING</h2>
+        </div>
+        
+        <!-- Student Information Section with dynamic data -->
+        <table class="form-grid" style="margin-bottom: 15px;">
+            <tr>
+                <td width="25%">
+                    <div class="field-label">Student ID NO</div>
+                    <div class="field-value" style="min-height: 25px;">{{ student.student_id }}</div>
+                </td>
+                <td width="25%">
+                    <div class="field-label">A-CODE</div>
+                    <div class="field-value" style="min-height: 25px;">{{ student.agent.agent_code }}</div>
+                </td>
+                <td width="25%">
+                    <div class="field-label">Gender</div>
+                    <div class="field-value" style="min-height: 25px;">{{ student.get_gender_display }}</div>
+                </td>
+                <td width="25%" class="text-center">
+                    <div class="photo-box">
+                        <div style="padding-top: 40px;">PHOTO</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        
+        <table class="form-grid" style="margin-bottom: 15px;">
+            <tr>
+                <td width="50%">
+                    <div class="field-label">Full Name</div>
+                    <div class="field-value" style="min-height: 25px;">{{ student.full_name }}</div>
+                </td>
+                <td width="25%">
+                    <div class="field-label">Date of Birth</div>
+                    <div class="field-value" style="min-height: 25px;">{{ student.date_of_birth|date:"Y-m-d" }}</div>
+                </td>
+                <td width="25%" rowspan="2">
+                    <!-- Empty cell for alignment -->
+                </td>
+            </tr>
+        </table>
+        
+        <table class="form-grid" style="margin-bottom: 15px;">
+            <tr>
+                <td colspan="4">
+                    <div class="field-label">Full Address</div>
+                </td>
+            </tr>
+            <tr>
+                <td width="50%">
+                    <div class="field-label">Permanent</div>
+                    <div class="field-value" style="min-height: 40px;">{{ student.permanent_address }}</div>
+                </td>
+                <td width="25%">
+                    <div class="field-label">Age</div>
+                    <div class="field-value" style="min-height: 40px;">{{ student.age }}</div>
+                </td>
+                <td width="25%">
+                    <!-- Empty cell for spacing -->
+                </td>
+            </tr>
+            <tr>
+                <td width="50%">
+                    <div class="field-label">Present</div>
+                    <div class="field-value" style="min-height: 40px;">{{ student.present_address }}</div>
+                </td>
+                <td width="25%">
+                    <div class="field-label">Marital Status</div>
+                    <div class="field-value" style="min-height: 40px;">{{ student.get_marital_status_display }}</div>
+                </td>
+                <td width="25%">
+                    <!-- Empty cell for spacing -->
+                </td>
+            </tr>
+        </table>
+        
+        <!-- ... Continue with other sections using student data ... -->
+    </div>
+</body>
+</html>

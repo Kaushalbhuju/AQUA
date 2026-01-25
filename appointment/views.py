@@ -1,6 +1,6 @@
 # appointment/views.py
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import CreateView, ListView, TemplateView, UpdateView, DeleteView
+from django.views.generic import CreateView, ListView, TemplateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
@@ -23,7 +23,168 @@ def is_admin(user):
     """Check if user is admin/staff"""
     return user.is_authenticated and user.is_staff
 
-# ================ DASHBOARD VIEWS ================
+# ================ PUBLIC VIEWS ================
+
+class AppointmentCreateView(CreateView):
+    """View for creating new appointments"""
+    model = Appointment
+    form_class = AppointmentForm
+    template_name = 'appointments/book_appointment.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        slot_id = self.request.GET.get('slot_id')
+        if slot_id:
+            try:
+                slot = AppointmentSlot.objects.get(id=slot_id)
+                context['selected_slot'] = slot
+                # Calculate slot duration
+                duration = (slot.end_time - slot.start_time).total_seconds() / 60
+                context['slot_duration'] = int(duration)
+            except AppointmentSlot.DoesNotExist:
+                pass
+        return context
+    
+    def form_valid(self, form):
+        # Set the appointment slot from GET parameter or form data
+        slot_id = self.request.GET.get('slot_id') or form.cleaned_data.get('appointment_slot')
+        if slot_id:
+            form.instance.appointment_slot_id = slot_id
+        
+        # Save the form to get the appointment object
+        self.object = form.save()
+        
+        # Update slot booked count if slot exists
+        if self.object.appointment_slot:
+            slot = self.object.appointment_slot
+            slot.booked_count = min(slot.booked_count + 1, slot.max_capacity)
+            slot.save()
+        
+        # Store the appointment ID in session for confirmation page
+        self.request.session['last_appointment_id'] = self.object.id
+        
+        # Don't use messages here as we redirect to confirmation page
+        return redirect(reverse('appointment_confirmation'))
+
+class AppointmentSlotListView(ListView):
+    """View for displaying available appointment slots"""
+    model = AppointmentSlot
+    template_name = 'appointments/available_slots.html'
+    context_object_name = 'slots'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        queryset = AppointmentSlot.objects.filter(
+            is_available=True,
+            start_time__gte=timezone.now()
+        ).order_by('start_time')
+        
+        # Filter by date if provided
+        date_filter = self.request.GET.get('date')
+        if date_filter:
+            queryset = queryset.filter(start_time__date=date_filter)
+        
+        # Filter by availability
+        available_only = self.request.GET.get('available_only')
+        if available_only == 'true':
+            queryset = queryset.filter(booked_count__lt=F('max_capacity'))
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['date_filter_form'] = DateFilterForm(self.request.GET or None)
+        context['selected_date'] = self.request.GET.get('date', '')
+        
+        # Add today's date for default
+        context['today'] = timezone.now().date()
+        
+        return context
+
+def get_available_slots_api(request):
+    """API endpoint for fetching available slots (for AJAX)"""
+    date = request.GET.get('date')
+    slots = AppointmentSlot.objects.filter(
+        is_available=True,
+        start_time__gte=timezone.now()
+    )
+    
+    if date:
+        slots = slots.filter(start_time__date=date)
+    
+    slots_data = [
+        {
+            'id': slot.id,
+            'date': slot.formatted_date,
+            'time': slot.formatted_time,
+            'end_time': slot.end_time.strftime('%H:%M'),
+            'is_full': slot.is_full,
+            'available_spots': slot.max_capacity - slot.booked_count,
+            'max_capacity': slot.max_capacity,
+            'booked_count': slot.booked_count,
+        }
+        for slot in slots.order_by('start_time')
+    ]
+    
+    return JsonResponse({'slots': slots_data})
+
+class AppointmentConfirmationView(TemplateView):
+    """View for displaying appointment confirmation"""
+    template_name = 'appointments/confirmation.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        appointment = None
+        
+        # 1. Try to get from URL parameter (confirmation code)
+        confirmation_code = self.request.GET.get('code')
+        if confirmation_code:
+            try:
+                appointment = Appointment.objects.get(confirmation_code=confirmation_code)
+            except Appointment.DoesNotExist:
+                pass
+        
+        # 2. If not in URL, check session (from form submission)
+        if not appointment:
+            appointment_id = self.request.session.get('last_appointment_id')
+            if appointment_id:
+                try:
+                    appointment = Appointment.objects.get(id=appointment_id)
+                    # Clear session after use
+                    if 'last_appointment_id' in self.request.session:
+                        del self.request.session['last_appointment_id']
+                except Appointment.DoesNotExist:
+                    pass
+        
+        # 3. Add appointment to context if found
+        if appointment:
+            context['appointment'] = appointment
+            
+            # Calculate slot duration
+            if appointment.appointment_slot:
+                duration = (appointment.appointment_slot.end_time - 
+                           appointment.appointment_slot.start_time).total_seconds() / 60
+                context['slot_duration'] = int(duration)
+        
+        return context
+
+def appointment_detail_public(request, confirmation_code):
+    """Public view for appointment details using confirmation code"""
+    appointment = get_object_or_404(Appointment, confirmation_code=confirmation_code)
+    
+    context = {
+        'appointment': appointment,
+    }
+    
+    if appointment.appointment_slot:
+        duration = (appointment.appointment_slot.end_time - 
+                   appointment.appointment_slot.start_time).total_seconds() / 60
+        context['slot_duration'] = int(duration)
+    
+    return render(request, 'appointments/appointment_detail_public.html', context)
+
+# ================ ADMIN VIEWS ================
 
 class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     """Mixin to require admin access"""
@@ -243,27 +404,6 @@ def appointment_list(request):
     return render(request, 'appointments/appointment_list.html', context)
 
 @login_required
-@user_passes_test(is_admin)
-def appointment_detail(request, pk):
-    """
-    Detailed view of a single appointment
-    """
-    appointment = get_object_or_404(Appointment, pk=pk)
-    
-    # Get related appointments from same company
-    related_appointments = Appointment.objects.filter(
-        company_name=appointment.company_name
-    ).exclude(pk=pk).order_by('-date')[:5]
-    
-    context = {
-        'appointment': appointment,
-        'related_appointments': related_appointments,
-    }
-    
-    return render(request, 'appointments/appointment_detail_admin.html', context)
-
-
-@login_required
 def appointment_detail_admin(request, pk):
     """Admin view for appointment details using database ID"""
     appointment = get_object_or_404(Appointment, pk=pk)
@@ -279,8 +419,6 @@ def appointment_detail_admin(request, pk):
     }
     
     return render(request, 'appointments/appointment_detail_admin.html', context)
-
-# Add these to your existing views.py
 
 @login_required
 @user_passes_test(is_admin)
@@ -407,6 +545,27 @@ def slot_management(request):
     }
     
     return render(request, 'appointments/slot_management.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def create_slot(request):
+    """Create a new appointment slot"""
+    if request.method == 'POST':
+        form = AppointmentSlotForm(request.POST)
+        if form.is_valid():
+            slot = form.save()
+            messages.success(request, f'Slot created for {slot.start_time.strftime("%Y-%m-%d %H:%M")}')
+            return redirect('slot_management')
+    else:
+        form = AppointmentSlotForm()
+    
+    context = {
+        'form': form,
+        'title': 'Create New Slot',
+    }
+    
+    return render(request, 'appointments/slot_form.html', context)
+
 @login_required
 @user_passes_test(is_admin)
 def edit_slot(request, pk):
@@ -612,141 +771,8 @@ def appointment_report(request):
     
     return render(request, 'appointments/appointment_report.html', context)
 
-# ================ EXISTING VIEWS (from previous setup) ================
+# ================ FORM HANDLING VIEWS ================
 
-class AppointmentCreateView(CreateView):
-    """View for creating new appointments"""
-    model = Appointment
-    form_class = AppointmentForm
-    template_name = 'appointments/book_appointment.html'
-    success_url = reverse_lazy('appointment_confirmation')
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        slot_id = self.request.GET.get('slot_id')
-        if slot_id:
-            try:
-                slot = AppointmentSlot.objects.get(id=slot_id)
-                context['selected_slot'] = slot
-                # Calculate slot duration
-                duration = (slot.end_time - slot.start_time).total_seconds() / 60
-                context['slot_duration'] = int(duration)
-            except AppointmentSlot.DoesNotExist:
-                pass
-        return context
-    
-    def form_valid(self, form):
-        # Set the appointment slot from GET parameter or form data
-        slot_id = self.request.GET.get('slot_id') or form.cleaned_data.get('appointment_slot')
-        if slot_id:
-            form.instance.appointment_slot_id = slot_id
-        
-        response = super().form_valid(form)
-        messages.success(self.request, 
-            f"Appointment booked successfully! Your confirmation code is: {form.instance.confirmation_code}")
-        return response
-
-class AppointmentSlotListView(ListView):
-    """View for displaying available appointment slots"""
-    model = AppointmentSlot
-    template_name = 'appointments/available_slots.html'
-    context_object_name = 'slots'
-    paginate_by = 12
-    
-    def get_queryset(self):
-        queryset = AppointmentSlot.objects.filter(
-            is_available=True,
-            start_time__gte=timezone.now()
-        ).order_by('start_time')
-        
-        # Filter by date if provided
-        date_filter = self.request.GET.get('date')
-        if date_filter:
-            queryset = queryset.filter(start_time__date=date_filter)
-        
-        # Filter by availability
-        available_only = self.request.GET.get('available_only')
-        if available_only == 'true':
-            queryset = queryset.filter(booked_count__lt=F('max_capacity'))
-        
-        return queryset
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['date_filter_form'] = DateFilterForm(self.request.GET or None)
-        context['selected_date'] = self.request.GET.get('date', '')
-        
-        # Add today's date for default
-        context['today'] = timezone.now().date()
-        
-        return context
-
-def get_available_slots_api(request):
-    """API endpoint for fetching available slots (for AJAX)"""
-    date = request.GET.get('date')
-    slots = AppointmentSlot.objects.filter(
-        is_available=True,
-        start_time__gte=timezone.now()
-    )
-    
-    if date:
-        slots = slots.filter(start_time__date=date)
-    
-    slots_data = [
-        {
-            'id': slot.id,
-            'date': slot.formatted_date,
-            'time': slot.formatted_time,
-            'end_time': slot.end_time.strftime('%H:%M'),
-            'is_full': slot.is_full,
-            'available_spots': slot.max_capacity - slot.booked_count,
-            'max_capacity': slot.max_capacity,
-            'booked_count': slot.booked_count,
-        }
-        for slot in slots.order_by('start_time')
-    ]
-    
-    return JsonResponse({'slots': slots_data})
-
-class AppointmentConfirmationView(TemplateView):
-    """View for displaying appointment confirmation"""
-    template_name = 'appointments/confirmation.html'
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        confirmation_code = self.request.GET.get('code')
-        if confirmation_code:
-            try:
-                appointment = Appointment.objects.get(confirmation_code=confirmation_code)
-                context['appointment'] = appointment
-                
-                # Calculate slot duration
-                if appointment.appointment_slot:
-                    duration = (appointment.appointment_slot.end_time - 
-                               appointment.appointment_slot.start_time).total_seconds() / 60
-                    context['slot_duration'] = int(duration)
-            except Appointment.DoesNotExist:
-                # Appointment not found - context won't have appointment
-                pass
-        return context
-
-def appointment_detail_public(request, confirmation_code):
-    """Public view for appointment details using confirmation code"""
-    appointment = get_object_or_404(Appointment, confirmation_code=confirmation_code)
-    
-    context = {
-        'appointment': appointment,
-    }
-    
-    if appointment.appointment_slot:
-        duration = (appointment.appointment_slot.end_time - 
-                   appointment.appointment_slot.start_time).total_seconds() / 60
-        context['slot_duration'] = int(duration)
-    
-    return render(request, 'appointment/appointment_detail.html', context)
-
-# ================ URL CONFIGURATION ================
-# In views.py
 from django.views.decorators.http import require_POST
 
 @login_required
@@ -806,82 +832,3 @@ def cancel_appointment_form(request):
         messages.error(request, f"Error: {str(e)}")
     
     return redirect('dashboard')
-
-
-# For slot_management.html
-
-# Add these to your views.py
-
-@login_required
-@user_passes_test(is_admin)
-def create_slot(request):
-    """Create a new appointment slot"""
-    if request.method == 'POST':
-        form = AppointmentSlotForm(request.POST)
-        if form.is_valid():
-            slot = form.save()
-            messages.success(request, f'Slot created for {slot.start_time.strftime("%Y-%m-%d %H:%M")}')
-            return redirect('slot_management')
-    else:
-        form = AppointmentSlotForm()
-    
-    context = {
-        'form': form,
-        'title': 'Create New Slot',
-    }
-    
-    return render(request, 'appointments/slot_form.html', context)
-
-@login_required
-@user_passes_test(is_admin)
-def edit_slot(request, pk):
-    """Edit an existing appointment slot"""
-    slot = get_object_or_404(AppointmentSlot, pk=pk)
-    
-    if request.method == 'POST':
-        form = AppointmentSlotForm(request.POST, instance=slot)
-        if form.is_valid():
-            slot = form.save()
-            messages.success(request, f'Slot updated for {slot.start_time.strftime("%Y-%m-%d %H:%M")}')
-            return redirect('slot_management')
-    else:
-        form = AppointmentSlotForm(instance=slot)
-    
-    context = {
-        'form': form,
-        'title': 'Edit Slot',
-        'slot': slot,
-    }
-    
-    return render(request, 'appointments/slot_form.html', context)
-
-@login_required
-@user_passes_test(is_admin)
-def delete_slot(request, pk):
-    """Delete an appointment slot"""
-    slot = get_object_or_404(AppointmentSlot, pk=pk)
-    
-    if request.method == 'POST':
-        slot_time = slot.start_time.strftime("%Y-%m-%d %H:%M")
-        slot.delete()
-        messages.success(request, f'Slot {slot_time} deleted')
-        return redirect('slot_management')
-    
-    context = {
-        'slot': slot,
-    }
-    
-    return render(request, 'appointments/slot_confirm_delete.html', context)
-
-@login_required
-@user_passes_test(is_admin)
-def toggle_slot_availability(request, pk):
-    """Toggle slot availability"""
-    slot = get_object_or_404(AppointmentSlot, pk=pk)
-    slot.is_available = not slot.is_available
-    slot.save()
-    
-    status = "available" if slot.is_available else "unavailable"
-    messages.success(request, f'Slot marked as {status}')
-    
-    return redirect('slot_management')

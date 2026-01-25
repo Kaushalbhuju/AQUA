@@ -76,23 +76,25 @@ class Student(models.Model):
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     full_name = models.CharField(max_length=100)
     date_of_birth = models.DateField()
-    photo = models.ImageField(upload_to='student_photos/', null=True, blank=True)
+    photo = models.ImageField(upload_to='student_photos/', null=False, blank=False)
     permanent_address = models.TextField()
     present_address = models.TextField(blank=True, null=True)
     age = models.IntegerField()
     marital_status = models.CharField(max_length=10, choices=MARITAL_STATUS_CHOICES)
     
     # Passport Information
-    passport_no = models.CharField(max_length=20, blank=True, null=True)
-    passport_issue_date = models.DateField(blank=True, null=True)
-    passport_expiry_date = models.DateField(blank=True, null=True)
+    passport_no = models.CharField(max_length=20, blank=False, null=False)
+    passport_issue_date = models.DateField(blank=False, null=False)
+    passport_expiry_date = models.DateField(blank=False, null=False)
     
     # Physical Information
-    height = models.CharField(max_length=20, blank=True, null=True)
-    weight = models.CharField(max_length=20, blank=True, null=True)
-    medical_report = models.TextField(blank=True, null=True)
-    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, blank=True, null=True)
-    tb_status = models.CharField(max_length=10, blank=True, null=True)
+    height = models.CharField(max_length=20, blank=False, null=False)
+    weight = models.CharField(max_length=20, blank=False, null=False)
+    medical_report =models.FileField(upload_to='medical_reports/', null=True, blank=True)
+    eye_lens_right = models.CharField(max_length=50, blank=False, null=False, verbose_name='Eye Lens - Right')
+    eye_lens_left = models.CharField(max_length=50, blank=False, null=False, verbose_name='Eye Lens - Left')
+    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, blank=False, null=False)
+    tb_status = models.CharField(max_length=10, blank=False, null=False)
     
     # Visa Information
     visa_apply_record = models.CharField(max_length=3, choices=VISA_CHOICES, blank=True, null=True)

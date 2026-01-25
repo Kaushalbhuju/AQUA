@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ letter.letter_number }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .document {
+            background-color: white;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .letter-number {
+            text-align: right;
+            margin-bottom: 20px;
+            color: #7f8c8d;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .date-section {
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .greeting {
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .content {
+            text-align: justify;
+            margin: 30px 0;
+            line-height: 1.8;
+        }
+
+        .content p {
+            margin-bottom: 15px;
+            text-indent: 40px;
+        }
+
+        .signature-section {
+            margin-top: 60px;
+            padding-top: 30px;
+        }
+
+        .signature-line {
+            width: 200px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+        }
+
+        .signature-name {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .validity-info {
+            background-color: #ecf0f1;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-left: 4px solid #27ae60;
+            border-radius: 4px;
+        }
+
+        .validity-info p {
+            margin: 5px 0;
+            text-indent: 0;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #bdc3c7;
+            font-size: 11px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+
+        .details-table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+            background-color: #f9f9f9;
+        }
+
+        .details-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .details-table td:first-child {
+            font-weight: bold;
+            width: 25%;
+            background-color: #ecf0f1;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            
+            .document {
+                box-shadow: none;
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        .print-button {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .print-button button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .print-button button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print print-button">
+        <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+        <a href="{% url 'letter_detail' letter.pk %}" style="margin-left: 10px; color: #3498db; text-decoration: none;">← Back</a>
+    </div>
+
+    <div class="document">
+        <div class="letter-number">Document #{{ letter.letter_number }}</div>
+        
+        <div class="header">
+            <h1>Job Guarantee Letter</h1>
+        </div>
+
+        <div class="date-section">
+            <p><strong>Date:</strong> {{ letter.issued_date|date:"F d, Y" }}</p>
+        </div>
+
+        <div class="validity-info">
+            <p><strong>Valid Until:</strong> {{ letter.expiry_date|date:"F d, Y" }}</p>
+            <p><strong>Document ID:</strong> {{ letter.letter_number }}</p>
+        </div>
+
+        <div class="greeting">To Whom It May Concern,</div>
+
+        <div class="content">
+            <table class="details-table">
+                <tr>
+                    <td>Name</td>
+                    <td>{{ letter.client.name }}</td>
+                </tr>
+                <tr>
+                    <td>Passport Number</td>
+                    <td>{{ letter.client.passport_number }}</td>
+                </tr>
+                <tr>
+                    <td>Position</td>
+                    <td>{{ letter.job_title }}</td>
+                </tr>
+                <tr>
+                    <td>Company</td>
+                    <td>{{ letter.company_name }}</td>
+                </tr>
+            </table>
+
+            <p>{{ letter.content|linebreaks }}</p>
+        </div>
+
+        {% if letter.remarks %}
+            <div style="background-color: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin: 20px 0; border-radius: 4px;">
+                <strong>Additional Notes:</strong> {{ letter.remarks }}
+            </div>
+        {% endif %}
+
+        <div class="signature-section">
+            <p><strong>Authorized by:</strong></p>
+            <div class="signature-line"></div>
+            <div class="signature-name">{{ letter.issued_by.get_full_name }}</div>
+            <p style="margin-top: 20px; font-size: 12px; color: #666;">
+                Issued on: {{ letter.issued_date|date:"F d, Y" }}<br>
+                Reference: {{ letter.letter_number }}
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>This is an official document. Unauthorized reproduction or modification is strictly prohibited.</p>
+            <p>© 2025 Consultancy Services. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

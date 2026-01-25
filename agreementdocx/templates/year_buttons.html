@@ -1,0 +1,47 @@
+{% extends "basea.html" %}
+
+{% block title %}Agreement Years{% endblock %}
+
+{% block extra_css %}
+<style>
+    h2 {
+        margin-bottom: 30px;
+        font-size: 28px;
+        color: #333;
+        font-weight: 600;
+        text-align: center;
+    }
+    .year-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    .year-button {
+        display: block;
+        padding: 40px;
+        background: linear-gradient(135deg, #4CAF50, #2e7d32);
+        color: #fff;
+        text-decoration: none;
+        border-radius: 10px;
+        font-size: 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        text-align: center;
+    }
+    .year-button:hover {
+        background: linear-gradient(135deg, #43a047, #1b5e20);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h2>Select Agreement Year</h2>
+    <div class="year-grid">
+        {% for year in years %}
+            <a href="{% url 'agreement_by_year' year=year %}" class="year-button">{{ year }}</a>
+        {% endfor %}
+    </div>
+{% endblock %}

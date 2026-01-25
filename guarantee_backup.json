@@ -1,0 +1,12 @@
+[
+{
+  "model": "guarantee_letter.client",
+  "pk": 1,
+  "fields": {
+    "name": "ABC",
+    "email": "laxmi123@gmail.com",
+    "phone": "9865652652",
+    "passport_number": "651615165",
+    "date_created": "2025-12-31T09:51:06.194Z"
+  }
+}

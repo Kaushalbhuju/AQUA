@@ -1,6 +1,7 @@
 # forms.py
 from django import forms 
 from django.contrib.auth.forms import AuthenticationForm
+import os
 
 class AgentLoginForm(AuthenticationForm):
     agent_code = forms.CharField(max_length=20, required=True)
@@ -10,6 +11,22 @@ class AgentLoginForm(AuthenticationForm):
         self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Agent Code'})
         self.fields['password'].widget.attrs.update({'class': 'form-control', 'placeholder': 'PIN'})
 
+
+# In StudentForm class in forms.py
+def clean_medical_report(self):
+    medical_report = self.cleaned_data.get('medical_report')
+    if medical_report:
+        # Check file extension
+        valid_extensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']
+        ext = os.path.splitext(medical_report.name)[1].lower()
+        if ext not in valid_extensions:
+            raise forms.ValidationError('Unsupported file extension. Please upload PDF, Word, or image files.')
+        
+        # Check file size (5MB limit)
+        if medical_report.size > 5 * 1024 * 1024:
+            raise forms.ValidationError('File size must be less than 5MB.')
+    
+    return medical_report
 class StudentForm(forms.ModelForm):
     """Main student registration form"""
     
@@ -32,11 +49,28 @@ class StudentForm(forms.ModelForm):
             'style': 'background-color: #f8f9fa;'
         })
     )
+      # Add Eye Lens fields
+    eye_lens_right = forms.CharField(
+        max_length=50,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g., -2.00'
+        })
+    )
     
+    eye_lens_left = forms.CharField(
+        max_length=50,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g., -1.50'
+        })
+    )
     # TB Status field
     tb_status = forms.ChoiceField(
         choices=[('positive', 'Positive'), ('negative', 'Negative')],
-        required=False,
+        required=True,
         widget=forms.RadioSelect(),
         initial='negative'
     )
@@ -110,10 +144,10 @@ class StudentForm(forms.ModelForm):
     working_years_2 = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Years'}))
     
     # Document fields
-    bio_data_file = forms.FileField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
-    id_info_file = forms.FileField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
-    educational_doc_file = forms.FileField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
-    report_file = forms.FileField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    bio_data_file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    id_info_file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    educational_doc_file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    report_file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
     other_file = forms.FileField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
     
     class Meta:
@@ -129,7 +163,7 @@ class StudentForm(forms.ModelForm):
             'permanent_address': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
             'present_address': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
             'visa_details': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
-            'medical_report': forms.TextInput(attrs={'class': 'form-control'}),
+            'medical_report':  forms.FileInput(attrs={'class': 'form-control'}),
             'hobbies': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
             'motivation': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
             'student_id': forms.TextInput(attrs={'class': 'form-control'}),
@@ -153,6 +187,8 @@ class StudentForm(forms.ModelForm):
             'visa_apply_record': forms.Select(attrs={'class': 'form-control'}),
             'photo': forms.FileInput(attrs={'class': 'form-control'}),
             'age': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+            'eye_lens_right': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Right eye measurement'}),
+            'eye_lens_left': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Left eye measurement'}),
         }
     
     def __init__(self, *args, **kwargs):

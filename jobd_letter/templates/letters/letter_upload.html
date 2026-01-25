@@ -1,0 +1,45 @@
+{% extends "baseb.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Upload Job Demand Letter</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label fw-bold">Title</label>
+                            {{ form.title }}
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label fw-bold">Description</label>
+                            {{ form.description }}
+                        </div>
+
+                        <!-- PDF Upload -->
+                        <div class="mb-3">
+                            <label for="id_pdf_file" class="form-label fw-bold">Upload PDF File</label>
+                            {{ form.pdf_file }}
+                            <div class="form-text">Only PDF files are allowed.</div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'letter_list' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success">Upload</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

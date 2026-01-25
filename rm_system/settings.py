@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'agreementdocx',
     'guarantee_letter',
+    'coe_visa',
+    'other_documents',
     
 
 ]

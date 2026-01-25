@@ -1,0 +1,27 @@
+{% extends 'baseg.html' %}
+
+{% block title %}Issue Letter{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h4 class="mb-0">Confirm Issue</h4>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to issue this letter?</p>
+                <p><strong>Letter #:</strong> {{ letter.letter_number }}</p>
+                <p><strong>Client:</strong> {{ letter.client.name }}</p>
+                <p><strong>Job Title:</strong> {{ letter.job_title }}</p>
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Confirm Issue</button>
+                    <a href="#" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

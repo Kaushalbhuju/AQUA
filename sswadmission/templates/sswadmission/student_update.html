@@ -1,0 +1,619 @@
+{% extends 'sswadmission/base.html' %}
+{% load static %}
+{% load humanize %}  <!-- Add this line to load humanize filters -->
+
+{% block title %}Update Student - {{ student.full_name }}{% endblock %}
+
+{% block page_title %}Update Student: {{ student.full_name }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{% url 'sswdashboard:student_detail' student.id %}" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left"></i> Back to Student
+    </a>
+    <a href="{% url 'sswdashboard:student_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-people"></i> All Students
+    </a>
+    <button type="button" onclick="window.location.reload()" class="btn btn-outline-warning">
+        <i class="bi bi-arrow-clockwise"></i> Reset Form
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Update Student Information</h5>
+            </div>
+            <div class="card-body">
+                <!-- Student Summary -->
+                <div class="card mb-4 border-info">
+                    <div class="card-header bg-info text-white py-2">
+                        <h6 class="mb-0"><i class="bi bi-info-circle"></i> Current Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <div class="avatar bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-person display-6 text-white"></i>
+                                </div>
+                                <h5 class="mt-3">{{ student.full_name }}</h5>
+                                <p class="text-muted">{{ student.student_id }}</p>
+                                <span class="badge {% if student.status == 'pending' %}status-pending{% elif student.status == 'approved' %}status-approved{% elif student.status == 'enrolled' %}status-enrolled{% elif student.status == 'declined' %}status-declined{% elif student.status == 'graduated' %}status-graduated{% endif %}">
+                                    {{ student.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h6>Course & Batch</h6>
+                                <p class="mb-1">{{ student.course|default:"Not Set" }}</p>
+                                <small class="text-muted">{{ student.batch|default:"Not Set" }}</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h6>Fee Status</h6>
+                                <p class="mb-1">Total: ₹{{ student.total_fee|default:0|intcomma }}</p>
+                                <p class="mb-1 text-success">Paid: ₹{{ student.paid_amount|default:0|intcomma }}</p>
+                                <p class="mb-0 text-danger">Due: ₹{{ student.due_amount|default:0|intcomma }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update Form -->
+                <form method="post" id="updateStudentForm">
+                    {% csrf_token %}
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar" role="progressbar" style="width: 100%;" id="formProgress"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <small>Personal Info</small>
+                            <small>Academic Info</small>
+                            <small>Fee Details</small>
+                            <small>Complete</small>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="form-section">
+                        <h5 class="border-bottom pb-2 mb-4">
+                            <i class="bi bi-person-circle text-primary"></i> Personal Information
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name *</label>
+                                {{ form.full_name }}
+                                {% if form.full_name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.full_name.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address *</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.email.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="text-muted">Current: {{ student.email }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number *</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.phone.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="text-muted">Current: {{ student.phone }}</small>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                {{ form.gender }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.blood_group.id_for_label }}" class="form-label">Blood Group</label>
+                                {{ form.blood_group }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Information -->
+                    <div class="form-section mt-4">
+                        <h5 class="border-bottom pb-2 mb-4">
+                            <i class="bi bi-geo-alt text-primary"></i> Address Information
+                        </h5>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                                {{ form.address }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                                {{ form.city }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.state.id_for_label }}" class="form-label">State</label>
+                                {{ form.state }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.pincode.id_for_label }}" class="form-label">PIN Code</label>
+                                {{ form.pincode }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
+                                {{ form.country }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Academic Information -->
+                    <div class="form-section mt-4">
+                        <h5 class="border-bottom pb-2 mb-4">
+                            <i class="bi bi-mortarboard text-primary"></i> Academic Information
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.course.id_for_label }}" class="form-label">Course *</label>
+                                {{ form.course }}
+                                {% if form.course.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.course.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.batch.id_for_label }}" class="form-label">Batch</label>
+                                {{ form.batch }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.qualification.id_for_label }}" class="form-label">Qualification</label>
+                                {{ form.qualification }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.previous_institution.id_for_label }}" class="form-label">Previous Institution</label>
+                                {{ form.previous_institution }}
+                            </div>
+                        </div>
+                        
+                        <!-- Status Update -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                                {{ form.status }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Registration Date</label>
+                                <input type="date" name="registration_date" class="form-control" 
+                                       value="{{ student.registration_date|date:'Y-m-d' }}" readonly>
+                                <small class="text-muted">Original registration date (cannot be changed)</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="admission_date" class="form-label">Admission Date</label>
+                                <input type="date" id="admission_date" name="admission_date" class="form-control"
+                                       value="{{ student.admission_date|date:'Y-m-d'|default:'' }}">
+                                <small class="text-muted">Set if student is admitted</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fee Information -->
+                    <div class="form-section mt-4">
+                        <h5 class="border-bottom pb-2 mb-4">
+                            <i class="bi bi-cash-coin text-primary"></i> Fee Information
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.total_fee.id_for_label }}" class="form-label">Total Fee *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    {{ form.total_fee }}
+                                </div>
+                                {% if form.total_fee.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.total_fee.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="text-muted">Current: ₹{{ student.total_fee|default:0|intcomma }}</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.discount.id_for_label }}" class="form-label">Discount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    {{ form.discount }}
+                                </div>
+                                {% if form.discount.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.discount.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="text-muted">Current: ₹{{ student.discount|default:0|intcomma }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body p-3">
+                                        <div class="row text-center">
+                                            <div class="col-md-3">
+                                                <h6>Total Fee</h6>
+                                                <h4 id="totalFeeDisplay">₹{{ student.total_fee|default:0|intcomma }}</h4>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h6>Discount</h6>
+                                                <h4 id="discountDisplay" class="text-success">-₹{{ student.discount|default:0|intcomma }}</h4>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h6>Net Fee</h6>
+                                                <h4 id="netFeeDisplay">₹{{ student.total_fee|default:0|add:student.discount|default:0|intcomma }}</h4>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h6>Due Amount</h6>
+                                                <h4 id="dueAmountDisplay" class="text-danger">₹{{ student.due_amount|default:0|intcomma }}</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>Note:</strong> Payment information (paid_amount, due_amount) is automatically calculated from payment records and cannot be manually edited here.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Contact -->
+                    <div class="form-section mt-4">
+                        <h5 class="border-bottom pb-2 mb-4">
+                            <i class="bi bi-telephone text-primary"></i> Emergency Contact
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact_name.id_for_label }}" class="form-label">Contact Name</label>
+                                {{ form.emergency_contact_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact.id_for_label }}" class="form-label">Contact Number</label>
+                                {{ form.emergency_contact }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="form-section mt-4">
+                        <h5 class="border-bottom pb-2 mb-4">
+                            <i class="bi bi-chat-left-text text-primary"></i> Additional Information
+                        </h5>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.remarks.id_for_label }}" class="form-label">Remarks</label>
+                                {{ form.remarks }}
+                                <small class="text-muted">Add any notes or comments about this update</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Buttons -->
+                    <div class="form-section mt-5">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="button" class="btn btn-outline-danger" onclick="confirmCancel()">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                    <i class="bi bi-arrow-clockwise"></i> Reset Changes
+                                </button>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-outline-primary me-2" onclick="saveAsDraft()">
+                                    <i class="bi bi-save"></i> Save Draft
+                                </button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle"></i> Update Student
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 0.375rem;
+        border: 1px solid #ced4da;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+    
+    textarea.form-control {
+        min-height: 80px;
+        resize: vertical;
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+    
+    .fee-summary-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    .current-info {
+        background-color: #f8f9fa;
+        border-left: 4px solid #17a2b8;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Calculate and update fee summary
+    function calculateFeeSummary() {
+        const totalFee = parseFloat(document.getElementById('{{ form.total_fee.id_for_label }}').value) || 0;
+        const discount = parseFloat(document.getElementById('{{ form.discount.id_for_label }}').value) || 0;
+        
+        const netFee = totalFee - discount;
+        
+        // Update displays
+        document.getElementById('totalFeeDisplay').textContent = '₹' + totalFee.toLocaleString('en-IN');
+        document.getElementById('discountDisplay').textContent = '-₹' + discount.toLocaleString('en-IN');
+        document.getElementById('netFeeDisplay').textContent = '₹' + (netFee > 0 ? netFee : 0).toLocaleString('en-IN');
+        
+        // Validate discount
+        if (discount > totalFee) {
+            document.getElementById('{{ form.discount.id_for_label }}').classList.add('is-invalid');
+            showAlert('Discount cannot be greater than total fee!', 'danger');
+        } else {
+            document.getElementById('{{ form.discount.id_for_label }}').classList.remove('is-invalid');
+        }
+    }
+    
+    // Reset form to original values
+    function resetForm() {
+        if (confirm('Are you sure you want to reset all changes?')) {
+            // This would normally reload the form with original data
+            // For now, just reload the page
+            window.location.reload();
+        }
+    }
+    
+    // Confirm cancel
+    function confirmCancel() {
+        if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
+            window.location.href = "{% url 'sswdashboard:student_detail' student.id %}";
+        }
+    }
+    
+    // Save as draft (placeholder function)
+    function saveAsDraft() {
+        showAlert('Draft saved successfully! You can continue later.', 'info');
+        // In a real application, save form data to localStorage or send to server
+    }
+    
+    // Show alert message
+    function showAlert(message, type) {
+        // Remove existing alerts
+        const existingAlerts = document.querySelectorAll('.custom-alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Create new alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show custom-alert`;
+        alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            <strong>${type.charAt(0).toUpperCase() + type.slice(1)}!</strong><br>
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 5000);
+    }
+    
+    // Form validation
+    function validateForm() {
+        let isValid = true;
+        
+        // Validate required fields
+        const requiredFields = document.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        // Validate discount
+        const totalFee = parseFloat(document.getElementById('{{ form.total_fee.id_for_label }}').value) || 0;
+        const discount = parseFloat(document.getElementById('{{ form.discount.id_for_label }}').value) || 0;
+        
+        if (discount > totalFee) {
+            showAlert('Discount cannot be greater than total fee!', 'danger');
+            isValid = false;
+        }
+        
+        // Validate email format
+        const emailField = document.getElementById('{{ form.email.id_for_label }}');
+        if (emailField.value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailField.value)) {
+                emailField.classList.add('is-invalid');
+                showAlert('Please enter a valid email address.', 'danger');
+                isValid = false;
+            }
+        }
+        
+        // Validate phone format
+        const phoneField = document.getElementById('{{ form.phone.id_for_label }}');
+        if (phoneField.value) {
+            const phoneRegex = /^[0-9]{10}$/;
+            if (!phoneRegex.test(phoneField.value)) {
+                phoneField.classList.add('is-invalid');
+                showAlert('Please enter a valid 10-digit phone number.', 'danger');
+                isValid = false;
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Form submission handler
+    document.getElementById('updateStudentForm').addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            showAlert('Please fix the errors in the form before submitting.', 'danger');
+        } else {
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Updating...';
+            submitBtn.disabled = true;
+            
+            // Form is valid, allow submission
+            return true;
+        }
+    });
+    
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize fee calculation
+        calculateFeeSummary();
+        
+        // Add event listeners for fee fields
+        document.getElementById('{{ form.total_fee.id_for_label }}').addEventListener('input', calculateFeeSummary);
+        document.getElementById('{{ form.discount.id_for_label }}').addEventListener('input', calculateFeeSummary);
+        
+        // Set today's date as max for date fields
+        const today = new Date().toISOString().split('T')[0];
+        const dateFields = document.querySelectorAll('input[type="date"]');
+        dateFields.forEach(field => {
+            field.max = today;
+        });
+        
+        // Set admission date field based on status
+        const statusField = document.getElementById('{{ form.status.id_for_label }}');
+        const admissionDateField = document.getElementById('admission_date');
+        
+        function updateAdmissionDateField() {
+            if (statusField.value === 'enrolled' && !admissionDateField.value) {
+                admissionDateField.value = today;
+            }
+        }
+        
+        statusField.addEventListener('change', updateAdmissionDateField);
+        updateAdmissionDateField();
+        
+        // Show current values for comparison
+        const formFields = document.querySelectorAll('.form-control, .form-select');
+        formFields.forEach(field => {
+            if (field.value) {
+                const fieldName = field.name || field.id;
+                // You could add visual indicators for changed fields here
+            }
+        });
+        
+        // Auto-calculate age from date of birth
+        document.getElementById('{{ form.date_of_birth.id_for_label }}').addEventListener('change', function() {
+            if (this.value) {
+                const birthDate = new Date(this.value);
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                
+                // Show age near the date field
+                const ageDisplay = document.getElementById('ageDisplay');
+                if (!ageDisplay) {
+                    const ageDiv = document.createElement('div');
+                    ageDiv.id = 'ageDisplay';
+                    ageDiv.className = 'text-muted small mt-1';
+                    ageDiv.textContent = `Age: ${age} years`;
+                    this.parentNode.appendChild(ageDiv);
+                } else {
+                    ageDisplay.textContent = `Age: ${age} years`;
+                }
+            }
+        });
+        
+        // Trigger age calculation if date of birth is already set
+        const dobField = document.getElementById('{{ form.date_of_birth.id_for_label }}');
+        if (dobField.value) {
+            dobField.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
+{% endblock %}

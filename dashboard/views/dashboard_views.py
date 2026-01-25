@@ -5,18 +5,11 @@ from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib import messages
 from django.urls import reverse
 from dashboard.models import Student
+from django.contrib.auth.decorators import login_required
+from  dashboard.decorators import check_role
 
-def check_role(required_role):
-    """Decorator to check user role"""
-    def decorator(view_func):
-        def wrapper(request, *args, **kwargs):
-            if not request.user.is_authenticated:
-                return redirect('login')
-            if request.user.role != required_role:
-                return HttpResponseForbidden("You do not have permission to access this page.")
-            return view_func(request, *args, **kwargs)
-        return wrapper
-    return decorator
+
+
 
 @login_required(login_url='login')
 @check_role('operation_head')
@@ -59,7 +52,7 @@ def college_student_dashboard(request):
     return render(request, 'dashboards/college_student_dashboard.html', context)
 
 @login_required(login_url='login')
-@check_role('client')
+@check_role('client', 'manager', 'staff')
 def recruitment_client_dashboard(request):
     # Get counts for each pipeline stage
     candidate_info_count = Student.objects.filter(stage='candidate_info').count()

@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Visa Status - Student Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #2c3e50;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header h2 {
+            color: #3498db;
+            font-size: 22px;
+            font-weight: normal;
+        }
+        
+        .form-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .student-info {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .info-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        
+        .info-item {
+            flex: 1;
+            min-width: 200px;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .info-value {
+            color: #555;
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .section-title {
+            background-color: #2c3e50;
+            color: white;
+            padding: 8px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-right: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        
+        select.form-control {
+            height: 40px;
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        input[type="file"].form-control {
+            padding: 6px;
+        }
+        
+        .error {
+            border-color: #e74c3c !important;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            list-style: none;
+            padding: 0;
+        }
+        
+        .error-message li {
+            margin-bottom: 3px;
+        }
+        
+        .visa-status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .visa-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .visa-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .visa-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .visa-processing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .visa-applied {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .visa-not_started {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .visa-stamped {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-success:disabled {
+            background-color: #7bc487;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-danger:disabled {
+            background-color: #e88d96;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .messages {
+            margin-bottom: 20px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+            color: #777;
+            font-size: 14px;
+        }
+        
+        .status-timeline {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .timeline-date {
+            min-width: 120px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .timeline-content {
+            flex: 1;
+        }
+        
+        .timeline-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .document-preview {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .document-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            color: #3498db;
+            font-weight: 500;
+        }
+        
+        .document-link:hover {
+            text-decoration: underline;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+            font-size: 13px;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .current-document {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f4fd;
+            border-radius: 4px;
+            border: 1px solid #b3d7ff;
+        }
+        
+        @media (max-width: 768px) {
+            .form-group {
+                min-width: 100%;
+                margin-right: 0;
+            }
+            
+            .info-item {
+                min-width: 100%;
+                margin-right: 0;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>STUDENT MANAGEMENT</h1>
+            <h2>UPDATE VISA STATUS</h2>
+        </div>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="form-container">
+            <!-- Student Information Display -->
+            <div class="student-info">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">Student Information</h3>
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="info-label">Student ID:</span>
+                        <span class="info-value">{{ student.student_id }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Full Name:</span>
+                        <span class="info-value">{{ student.full_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Passport No:</span>
+                        <span class="info-value">{{ student.passport_no|default:"Not Provided" }}</span>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{{ student.email }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Phone:</span>
+                        <span class="info-value">{{ student.phone }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Current Visa Status:</span>
+                        <span class="info-value">
+                            {% if visa_tracking.status == 'approved' %}
+                                <span class="visa-status-badge visa-approved">APPROVED</span>
+                            {% elif visa_tracking.status == 'pending' %}
+                                <span class="visa-status-badge visa-pending">PENDING</span>
+                            {% elif visa_tracking.status == 'rejected' %}
+                                <span class="visa-status-badge visa-rejected">REJECTED</span>
+                            {% elif visa_tracking.status == 'processing' %}
+                                <span class="visa-status-badge visa-processing">PROCESSING</span>
+                            {% elif visa_tracking.status == 'applied' %}
+                                <span class="visa-status-badge visa-applied">APPLIED</span>
+                            {% elif visa_tracking.status == 'stamped' %}
+                                <span class="visa-status-badge visa-stamped">STAMPED</span>
+                            {% else %}
+                                <span class="visa-status-badge visa-not_started">NOT STARTED</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% if visa_tracking.visa_document %}
+                <div class="info-row" style="margin-top: 15px;">
+                    <div class="info-item">
+                        <span class="info-label">Current Visa Document:</span>
+                        <div class="current-document">
+                            <a href="{{ visa_tracking.visa_document.url }}" target="_blank" class="document-link">
+                                📄 View Uploaded Visa Document
+                            </a>
+                            <span class="text-muted">Uploaded on {{ visa_tracking.updated_at|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Visa Status Update Form -->
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <div class="section-title">Visa Application Details</div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_application_number">Application Number</label>
+                            {{ form.application_number }}
+                            {% if form.application_number.errors %}
+                            <div class="error-message">{{ form.application_number.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_applied_date">Applied Date</label>
+                            {{ form.applied_date }}
+                            {% if form.applied_date.errors %}
+                            <div class="error-message">{{ form.applied_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_approved_date">Approved Date</label>
+                            {{ form.approved_date }}
+                            {% if form.approved_date.errors %}
+                            <div class="error-message">{{ form.approved_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_interview_date">Interview Date</label>
+                            {{ form.interview_date }}
+                            {% if form.interview_date.errors %}
+                            <div class="error-message">{{ form.interview_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_visa_document">Upload Visa Document</label>
+                            {{ form.visa_document }}
+                            <small class="text-muted">Max file size: 10MB. Allowed formats: PDF, JPG, PNG</small>
+                            {% if form.visa_document.errors %}
+                            <div class="error-message">{{ form.visa_document.errors }}</div>
+                            {% endif %}
+                            
+                            {% if visa_tracking.visa_document %}
+                            <div class="document-preview">
+                                <small class="text-muted">Current document will be replaced if you upload a new one.</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <div class="section-title">Visa Status Update</div>
+                    
+                    <div class="form-row">
+                        <div class="form-group required">
+                            <label for="id_status">Visa Status</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                            <div class="error-message">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_notes">Remarks / Comments</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <div class="error-message">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden field for rejection reason -->
+                    <input type="hidden" name="rejection_reason" id="rejection_reason">
+                </div>
+                
+                <!-- Visa Status Timeline (if exists) -->
+                {% if visa_history %}
+                <div class="status-timeline">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">Visa Status History</h4>
+                    {% for history in visa_history %}
+                    <div class="timeline-item">
+                        <div class="timeline-date">{{ history.created_at|date:"M d, Y" }}</div>
+                        <div class="timeline-content">
+                            <strong>{{ history.get_status_display }}</strong>
+                            {% if history.status == 'approved' %}
+                                <span class="timeline-status" style="background-color: #d4edda; color: #155724;">APPROVED</span>
+                            {% elif history.status == 'pending' %}
+                                <span class="timeline-status" style="background-color: #fff3cd; color: #856404;">PENDING</span>
+                            {% elif history.status == 'rejected' %}
+                                <span class="timeline-status" style="background-color: #f8d7da; color: #721c24;">REJECTED</span>
+                            {% elif history.status == 'processing' %}
+                                <span class="timeline-status" style="background-color: #cce5ff; color: #004085;">PROCESSING</span>
+                            {% endif %}
+                            {% if history.remarks %}
+                            <p style="margin-top: 5px; color: #666; font-size: 14px;">{{ history.remarks }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="btn-container">
+                    <div>
+                        <a href="{% url 'coe_visa:seoandvisa_dashboard' %}" class="btn btn-secondary">
+                            ← Back to Student Details
+                        </a>
+                    </div>
+                    <div class="btn-group">
+                        <button type="submit" name="action" value="save" class="btn">
+                            Save Changes
+                        </button>
+                        <button type="submit" name="action" value="approve" class="btn btn-success" id="approveBtn">
+                            Approve Visa
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger" id="rejectBtn">
+                            Reject Visa
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="footer">
+            <p>Copyright © Aqua Group, All Rights Reserved</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-fill current date for approved date
+        document.addEventListener('DOMContentLoaded', function() {
+            const approvedDateInput = document.getElementById('id_approved_date');
+            const appliedDateInput = document.getElementById('id_applied_date');
+            const interviewDateInput = document.getElementById('id_interview_date');
+            
+            // Set current date if approved date is empty
+            if (approvedDateInput && !approvedDateInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                // approvedDateInput.value = today; // Don't auto-fill
+            }
+            
+            // Status selection auto-fills form buttons
+            const statusSelect = document.getElementById('id_status');
+            const approveBtn = document.getElementById('approveBtn');
+            const rejectBtn = document.getElementById('rejectBtn');
+            
+            if (statusSelect) {
+                // Initial state
+                updateButtonStates();
+                
+                statusSelect.addEventListener('change', function() {
+                    updateButtonStates();
+                    
+                    // Auto-fill dates based on status
+                    const today = new Date().toISOString().split('T')[0];
+                    
+                    if (this.value === 'applied' && appliedDateInput && !appliedDateInput.value) {
+                        appliedDateInput.value = today;
+                    }
+                    
+                    if (this.value === 'approved' && approvedDateInput && !approvedDateInput.value) {
+                        approvedDateInput.value = today;
+                    }
+                });
+            }
+            
+            function updateButtonStates() {
+                if (!statusSelect || !approveBtn || !rejectBtn) return;
+                
+                if (statusSelect.value === 'approved') {
+                    approveBtn.disabled = true;
+                    rejectBtn.disabled = false;
+                } else if (statusSelect.value === 'rejected') {
+                    approveBtn.disabled = false;
+                    rejectBtn.disabled = true;
+                } else {
+                    approveBtn.disabled = false;
+                    rejectBtn.disabled = false;
+                }
+            }
+            
+            // Quick action buttons
+            const actionButtons = document.querySelectorAll('button[value="approve"], button[value="reject"]');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const action = this.value;
+                    const statusSelect = document.getElementById('id_status');
+                    const notesTextarea = document.getElementById('id_notes');
+                    const today = new Date().toISOString().split('T')[0];
+                    
+                    if (action === 'approve') {
+                        if (statusSelect) statusSelect.value = 'approved';
+                        
+                        // Auto-fill approved date
+                        if (approvedDateInput && !approvedDateInput.value) {
+                            approvedDateInput.value = today;
+                        }
+                        
+                        // Auto-fill notes for approval
+                        if (notesTextarea && !notesTextarea.value.trim()) {
+                            notesTextarea.value = 'Visa application approved.';
+                        }
+                    } else if (action === 'reject') {
+                        if (statusSelect) statusSelect.value = 'rejected';
+                        
+                        // Prompt for rejection reason
+                        const reason = prompt('Please enter rejection reason:');
+                        if (reason) {
+                            // Set hidden rejection reason field
+                            document.getElementById('rejection_reason').value = reason;
+                            
+                            // Auto-fill notes for rejection
+                            if (notesTextarea && !notesTextarea.value.trim()) {
+                                notesTextarea.value = 'Visa rejected. Reason: ' + reason;
+                            }
+                        }
+                    }
+                });
+            });
+            
+            // Form validation
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const statusSelect = document.getElementById('id_status');
+                    if (!statusSelect || !statusSelect.value) {
+                        e.preventDefault();
+                        alert('Please select a visa status.');
+                        if (statusSelect) statusSelect.focus();
+                        return false;
+                    }
+                    
+                    // Validate file size and type if document is being uploaded
+                    const fileInput = document.getElementById('id_visa_document');
+                    if (fileInput && fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        const maxSize = 10 * 1024 * 1024; // 10MB
+                        
+                        // Check file size
+                        if (file.size > maxSize) {
+                            e.preventDefault();
+                            alert('File size must be less than 10MB.');
+                            return false;
+                        }
+                        
+                        // Validate file type
+                        const allowedTypes = [
+                            'application/pdf',
+                            'image/jpeg',
+                            'image/jpg',
+                            'image/png'
+                        ];
+                        
+                        if (!allowedTypes.includes(file.type.toLowerCase())) {
+                            e.preventDefault();
+                            alert('Only PDF, JPEG, and PNG files are allowed.');
+                            return false;
+                        }
+                    }
+                    
+                    // Validate dates
+                    const appliedDate = document.getElementById('id_applied_date').value;
+                    const approvedDate = document.getElementById('id_approved_date').value;
+                    const interviewDate = document.getElementById('id_interview_date').value;
+                    
+                    if (appliedDate && approvedDate) {
+                        if (new Date(appliedDate) > new Date(approvedDate)) {
+                            e.preventDefault();
+                            alert('Applied date cannot be later than approved date.');
+                            document.getElementById('id_applied_date').focus();
+                            return false;
+                        }
+                    }
+                    
+                    if (interviewDate && appliedDate) {
+                        if (new Date(interviewDate) < new Date(appliedDate)) {
+                            e.preventDefault();
+                            alert('Interview date cannot be earlier than applied date.');
+                            document.getElementById('id_interview_date').focus();
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                });
+            }
+            
+            // File input preview
+            const fileInput = document.getElementById('id_visa_document');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    if (this.files.length > 0) {
+                        const file = this.files[0];
+                        const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
+                        const fileName = file.name;
+                        
+                        // Show file info
+                        const fileInfo = document.createElement('div');
+                        fileInfo.className = 'document-preview';
+                        fileInfo.innerHTML = `
+                            <strong>Selected file:</strong> ${fileName}<br>
+                            <small class="text-muted">Size: ${fileSize} MB</small>
+                        `;
+                        
+                        // Remove previous preview if exists
+                        const prevPreview = this.parentNode.querySelector('.document-preview:not(:first-of-type)');
+                        if (prevPreview) {
+                            prevPreview.remove();
+                        }
+                        
+                        this.parentNode.appendChild(fileInfo);
+                    }
+                });
+            }
+            
+            // Auto-fill today's date on date inputs when clicked
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(input => {
+                input.addEventListener('click', function() {
+                    if (!this.value) {
+                        this.value = new Date().toISOString().split('T')[0];
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
