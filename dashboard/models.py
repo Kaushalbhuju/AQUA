@@ -73,28 +73,28 @@ class Student(models.Model):
     
     # Personal Information
     student_id = models.CharField(max_length=20, unique=True)
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
-    full_name = models.CharField(max_length=100)
-    date_of_birth = models.DateField()
-    photo = models.ImageField(upload_to='student_photos/', null=False, blank=False)
-    permanent_address = models.TextField()
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='male')
+    full_name = models.CharField(max_length=100, default='Unknown Student')
+    date_of_birth = models.DateField(default='2000-01-01')
+    photo = models.ImageField(upload_to='student_photos/', null=False, blank=False, default='student_photos/default.png')
+    permanent_address = models.TextField(default='Unknown')
     present_address = models.TextField(blank=True, null=True)
-    age = models.IntegerField()
-    marital_status = models.CharField(max_length=10, choices=MARITAL_STATUS_CHOICES)
+    age = models.IntegerField(default=18)
+    marital_status = models.CharField(max_length=10, choices=MARITAL_STATUS_CHOICES, default='single')
     
     # Passport Information
-    passport_no = models.CharField(max_length=20, blank=False, null=False)
-    passport_issue_date = models.DateField(blank=False, null=False)
-    passport_expiry_date = models.DateField(blank=False, null=False)
+    passport_no = models.CharField(max_length=20, blank=False, null=False, default='UNKNOWN')
+    passport_issue_date = models.DateField(blank=False, null=False, default='2000-01-01')
+    passport_expiry_date = models.DateField(blank=False, null=False, default='2030-01-01')
     
     # Physical Information
-    height = models.CharField(max_length=20, blank=False, null=False)
-    weight = models.CharField(max_length=20, blank=False, null=False)
+    height = models.CharField(max_length=20, blank=False, null=False, default='0')
+    weight = models.CharField(max_length=20, blank=False, null=False, default='0')
     medical_report =models.FileField(upload_to='medical_reports/', null=True, blank=True)
-    eye_lens_right = models.CharField(max_length=50, blank=False, null=False, verbose_name='Eye Lens - Right')
-    eye_lens_left = models.CharField(max_length=50, blank=False, null=False, verbose_name='Eye Lens - Left')
-    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, blank=False, null=False)
-    tb_status = models.CharField(max_length=10, blank=False, null=False)
+    eye_lens_right = models.CharField(max_length=50, blank=False, null=False, verbose_name='Eye Lens - Right', default='Normal')
+    eye_lens_left = models.CharField(max_length=50, blank=False, null=False, verbose_name='Eye Lens - Left', default='Normal')
+    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, blank=False, null=False, default='O+')
+    tb_status = models.CharField(max_length=10, blank=False, null=False, default='negative')
     
     # Visa Information
     visa_apply_record = models.CharField(max_length=3, choices=VISA_CHOICES, blank=True, null=True)

@@ -1,6 +1,8 @@
-# forms.py
 from django import forms 
 from django.contrib.auth.forms import AuthenticationForm
+from datetime import date
+import re
+import os
 import os
 
 class AgentLoginForm(AuthenticationForm):
@@ -27,6 +29,8 @@ def clean_medical_report(self):
             raise forms.ValidationError('File size must be less than 5MB.')
     
     return medical_report
+    return medical_report
+
 class StudentForm(forms.ModelForm):
     """Main student registration form"""
     

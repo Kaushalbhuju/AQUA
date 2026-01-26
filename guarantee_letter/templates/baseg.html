@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -26,6 +27,7 @@
             justify-content: space-between;
             flex-wrap: wrap;
         }
+
         nav a {
             color: #fff;
             margin-right: 20px;
@@ -33,9 +35,11 @@
             font-weight: 500;
             transition: color 0.3s ease;
         }
+
         nav a:hover {
             color: #ffd43b;
         }
+
         nav h1 {
             flex: 1;
             text-align: center;
@@ -54,6 +58,7 @@
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+
         .container:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
@@ -67,6 +72,7 @@
             padding: 8px 16px;
             transition: all 0.3s ease;
         }
+
         .btn-custom:hover {
             background: #15508a;
             transform: scale(1.05);
@@ -76,14 +82,23 @@
         .fade-in {
             animation: fadeIn 0.6s ease-in-out;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <!-- Navbar -->
     <nav>
@@ -105,7 +120,7 @@
     <script>
         // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener("click", function(e) {
+            anchor.addEventListener("click", function (e) {
                 e.preventDefault();
                 document.querySelector(this.getAttribute("href")).scrollIntoView({
                     behavior: "smooth"
@@ -122,4 +137,5 @@
         });
     </script>
 </body>
+
 </html>

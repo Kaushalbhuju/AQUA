@@ -57,6 +57,13 @@ class VisaTracking(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     visa_document = models.FileField(upload_to='visa_documents/', blank=True, null=True)
+    
+    # Departure Details
+    ticket_file = models.FileField(upload_to='ticket_files/', blank=True, null=True)
+    departure_airport = models.CharField(max_length=100, blank=True, null=True)
+    transit_airport = models.CharField(max_length=100, blank=True, null=True)
+    arrival_airport = models.CharField(max_length=100, blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

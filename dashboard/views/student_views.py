@@ -298,7 +298,7 @@ def generate_student_pdf(request, student_id):
         <tr class="center">
             <td>{student.height or ''}</td><td>{student.weight or ''}</td>
             <td>{getattr(student, 'eye_lens_right', '')}</td><td>{getattr(student, 'eye_lens_left', '')}</td>
-            <td>{student.blood_group or ''}</td><td>{student.visa_apply_record or ''}</td><td colspan="2">{student.visa_details or ''}</td>
+            <td>{student.blood_group or ''}</td><td>{student.get_visa_apply_record_display() if student.visa_apply_record else ''}</td><td colspan="2">{student.visa_details or ''}</td>
         </tr>
     </table>
 
@@ -389,7 +389,7 @@ def generate_student_pdf(request, student_id):
 """
         pdf = HTML(string=html_content).write_pdf()
         response = HttpResponse(pdf, content_type="application/pdf")
-        response["Content-Disposition"] = f'attachment; filename="Admission_Form_{student.student_id}.pdf"'
+        response["Content-Disposition"] = f'inline; filename="Admission_Form_{student.student_id}.pdf"'
         return response
 
     except Exception as e:
