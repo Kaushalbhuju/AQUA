@@ -1,0 +1,51 @@
+/* static/appointment/css/style.css */
+
+/* TEST CSS - MAKE IT OBVIOUS */
+body {
+    background-color: #f0f8ff !important;  /* Light blue */
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #2c3e50 !important;
+    border-bottom: 3px solid #3498db !important;
+    padding-bottom: 10px !important;
+}
+
+.navbar-brand {
+    color: #e74c3c !important;
+    font-weight: bold !important;
+}
+
+.card {
+    background: linear-gradient(145deg, #ffffff, #f0f0f0) !important;
+    border-radius: 15px !important;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.1) !important;
+}
+
+.btn-primary {
+    background: linear-gradient(to right, #3498db, #2980b9) !important;
+    border: none !important;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to right, #2980b9, #1c5d87) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Flashy test class */
+.css-working {
+    animation: pulse 2s infinite;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4) !important;
+    color: white !important;
+    padding: 20px !important;
+    border-radius: 10px !important;
+    text-align: center !important;
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
