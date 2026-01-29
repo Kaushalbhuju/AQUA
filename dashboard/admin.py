@@ -97,6 +97,7 @@ class StudentDocumentInline(admin.TabularInline):
     model = StudentDocument
     extra = 1
     fields = ['document_type', 'document_file', 'uploaded_at']
+    readonly_fields = ['uploaded_at']
 
 
 @admin.register(Student)
@@ -111,8 +112,7 @@ class StudentAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Personal Information', {
             'fields': (
-                'student_id', 'full_name', 'date_of_birth', 'age', 'gender', 
-                'marital_status', 'photo'
+                'student_id', 'full_name', 'date_of_birth', 'age', 'gender', 'photo'
             )
         }),
         ('Contact Information', {
@@ -125,7 +125,7 @@ class StudentAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
         ('Physical Information', {
-            'fields': ('height', 'weight', 'blood_group', 'medical_report', 'tb_status'),
+            'fields': ('height', 'weight', 'blood_group', 'tb_status'),
             'classes': ('collapse',)
         }),
         ('Visa Information', {
@@ -133,7 +133,7 @@ class StudentAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
         ('Family Records', {
-            'fields': ('spouse_name', 'spouse_contact'),
+            'fields': ('marital_status', 'spouse_name', 'spouse_contact', 'family_records'),
             'classes': ('collapse',)
         }),
         ('Certificates & Skills', {

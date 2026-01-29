@@ -1,0 +1,117 @@
+{% extends 'baseg.html' %}
+
+{% block title %}{% if client %}Edit Client{% else %}Add Client Information{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>{% if client %}Edit Client{% else %}Add Client Information{% endif %}</h2>
+            <a href="{% url 'guarantee_letter:letter_list_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Letters
+            </a>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-fill"></i> 
+                    {% if client %}Update Client Details{% else %}Enter Client Information{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" class="mt-3">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                <strong>Client Name <span class="text-danger">*</span></strong>
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {{ form.name.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Enter the full name of the client</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                <strong>Email Address <span class="text-danger">*</span></strong>
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {{ form.email.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Valid email address (must be unique)</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                <strong>Phone Number</strong>
+                            </label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {{ form.phone.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Contact phone number</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="{{ form.passport_number.id_for_label }}" class="form-label">
+                                <strong>Passport Number</strong>
+                            </label>
+                            {{ form.passport_number }}
+                            {% if form.passport_number.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {{ form.passport_number.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">6-12 alphanumeric characters (uppercase), must be unique if provided</small>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Note:</strong> Email and Passport Number must be unique. Once saved, this client can be used when creating job guarantee letters.
+                    </div>
+                    
+                    <div class="mt-4 d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 
+                            {% if client %}Update Client{% else %}Add Client{% endif %}
+                        </button>
+                        <div>
+                            <a href="{% url 'guarantee_letter:client_list' %}" class="btn btn-outline-secondary me-2">
+                                <i class="bi bi-list"></i> View All Clients
+                            </a>
+                            <a href="{% url 'guarantee_letter:letter_list_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

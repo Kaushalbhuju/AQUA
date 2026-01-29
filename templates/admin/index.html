@@ -1,0 +1,113 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}Dashboard | AQUA Education Admin{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module">
+        <h2>Welcome to AQUA Education Admin Dashboard</h2>
+        <div style="padding: 20px;">
+            <p style="font-size: 16px; color: #666; margin-bottom: 20px;">
+                Manage your educational platform efficiently with our comprehensive admin panel.
+            </p>
+
+            <!-- Quick Stats -->
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                <div class="stats-card">
+                    <h4>Total Users</h4>
+                    <div class="number">{{ user_count|default:0 }}</div>
+                </div>
+                <div class="stats-card" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                    <h4>Active Students</h4>
+                    <div class="number">{{ student_count|default:0 }}</div>
+                </div>
+                <div class="stats-card" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                    <h4>Pending Applications</h4>
+                    <div class="number">{{ pending_count|default:0 }}</div>
+                </div>
+                <div class="stats-card" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                    <h4>Companies</h4>
+                    <div class="number">{{ company_count|default:0 }}</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 15px 0; color: #2c3e50;">Quick Actions</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                    <a href="{% url 'admin:accounts_user_add' %}" class="button" style="text-align: center;">Add
+                        User</a>
+                    <a href="{% url 'admin:dashboard_student_changelist' %}" class="button"
+                        style="text-align: center; background: linear-gradient(135deg, #27ae60, #2ecc71);">View
+                        Students</a>
+                    <a href="#" class="button"
+                        style="text-align: center; background: linear-gradient(135deg, #f39c12, #e67e22);">Manage
+                        Colleges</a>
+
+                    <a href="{% url 'admin:company_college_changelist' %}" class="button" style="text-align: center; background: linear-gradient(135deg, #f39c12, #e67e22);">Manage Colleges</a>
+
+                    <a href="{% url 'admin:dashboard_student_add' %}" class="button"
+                        style="text-align: center; background: linear-gradient(135deg, #9b59b6, #8e44ad);">AddStudent</a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="module">
+        <h2>Recent Activity</h2>
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>User</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_actions %}
+                <tr>
+                    <td>{{ log.action }}</td>
+                    <td>{{ log.user }}</td>
+                    <td>{{ log.timestamp|date:"M d, Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 20px; color: #666;">
+                        No recent activity
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="content-related">
+    <div class="module">
+        <h2>System Information</h2>
+        <div style="padding: 15px;">
+            <p><strong>Django Version:</strong> {{ django_version }}</p>
+            <p><strong>Database:</strong> SQLite3</p>
+            <p><strong>Server Time:</strong> {% now "F j, Y, P" %}</p>
+            <p><strong>Environment:</strong> {% if debug %}Development{% else %}Production{% endif %}</p>
+        </div>
+    </div>
+
+    <div class="module">
+        <h2>Quick Links</h2>
+        <ul style="padding: 15px;">
+            <li><a href="{% url 'admin:accounts_user_changelist' %}">Manage Users</a></li>
+            <li><a href="{% url 'admin:dashboard_student_changelist' %}">Student Applications</a></li>
+            <li><a href="{% url 'admin:company_college_changelist' %}">College Management</a></li>
+            <li><a href="{% url 'admin:appointment_appointment_changelist' %}">Appointments</a></li>
+
+
+
+
+        </ul>
+    </div>
+</div>
+{% endblock %}

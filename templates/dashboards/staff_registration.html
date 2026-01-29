@@ -252,13 +252,81 @@
         {% endif %}
 
         <!-- Form Errors Display -->
-        {% if form.errors or education_formset.errors or work_formset.errors %}
+        {% if form.errors or education_formset.errors or work_formset.errors or certificate_formset.errors or training_formset.errors or license_form.errors or bank_formset.errors %}
             <div class="alert alert-danger" role="alert">
                 <strong><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</strong>
-                <ul>
+                <ul class="mb-0">
                     {% for field, errors in form.errors.items %}
                         {% for error in errors %}
-                            <li>{{ field }}: {{ error }}</li>
+                            <li><strong>{{ field|capfirst }}</strong>: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% for error in form.non_field_errors %}
+                        <li><strong>Form</strong>: {{ error }}</li>
+                    {% endfor %}
+
+                    {% for error in education_formset.non_form_errors %}
+                        <li><strong>Education</strong>: {{ error }}</li>
+                    {% endfor %}
+                    {% for form_err in education_formset.errors %}
+                        {% for field, errors in form_err.items %}
+                            {% for error in errors %}
+                                <li><strong>Education</strong> ({{ field|capfirst }}): {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% for error in work_formset.non_form_errors %}
+                        <li><strong>Work</strong>: {{ error }}</li>
+                    {% endfor %}
+                    {% for form_err in work_formset.errors %}
+                        {% for field, errors in form_err.items %}
+                            {% for error in errors %}
+                                <li><strong>Work</strong> ({{ field|capfirst }}): {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% for error in certificate_formset.non_form_errors %}
+                        <li><strong>Certificate</strong>: {{ error }}</li>
+                    {% endfor %}
+                    {% for form_err in certificate_formset.errors %}
+                        {% for field, errors in form_err.items %}
+                            {% for error in errors %}
+                                <li><strong>Certificate</strong> ({{ field|capfirst }}): {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% for error in training_formset.non_form_errors %}
+                        <li><strong>Training</strong>: {{ error }}</li>
+                    {% endfor %}
+                    {% for form_err in training_formset.errors %}
+                        {% for field, errors in form_err.items %}
+                            {% for error in errors %}
+                                <li><strong>Training</strong> ({{ field|capfirst }}): {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    {% for field, errors in license_form.errors.items %}
+                        {% for error in errors %}
+                            <li><strong>Driving License</strong> ({{ field|capfirst }}): {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in license_form.non_field_errors %}
+                        <li><strong>Driving License</strong>: {{ error }}</li>
+                    {% endfor %}
+
+                    {% for error in bank_formset.non_form_errors %}
+                        <li><strong>Bank</strong>: {{ error }}</li>
+                    {% endfor %}
+                    {% for form_err in bank_formset.errors %}
+                        {% for field, errors in form_err.items %}
+                            {% for error in errors %}
+                                <li><strong>Bank</strong> ({{ field|capfirst }}): {{ error }}</li>
+                            {% endfor %}
                         {% endfor %}
                     {% endfor %}
                 </ul>
@@ -414,13 +482,16 @@
                 </thead>
                 <tbody>
                     {{ bank_formset.management_form }}
-                    {% for form in bank_formset %}
+                    {% for bank_row in bank_formset %}
                         <tr>
-                            <td>{{ form.bank_name }}</td>
-                            <td>{{ form.branch_name }}</td>
-                            <td>{{ form.account_no }}</td>
-                            <td>{{ form.account_holder_name }}</td>
-                            <td>{{ form.DELETE }}</td>
+                            <td>
+                                {% for hidden in bank_row.hidden_fields %}{{ hidden }}{% endfor %}
+                                {{ bank_row.bank_name }}
+                            </td>
+                            <td>{{ bank_row.branch_name }}</td>
+                            <td>{{ bank_row.account_no }}</td>
+                            <td>{{ bank_row.account_holder_name }}</td>
+                            <td>{{ bank_row.DELETE }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -442,15 +513,18 @@
                 </thead>
                 <tbody>
                     {{ education_formset.management_form }}
-                    {% for form in education_formset %}
+                    {% for edu_form in education_formset %}
                         <tr>
-                            <td>{{ form.pass_level }}</td>
-                            <td>{{ form.name_of_school }}</td>
-                            <td>{{ form.admission_year }}</td>
-                            <td>{{ form.admission_month }}</td>
-                            <td>{{ form.graduation_year }}</td>
-                            <td>{{ form.graduation_month }}</td>
-                            <td>{{ form.enrolled_years }}</td>
+                            <td>
+                                {% for hidden in edu_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                {{ edu_form.pass_level }}
+                            </td>
+                            <td>{{ edu_form.name_of_school }}</td>
+                            <td>{{ edu_form.admission_year }}</td>
+                            <td>{{ edu_form.admission_month }}</td>
+                            <td>{{ edu_form.graduation_year }}</td>
+                            <td>{{ edu_form.graduation_month }}</td>
+                            <td>{{ edu_form.enrolled_years }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -472,15 +546,18 @@
                 </thead>
                 <tbody>
                     {{ work_formset.management_form }}
-                    {% for form in work_formset %}
+                    {% for work_form in work_formset %}
                         <tr>
-                            <td>{{ form.type_of_work }}</td>
-                            <td>{{ form.name_of_company }}</td>
-                            <td>{{ form.join_year }}</td>
-                            <td>{{ form.join_month }}</td>
-                            <td>{{ form.resign_year }}</td>
-                            <td>{{ form.resign_month }}</td>
-                            <td>{{ form.working_years }}</td>
+                            <td>
+                                {% for hidden in work_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                {{ work_form.type_of_work }}
+                            </td>
+                            <td>{{ work_form.name_of_company }}</td>
+                            <td>{{ work_form.join_year }}</td>
+                            <td>{{ work_form.join_month }}</td>
+                            <td>{{ work_form.resign_year }}</td>
+                            <td>{{ work_form.resign_month }}</td>
+                            <td>{{ work_form.working_years }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -501,14 +578,17 @@
                 </thead>
                 <tbody>
                     {{ certificate_formset.management_form }}
-                    {% for form in certificate_formset %}
+                    {% for cert_form in certificate_formset %}
                         <tr>
-                            <td>{{ form.pass_year }}</td>
-                            <td>{{ form.pass_month }}</td>
-                            <td>{{ form.name_of_certificate }}</td>
-                            <td>{{ form.join_year }}</td>
-                            <td>{{ form.join_month }}</td>
-                            <td>{{ form.organization }}</td>
+                            <td>
+                                {% for hidden in cert_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                {{ cert_form.pass_year }}
+                            </td>
+                            <td>{{ cert_form.pass_month }}</td>
+                            <td>{{ cert_form.name_of_certificate }}</td>
+                            <td>{{ cert_form.join_year }}</td>
+                            <td>{{ cert_form.join_month }}</td>
+                            <td>{{ cert_form.organization }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -529,14 +609,17 @@
                 </thead>
                 <tbody>
                     {{ training_formset.management_form }}
-                    {% for form in training_formset %}
+                    {% for training_form in training_formset %}
                         <tr>
-                            <td>{{ form.pass_year }}</td>
-                            <td>{{ form.pass_month }}</td>
-                            <td>{{ form.name_of_training }}</td>
-                            <td>{{ form.join_year }}</td>
-                            <td>{{ form.join_month }}</td>
-                            <td>{{ form.organization }}</td>
+                            <td>
+                                {% for hidden in training_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                {{ training_form.pass_year }}
+                            </td>
+                            <td>{{ training_form.pass_month }}</td>
+                            <td>{{ training_form.name_of_training }}</td>
+                            <td>{{ training_form.join_year }}</td>
+                            <td>{{ training_form.join_month }}</td>
+                            <td>{{ training_form.organization }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

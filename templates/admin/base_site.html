@@ -1,0 +1,194 @@
+{% extends "admin/base.html" %}
+
+{% load static %}
+
+{% block title %}{% if title %}{{ title }} | {% endif %}{{ site_title|default:"AQUA Education Admin" }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
+<style>
+:root {
+    --primary-color: #1a2332;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    --light-bg: #f8f9fa;
+    --dark-text: #2c3e50;
+    --success-color: #27ae60;
+    --warning-color: #f39c12;
+    --danger-color: #e74c3c;
+    --info-color: #17a2b8;
+}
+</style>
+{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <img src="{% static 'images/aqua-logo.png' %}" alt="AQUA Education" onerror="this.style.display='none'">
+        <h1 style="background: linear-gradient(135deg, #1a2332, #3498db); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0; font-size: 1.8em; font-weight: 700;">
+            AQUA Education Admin
+        </h1>
+    </a>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+<ul id="top-nav">
+    <li><a href="{% url 'admin:index' %}">Dashboard</a></li>
+    <li><a href="/" target="_blank">Main Site</a></li>
+    <li><a href="{% url 'admin:password_change' %}">Password Change</a></li>
+    <li><a href="{% url 'admin:logout' %}">Logout</a></li>
+</ul>
+{% endblock %}
+
+{% block sidebar %}
+<div id="nav-sidebar">
+    <div id="nav-header">
+        <h2>Navigation</h2>
+    </div>
+    <div id="nav-content">
+        {% for app in app_list %}
+        <div class="app-{{ app.app_label }}">
+            <h3>
+                <a href="{{ app.app_url }}" class="section" title="{{ app.name }}">
+                    {{ app.name }}
+                </a>
+            </h3>
+            <ul>
+                {% for model in app.models %}
+                <li class="{% if model.perms.change %}change-link{% endif %} {% if model.perms.add %}add-link{% endif %} {% if model.perms.delete %}delete-link{% endif %}">
+                    {% if model.admin_url %}
+                    <a href="{{ model.admin_url }}" title="{{ model.name }}">{{ model.name }}</a>
+                    {% else %}
+                    <span>{{ model.name }}</span>
+                    {% endif %}
+                    {% if model.add_url %}
+                    <a href="{{ model.add_url }}" class="addlink" title="Add {{ model.name }}"></a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<div id="site-footer">
+    <p>&copy; 2024 AQUA Education and Training Academy. All rights reserved.</p>
+    <p>Powered by Django Admin | Custom Theme</p>
+</div>
+{{ block.super }}
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* Custom sidebar styling */
+#nav-sidebar {
+    background: linear-gradient(135deg, #1a2332, #2c3e50);
+    border-right: 3px solid #3498db;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+#nav-sidebar h3 {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    color: #ecf0f1;
+    margin: 0;
+    padding: 12px 15px;
+    border-bottom: 1px solid #7f8c8d;
+    font-size: 1em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#nav-sidebar h3 a {
+    color: #ecf0f1;
+    text-decoration: none;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+#nav-sidebar h3 a:hover {
+    color: #3498db;
+    background: rgba(52, 152, 219, 0.1);
+    padding-left: 5px;
+}
+
+#nav-sidebar ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#nav-sidebar li {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+#nav-sidebar li a {
+    display: block;
+    padding: 10px 15px;
+    color: #bdc3c7;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+#nav-sidebar li a:hover {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.2), rgba(155, 89, 182, 0.2));
+    color: #ecf0f1;
+    padding-left: 20px;
+}
+
+#nav-sidebar li a:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(135deg, #3498db, #9b59b6);
+    transition: width 0.3s ease;
+}
+
+#nav-sidebar li a:hover:before {
+    width: 4px;
+}
+
+/* Footer styling */
+#site-footer {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: #bdc3c7;
+    text-align: center;
+    padding: 20px;
+    border-top: 3px solid #3498db;
+    margin-top: 30px;
+}
+
+#site-footer p {
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #top-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #top-nav li {
+        flex: none;
+    }
+
+    #nav-sidebar {
+        position: static;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+</style>
+{% endblock %}

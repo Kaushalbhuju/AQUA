@@ -1,0 +1,60 @@
+{% extends 'baseg.html' %}
+
+{% block title %}Delete Client{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Delete Client
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Warning:</strong> This action cannot be undone!
+                </div>
+                
+                <div class="mb-4">
+                    <h5>Client Information</h5>
+                    <p><strong>Name:</strong> {{ client.name }}</p>
+                    <p><strong>Email:</strong> {{ client.email }}</p>
+                    {% if client.phone %}
+                    <p><strong>Phone:</strong> {{ client.phone }}</p>
+                    {% endif %}
+                    {% if client.passport_number %}
+                    <p><strong>Passport Number:</strong> {{ client.passport_number }}</p>
+                    {% endif %}
+                </div>
+
+                {% if client.letters.count > 0 %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Important:</strong> This client has <strong>{{ client.letters.count }}</strong> associated job guarantee letter(s). 
+                    Deleting this client will not delete the letters, but the client reference will be removed.
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    This client has no associated letters.
+                </div>
+                {% endif %}
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Yes, Delete Client
+                        </button>
+                        <a href="{% url 'guarantee_letter:client_detail' client.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

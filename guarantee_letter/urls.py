@@ -36,4 +36,7 @@ urlpatterns = [
     path('templates/', views.template_list, name='template_list'),
     path('templates/add/', views.add_template, name='add_template'),
     path('templates/<int:pk>/edit/', views.edit_template, name='edit_template'),
+
+    # ============ STUDENT INTEGRATION ============
+    path('issue/student/<int:student_id>/', views.issue_letter_for_student, name='issue_for_student'),
 ]

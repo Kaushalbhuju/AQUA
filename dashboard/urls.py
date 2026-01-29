@@ -10,7 +10,7 @@ from .views.student_views import (
     registration_success, student_registration, student_list, student_detail,
     student_application_detail, update_student_status,
     generate_student_pdf, approve_student, decline_student,
-    approve_student_page, decline_student_page, biodata
+    approve_student_page, decline_student_page, biodata, approval_success
 )
 from .views.portal_views import (
     PortalStudentRegistrationView, portal_registration_success
@@ -61,6 +61,9 @@ urlpatterns = [
     # Detailed approve/decline forms
     path('dashboard/students/<int:student_id>/approve/', approve_student_page, name='approve_student_page'),
     path('dashboard/students/<int:student_id>/decline/', decline_student_page, name='decline_student_page'),
+
+    # Approval success page
+    path('approval_success/<int:student_id>/', approval_success, name='approval_success'),
 
     # REMOVE Agent Dashboard Routes from here
     # path('agent/login/', agent_login, name='agent_login'),

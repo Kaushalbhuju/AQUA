@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.template.loader import render_to_string
 from datetime import date
 from weasyprint import HTML
+from django.db import models
 
 from dashboard.models import Student, EducationalHistory, WorkExperience, StudentDocument, Agent
 from dashboard.forms import StudentForm
@@ -102,7 +103,23 @@ def registration_success(request, student_id):
 @login_required
 def student_list(request):
     students = Student.objects.all().order_by('-created_at')
-    return render(request, 'dashboards/student_list.html', {'students': students})
+
+    # Optimize database queries by using aggregation
+    status_counts = students.aggregate(
+        total_count=models.Count('id'),
+        pending_count=models.Sum(models.Case(models.When(status='pending', then=1), default=0, output_field=models.IntegerField())),
+        approved_count=models.Sum(models.Case(models.When(status='approved', then=1), default=0, output_field=models.IntegerField())),
+        declined_count=models.Sum(models.Case(models.When(status='declined', then=1), default=0, output_field=models.IntegerField())),
+    )
+
+    context = {
+        'students': students,
+        'total_count': status_counts['total_count'] or 0,
+        'pending_count': status_counts['pending_count'] or 0,
+        'approved_count': status_counts['approved_count'] or 0,
+        'declined_count': status_counts['declined_count'] or 0,
+    }
+    return render(request, 'dashboards/student_list.html', context)
 
 @login_required
 def student_detail(request, student_id):
@@ -125,10 +142,12 @@ def student_application_detail(request, student_id):
         Student.objects.prefetch_related('education_history', 'work_experience', 'documents'),
         id=student_id
     )
+    known_types = ['bio_data', 'id_info', 'educational_doc', 'report']
     documents_by_type = {
-        doc_type: student.documents.filter(document_type=doc_type)
-        for doc_type in ['bio_data', 'id_info', 'educational_doc', 'report', 'other']
+        t: student.documents.filter(document_type=t)
+        for t in known_types
     }
+    documents_by_type['other'] = student.documents.exclude(document_type__in=known_types)
     return render(request, 'dashboards/student_application_detail.html', {
         'student': student,
         'education_history': student.education_history.all(),
@@ -275,7 +294,7 @@ def generate_student_pdf(request, student_id):
         <tr>
             <td class="lbl-sm">Present: {student.present_address or ''}</td>
             <td colspan="2" class="center bg-white">Marital Status</td>
-            <td colspan="2">{student.marital_status or ''}</td>
+            <td colspan="2">{student.get_marital_status_display() if student.marital_status else ''}</td>
         </tr>
     </table>
 
@@ -308,11 +327,11 @@ def generate_student_pdf(request, student_id):
             <td width="15%" class="center">Phone No.</td><td>{student.phone or ''}</td>
         </tr>
         <tr>
-            <td>Family Records</td><td colspan="3"></td>
+            <td>Family Records</td><td colspan="3">{student.family_records or ''}</td>
         </tr>
         <tr>
             <td>Spouse Name</td><td>{student.spouse_name or ''}</td>
-            <td class="center">Contact No.</td><td></td>
+            <td class="center">Contact No.</td><td>{student.spouse_contact or ''}</td>
         </tr>
     </table>
 
@@ -394,6 +413,8 @@ def generate_student_pdf(request, student_id):
 
     except Exception as e:
         return HttpResponse(f"Error: {str(e)}", status=500)
+
+@login_required
 def approve_student_page(request, student_id):
     return _approval_page(request, student_id, 'approve')
 
@@ -511,22 +532,37 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 
 @login_required
-def update_student_status(request, student_id):
+def update_student_status(request, student_id, status=None):
     student = get_object_or_404(Student, id=student_id)
-    
+
     if request.method == 'POST':
-        action = request.POST.get('action')
+        # If status is provided as parameter, use it; otherwise get from POST
+        if status:
+            action = status
+        else:
+            action = request.POST.get('action')
+
         review_notes = request.POST.get('review_notes', '')
 
-        if action in ['approve', 'decline']:
-            student.status = 'approved' if action == 'approve' else 'declined'
+        if action in ['approve', 'approved', 'decline', 'declined']:
+            # Normalize to the correct status value
+            student.status = 'approved' if action in ['approve', 'approved'] else 'declined'
             student.reviewed_by = request.user
             student.reviewed_at = timezone.now()
             student.review_notes = review_notes
             student.save()
-            
-            messages.success(request, f'Student {student.full_name} has been {action}d.')
+
+            messages.success(request, f'Student {student.full_name} has been {student.status}.')
+
+            # Redirect to success page for approval, dashboard for decline
+            if student.status == 'approved':
+                return redirect('dashboard:approval_success', student_id=student.id)
         else:
             messages.error(request, 'Invalid action.')
 
     return redirect('dashboard:recruitment_client_dashboard')
+
+@login_required
+def approval_success(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    return render(request, 'dashboards/approval_success.html', {'student': student})

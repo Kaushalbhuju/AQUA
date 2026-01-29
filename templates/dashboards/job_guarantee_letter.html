@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Job Guarantee Letter</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #000;
+        }
+
+        .header {
+            text-align: right;
+            font-weight: bold;
+            color: #c00000;
+            /* Red color for MCL code */
+            margin-bottom: 20px;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-decoration: underline;
+            margin-bottom: 30px;
+        }
+
+        .candidate-info {
+            margin-bottom: 20px;
+            color: #c00000;
+            /* Red color for candidate info */
+            font-weight: bold;
+        }
+
+        .content {
+            text-align: justify;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            text-decoration: underline;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        ol {
+            margin-left: 20px;
+            padding-left: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            position: relative;
+        }
+
+        .date {
+            text-align: right;
+            color: #c00000;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .signature-block {
+            margin-top: 20px;
+        }
+
+        .stamp {
+            position: absolute;
+            bottom: -20px;
+            left: 50px;
+            width: 100px;
+            opacity: 0.8;
+            color: red;
+            border: 3px double red;
+            padding: 5px;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: center;
+            transform: rotate(-5deg);
+        }
+
+        /* Custom stamp simulation if image not used */
+        .stamp-box {
+            border: 2px solid red;
+            color: red;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .signature-text {
+            font-weight: bold;
+            margin-top: 80px;
+            /* Space for stamp */
+            line-height: 1.3;
+        }
+
+        .dynamic-red {
+            color: #c00000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        MCL-01F2026
+    </div>
+
+    <div class="title">
+        JOB GAURANTEE LETTER
+    </div>
+
+    <div class="candidate-info">
+        <div>MR. {{ student.full_name|upper }}</div>
+        <div>Date of Birth: {{ student.date_of_birth|date:"d, M Y"|upper }}</div>
+    </div>
+
+    <div class="content">
+        Thank you very much for candidate applying for the <b>Specified Skilled Worker (SSW) program</b> of the company
+        mentioned below from Nepal. Based on the documents you submitted, and after careful consideration in
+        coordination with the Job hiring company in Japan, it has been decided to hire you employment under the <b>terms
+            and conditions stated below.</b>
+    </div>
+
+    <div class="section-title">
+        HIRE TERM AND CONDITION
+    </div>
+
+    <ol>
+        <li>You must complete the <b>Six (6) months Japanese Language Course</b> at Aqua Education and Training Academy
+            Pvt. Ltd located in Lazimpat-02, Kathmandu Nepal.</li>
+        <li>You must pass the <b>Japanese Language Test N4 and N3 Level</b> before Interview in Nepal.</li>
+        <li>You must pass the <b>SSW Skill Examination</b> before our Physical Interview held in Nepal.</li>
+        <li>You must pass the final interview conducted by Japanese company mention below.</li>
+        <li>Basic Monthly salary: <b>+2 Graduate: JPY 195,000 ～ / Bachelor's Pass: JPY 200,000 ～</b></li>
+        <li>The terms and condition of employment will be fixed in the job agreement after you pass the interview.</li>
+        <li>Only after all conditions are fulfilled, our company will guarantee and support your work visa application
+            in Japan. If any condition is not met, this offer may be withdrawn.</li>
+    </ol>
+
+    <div class="section-title">
+        JOB HIRING COMPANYS
+    </div>
+    <div style="margin-left: 20px; font-weight: bold;">
+        ☞ ZENSYO GROUP (SUKIYA), TECHNO SMILE INC, TOKYU GROUP, SEIBU GROUP
+    </div>
+
+    <div class="content" style="margin-top: 20px;">
+        <b>Note:</b> This job guarantee letter is issued in according with the job guarantee offer provided <b>on behalf
+            of</b> the company mentioned above. You must need to fallow immigration law of Japan.
+    </div>
+
+    <div class="footer">
+        <div class="date">
+            Date: {{ date|date:"d F Y" }}
+        </div>
+
+        <div class="signature-block">
+            <!-- Simulated Stamp/Signature Area -->
+            <!-- In a real scenario, you'd use an <img> tag here for the stamp/signature artifact -->
+            <!-- <div class="stamp-box">
+                AQUA GROUP
+                <br>SEAL
+            </div> -->
+
+            <div class="signature-text">
+                アクアグループ<br>
+                総合ビジネス企画社<br>
+                ジャパンディレクター<br>
+                東京都武蔵野市吉祥寺本町 3-9-14<br>
+                Https://aquagroupnp.com<br>
+                Https://macoli.jp<br>
+                E-mail:ssw.japan.aie@gmail.com
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

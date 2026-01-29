@@ -73,7 +73,7 @@ def staff_registration_create(request):
         if not license_valid:
             print("License Errors:", license_form.errors)
         
-        if form_valid and education_valid and work_valid and certificate_valid and training_valid and license_valid:
+        if form_valid and education_valid and work_valid and certificate_valid and training_valid and license_valid and bank_valid:
             try:
                 with transaction.atomic():
                     # Save main staff form
@@ -129,7 +129,7 @@ def staff_registration_create(request):
         certificate_formset = CertificateFormSet(prefix='certificate', queryset=CertificateOfSkills.objects.none())
         training_formset = TrainingFormSet(prefix='training', queryset=SkillsTrainingStatus.objects.none())
         license_form = DrivingLicenseForm(prefix='license')
-        bank_formset = BankFormSet(prefix='bank', queryset=BankInformation.objects.none())  # ✅ NEW
+        bank_formset = BankFormSet(instance=None, prefix='bank', queryset=BankInformation.objects.none())  # ✅ NEW
 
     
     context = {
@@ -202,7 +202,8 @@ def staff_registration_update(request, pk):
         work_formset = WorkingExperienceFormSet(instance=staff, prefix='work')
         certificate_formset = CertificateFormSet(instance=staff, prefix='certificate')
         training_formset = TrainingFormSet(instance=staff, prefix='training')
-        bank_formset = BankFormSet(prefix='bank', queryset=BankInformation.objects.filter(staff=staff))
+        # Use instance so management_form counts stay consistent on POST
+        bank_formset = BankFormSet(instance=staff, prefix='bank')
 
 
         

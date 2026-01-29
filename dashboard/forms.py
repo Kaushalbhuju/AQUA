@@ -14,22 +14,6 @@ class AgentLoginForm(AuthenticationForm):
         self.fields['password'].widget.attrs.update({'class': 'form-control', 'placeholder': 'PIN'})
 
 
-# In StudentForm class in forms.py
-def clean_medical_report(self):
-    medical_report = self.cleaned_data.get('medical_report')
-    if medical_report:
-        # Check file extension
-        valid_extensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']
-        ext = os.path.splitext(medical_report.name)[1].lower()
-        if ext not in valid_extensions:
-            raise forms.ValidationError('Unsupported file extension. Please upload PDF, Word, or image files.')
-        
-        # Check file size (5MB limit)
-        if medical_report.size > 5 * 1024 * 1024:
-            raise forms.ValidationError('File size must be less than 5MB.')
-    
-    return medical_report
-    return medical_report
 
 class StudentForm(forms.ModelForm):
     """Main student registration form"""
@@ -148,11 +132,29 @@ class StudentForm(forms.ModelForm):
     working_years_2 = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Years'}))
     
     # Document fields
-    bio_data_file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
-    id_info_file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
-    educational_doc_file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
-    report_file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
-    other_file = forms.FileField(required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    bio_data_file = forms.FileField(label="Passport", required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    id_info_file = forms.FileField(label="Citizenship/Driving", required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    educational_doc_file = forms.FileField(label="Graduation/Transcript", required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    report_file = forms.FileField(label="Medical Report", required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    other_file = forms.FileField(label="Other PDF", required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    
+    def _clean_file_field(self, field_name, label, max_mb=5):
+        file = self.cleaned_data.get(field_name)
+        if file:
+            valid_extensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']
+            ext = os.path.splitext(file.name)[1].lower()
+            if ext not in valid_extensions:
+                raise forms.ValidationError(f'Unsupported file extension for {label}. Please upload PDF, Word, or image files.')
+            
+            if file.size > max_mb * 1024 * 1024:
+                raise forms.ValidationError(f'{label} size must be less than {max_mb}MB.')
+        return file
+
+    def clean_bio_data_file(self): return self._clean_file_field('bio_data_file', 'Passport')
+    def clean_id_info_file(self): return self._clean_file_field('id_info_file', 'Citizenship/Driving')
+    def clean_educational_doc_file(self): return self._clean_file_field('educational_doc_file', 'Graduation/Transcript')
+    def clean_report_file(self): return self._clean_file_field('report_file', 'Medical Report')
+    def clean_other_file(self): return self._clean_file_field('other_file', 'Other PDF')
     
     class Meta:
         # Import here to avoid circular imports
@@ -161,21 +163,21 @@ class StudentForm(forms.ModelForm):
         # Remove stage and experience from exclude since we're defining them explicitly
         exclude = ['status', 'reviewed_at', 'review_notes', 'candidate', 'agent', 'student_id']
         widgets = {
-            'date_of_birth': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'passport_issue_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'passport_expiry_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'permanent_address': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
+            'date_of_birth': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'required': 'required'}),
+            'passport_issue_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'required': 'required'}),
+            'passport_expiry_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'required': 'required'}),
+            'permanent_address': forms.Textarea(attrs={'rows': 2, 'class': 'form-control', 'required': 'required'}),
             'present_address': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
+            'family_records': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
             'visa_details': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
-            'medical_report':  forms.FileInput(attrs={'class': 'form-control'}),
-            'hobbies': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
-            'motivation': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'hobbies': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'required': 'required'}),
+            'motivation': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'required': 'required'}),
             'student_id': forms.TextInput(attrs={'class': 'form-control'}),
-            'full_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'height': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "e.g., 5'8\""}),
-            'weight': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 65 kg'}),
+            'full_name': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'height': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "e.g., 5'8\"", 'required': 'required'}),
+            'weight': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 65 kg', 'required': 'required'}),
             'spouse_name': forms.TextInput(attrs={'class': 'form-control'}),
             'spouse_contact': forms.TextInput(attrs={'class': 'form-control'}),
             'certificate_pass_year': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Year & Month'}),
@@ -185,14 +187,14 @@ class StudentForm(forms.ModelForm):
             'driving_license': forms.TextInput(attrs={'class': 'form-control'}),
             'license_pass_year': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Year & Month'}),
             'license_discretion': forms.TextInput(attrs={'class': 'form-control'}),
-            'gender': forms.Select(attrs={'class': 'form-control'}),
-            'marital_status': forms.Select(attrs={'class': 'form-control'}),
-            'blood_group': forms.Select(attrs={'class': 'form-control'}),
-            'visa_apply_record': forms.Select(attrs={'class': 'form-control'}),
-            'photo': forms.FileInput(attrs={'class': 'form-control'}),
-            'age': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
-            'eye_lens_right': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Right eye measurement'}),
-            'eye_lens_left': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Left eye measurement'}),
+            'gender': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
+            'marital_status': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
+            'blood_group': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
+            'visa_apply_record': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
+            'photo': forms.FileInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'age': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly', 'required': 'required'}),
+            'eye_lens_right': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Right eye measurement', 'required': 'required'}),
+            'eye_lens_left': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Left eye measurement', 'required': 'required'}),
         }
     
     def __init__(self, *args, **kwargs):
@@ -212,8 +214,10 @@ class StudentForm(forms.ModelForm):
         # Make required fields
         required_fields = [
             'full_name', 'date_of_birth', 'permanent_address', 
-            'marital_status', 'email', 'phone', 'gender'
-              # Add these to required fields
+            'marital_status', 'email', 'phone', 'gender',
+            'hobbies', 'motivation', 'height', 'weight',
+            'eye_lens_right', 'eye_lens_left', 'blood_group',
+            'passport_no', 'passport_issue_date', 'passport_expiry_date'
         ]
         
         for field_name in required_fields:
@@ -230,6 +234,40 @@ class StudentForm(forms.ModelForm):
         self.fields['experience'].required = False
       
     
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Passport dates validation
+        issue_date = cleaned_data.get('passport_issue_date')
+        expiry_date = cleaned_data.get('passport_expiry_date')
+        if issue_date and expiry_date and expiry_date <= issue_date:
+            self.add_error('passport_expiry_date', 'Passport expiry date must be after the issue date.')
+
+        # Visa Details conditional validation
+        visa_apply_record = cleaned_data.get('visa_apply_record')
+        visa_details = cleaned_data.get('visa_details')
+        if visa_apply_record == 'yes' and not visa_details:
+            self.add_error('visa_details', 'Visa details are mandatory if you have a past visa application record.')
+
+        # Spouse Details conditional validation
+        marital_status = cleaned_data.get('marital_status')
+        spouse_name = cleaned_data.get('spouse_name')
+        spouse_contact = cleaned_data.get('spouse_contact')
+        if marital_status == 'married':
+            if not spouse_name:
+                self.add_error('spouse_name', 'Spouse name is mandatory if you are married.')
+            if not spouse_contact:
+                self.add_error('spouse_contact', 'Spouse contact is mandatory if you are married.')
+
+        # Education history years validation
+        for level in ['primary_school', 'junior_h_school', 'higher_s_school', 'college_university', 'graduate_university', 'other_school']:
+            adm_yr = cleaned_data.get(f'admission_year_{level}')
+            grad_yr = cleaned_data.get(f'graduation_year_{level}')
+            if adm_yr and grad_yr and grad_yr < adm_yr:
+                self.add_error(f'graduation_year_{level}', 'Graduation year cannot be earlier than admission year.')
+
+        return cleaned_data
+
     def clean_email(self):
         """Ensure email uniqueness within the same agent"""
         email = self.cleaned_data.get('email')

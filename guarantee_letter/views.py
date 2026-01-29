@@ -202,7 +202,7 @@ def download_letter(request, pk):
     """Download letter PDF"""
     letter = get_object_or_404(JobGuaranteeLetter, pk=pk)
     
-    if letter.source == 'uploaded' and letter.pdf_file:
+    if letter.pdf_file:
         try:
             file_path = letter.pdf_file.path
             filename = f"{letter.letter_number}.pdf"
@@ -221,7 +221,7 @@ def download_letter(request, pk):
         except Exception as e:
             messages.error(request, f'Error downloading file: {str(e)}')
     else:
-        messages.error(request, 'PDF file not found or not uploaded.')
+        messages.error(request, 'PDF file not found.')
     
     return redirect('guarantee_letter:letter_detail', pk=pk)
 
@@ -287,13 +287,19 @@ def client_list(request):
 
 @login_required
 def add_client(request):
-    """Add new client"""
+    """Add new client - Manager only"""
+    # Check if user is manager
+    if not request.user.is_authenticated or getattr(request.user, 'role', None) != 'manager':
+        messages.error(request, 'You do not have permission to add clients. Only managers can perform this action.')
+        return redirect('guarantee_letter:letter_list_list')
+    
     if request.method == 'POST':
         form = ClientForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, 'Client added successfully!')
-            return redirect('guarantee_letter:client_list')
+            # Redirect back to letter list where the button was clicked
+            return redirect('guarantee_letter:letter_list_list')
     else:
         form = ClientForm()
     
@@ -306,15 +312,28 @@ def client_detail(request, pk):
     client = get_object_or_404(Client, pk=pk)
     client_letters = client.letters.all().order_by('-date_created')
     
+    # Calculate statistics
+    total_letters = client.letters.count()
+    issued_count = client.letters.filter(status='issued').count()
+    draft_count = client.letters.filter(status='draft').count()
+    
     context = {
         'client': client,
         'letters': client_letters,
+        'total_letters': total_letters,
+        'issued_count': issued_count,
+        'draft_count': draft_count,
     }
     return render(request, 'guarantee_letter/client_detail.html', context)
 
 @login_required
 def edit_client(request, pk):
-    """Edit existing client"""
+    """Edit existing client - Manager only"""
+    # Check if user is manager
+    if not request.user.is_authenticated or getattr(request.user, 'role', None) != 'manager':
+        messages.error(request, 'You do not have permission to edit clients. Only managers can perform this action.')
+        return redirect('guarantee_letter:client_list')
+    
     client = get_object_or_404(Client, pk=pk)
     
     if request.method == 'POST':
@@ -334,7 +353,12 @@ def edit_client(request, pk):
 
 @login_required
 def delete_client(request, pk):
-    """Delete a client"""
+    """Delete a client - Manager only"""
+    # Check if user is manager
+    if not request.user.is_authenticated or getattr(request.user, 'role', None) != 'manager':
+        messages.error(request, 'You do not have permission to delete clients. Only managers can perform this action.')
+        return redirect('guarantee_letter:client_list')
+    
     client = get_object_or_404(Client, pk=pk)
     
     if request.method == 'POST':
@@ -387,3 +411,71 @@ def edit_template(request, pk):
     
     context = {'form': form, 'template': template}
     return render(request, 'guarantee_letter/template_form.html', context)
+
+# ============ STUDENT INTEGRATION ============
+from dashboard.models import Student
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from django.core.files.base import ContentFile
+from django.http import HttpResponse
+from datetime import date, timedelta
+
+@login_required
+def issue_letter_for_student(request, student_id):
+    """Generate and save Job Guarantee Letter for a dashboard Student"""
+    student = get_object_or_404(Student, id=student_id)
+    
+    # 1. Get or Create Default Client (required by ForeignKey)
+    client, _ = Client.objects.get_or_create(
+        name="Direct Student Issue",
+        defaults={
+            'email': 'admin@aquagroup.com',
+            'phone': '0000000000',
+            'passport_number': 'SYSTEM-DIRECT-ISSUE'
+        }
+    )
+    
+    # 2. Generate PDF Content
+    context = {
+        'student': student,
+        'date': date.today(),
+    }
+    # Reuse the template we created in the dashboard app
+    html_string = render_to_string('dashboards/job_guarantee_letter.html', context)
+    pdf_content = HTML(string=html_string).write_pdf()
+    
+    # 3. Create JobGuaranteeLetter Record
+    letter = JobGuaranteeLetter(
+        client=client,
+        candidate_name=student.full_name,
+        candidate_email=student.email,
+        candidate_phone=student.phone or '',
+        passport_number=student.passport_no or '',
+        job_title="Specified Skilled Worker (SSW)",
+        source='created',
+        status='issued',
+        issued_by=request.user,
+        issue_date=date.today(),
+        start_date=date.today(),
+        expiry_date=date.today() + timedelta(days=365), # Default 1 year validity
+        remarks=f"Auto-generated from Student Dashboard (ID: {student.student_id})"
+    )
+    
+    # 4. Save PDF File to Record
+    # Use a unique filename
+    filename = f"Job_Guarantee_{student.student_id}_{timezone.now().strftime('%Y%m%d%H%M%S')}.pdf"
+    letter.pdf_file.save(filename, ContentFile(pdf_content), save=False)
+    letter.save()
+    
+    # 5. Create Log Entry
+    LetterLog.objects.create(
+        letter=letter,
+        action='create',
+        user=request.user,
+        details=f'Generated letter for student {student.student_id} from Dashboard'
+    )
+    
+    # 6. Return PDF inline (so the user sees it immediately)
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    return response

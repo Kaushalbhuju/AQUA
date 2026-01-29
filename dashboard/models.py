@@ -73,28 +73,28 @@ class Student(models.Model):
     
     # Personal Information
     student_id = models.CharField(max_length=20, unique=True)
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='male')
-    full_name = models.CharField(max_length=100, default='Unknown Student')
-    date_of_birth = models.DateField(default='2000-01-01')
-    photo = models.ImageField(upload_to='student_photos/', null=False, blank=False, default='student_photos/default.png')
-    permanent_address = models.TextField(default='Unknown')
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
+    full_name = models.CharField(max_length=100)
+    date_of_birth = models.DateField()
+    photo = models.ImageField(upload_to='student_photos/')
+    permanent_address = models.TextField()
     present_address = models.TextField(blank=True, null=True)
-    age = models.IntegerField(default=18)
-    marital_status = models.CharField(max_length=10, choices=MARITAL_STATUS_CHOICES, default='single')
+    age = models.IntegerField()
+    marital_status = models.CharField(max_length=10, choices=MARITAL_STATUS_CHOICES)
+    family_records = models.TextField(blank=True, null=True)
     
     # Passport Information
-    passport_no = models.CharField(max_length=20, blank=False, null=False, default='UNKNOWN')
-    passport_issue_date = models.DateField(blank=False, null=False, default='2000-01-01')
-    passport_expiry_date = models.DateField(blank=False, null=False, default='2030-01-01')
-    
+    passport_no = models.CharField(max_length=20)
+    passport_issue_date = models.DateField()
+    passport_expiry_date = models.DateField()
+
     # Physical Information
-    height = models.CharField(max_length=20, blank=False, null=False, default='0')
-    weight = models.CharField(max_length=20, blank=False, null=False, default='0')
-    medical_report =models.FileField(upload_to='medical_reports/', null=True, blank=True)
-    eye_lens_right = models.CharField(max_length=50, blank=False, null=False, verbose_name='Eye Lens - Right', default='Normal')
-    eye_lens_left = models.CharField(max_length=50, blank=False, null=False, verbose_name='Eye Lens - Left', default='Normal')
-    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, blank=False, null=False, default='O+')
-    tb_status = models.CharField(max_length=10, blank=False, null=False, default='negative')
+    height = models.CharField(max_length=20)
+    weight = models.CharField(max_length=20)
+    eye_lens_right = models.CharField(max_length=50, verbose_name='Eye Lens - Right')
+    eye_lens_left = models.CharField(max_length=50, verbose_name='Eye Lens - Left')
+    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES)
+    tb_status = models.CharField(max_length=10)
     
     # Visa Information
     visa_apply_record = models.CharField(max_length=3, choices=VISA_CHOICES, blank=True, null=True)
@@ -102,7 +102,7 @@ class Student(models.Model):
     
     # Contact Information
     email = models.EmailField()
-    phone = models.CharField(max_length=15)
+    phone = models.CharField(max_length=10)
     
     # Family Records
     spouse_name = models.CharField(max_length=100, blank=True, null=True)
@@ -116,8 +116,8 @@ class Student(models.Model):
     driving_license = models.CharField(max_length=100, blank=True, null=True)
     license_pass_year = models.CharField(max_length=50, blank=True, null=True)
     license_discretion = models.TextField(blank=True, null=True)
-    hobbies = models.TextField(blank=True, null=True)
-    motivation = models.TextField(blank=True, null=True)
+    hobbies = models.TextField(blank=False, null=True)
+    motivation = models.TextField(blank=False, null=True)
     
     # Additional fields for pipeline stages
     qualification = models.CharField(max_length=100, blank=True, null=True)
@@ -181,11 +181,11 @@ class WorkExperience(models.Model):
 
 class StudentDocument(models.Model):
     DOCUMENT_TYPES = [
-        ('bio_data', 'Student BIO-DATA'),
-        ('id_info', 'Student ID Information'),
-        ('educational_doc', 'Student Educational Doc'),
-        ('report', 'Student Report'),
-        ('other', 'PDF'),
+        ('bio_data', 'Passport'),
+        ('id_info', 'Citizenship/Driving'),
+        ('educational_doc', 'Graduation/Transcript'),
+        ('report', 'Medical Report'),
+        ('other', 'Other PDF'),
     ]
     
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='documents')

@@ -1076,7 +1076,8 @@
                                     </div>
                                     <img class="photo-preview" id="photoPreview" alt="Student Photo">
                                 </div>
-                                <input type="file" id="id_photo" name="photo" accept="image/*" style="display: none;">
+                                <input type="file" id="id_photo" name="photo" accept="image/*" style="display: none;"
+                                    required>
                                 {% if form.photo.errors %}
                                 <div class="field-error">
                                     <span>⚠️</span>
@@ -1164,7 +1165,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="id_spouse_name" class="form-label">Spouse Name</label>
+                            <label for="id_spouse_name" class="form-label" id="label_spouse_name">Spouse Name</label>
                             {{ form.spouse_name }}
                             {% if form.spouse_name.errors %}
                             <div class="field-error">
@@ -1175,12 +1176,27 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="id_spouse_contact" class="form-label">Spouse Contact No.</label>
+                            <label for="id_spouse_contact" class="form-label" id="label_spouse_contact">Spouse Contact
+                                No.</label>
                             {{ form.spouse_contact }}
                             {% if form.spouse_contact.errors %}
                             <div class="field-error">
                                 <span>⚠️</span>
                                 {{ form.spouse_contact.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="id_family_records" class="form-label">Family Records</label>
+                            {{ form.family_records }}
+                            <div class="helper-text">List your parents, siblings, or other family members</div>
+                            {% if form.family_records.errors %}
+                            <div class="field-error">
+                                <span>⚠️</span>
+                                {{ form.family_records.errors.0 }}
                             </div>
                             {% endif %}
                         </div>
@@ -1305,534 +1321,514 @@
                             </div>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="id_medical_report" class="form-label ">Medical Report</label>
-                                <!-- Create a custom file upload area for medical report -->
-                                <div class="document-card" style="margin-bottom: 15px;" data-doc="medical_report">
-                                    <div class="document-icon">⚕️</div>
-                                    <div class="document-title">MEDICAL REPORT PDF</div>
-                                    <input type="file" id="id_medical_report" name="medical_report"
-                                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
-                                    <div class="document-requirements">
-                                        PDF preferred, also accepts Word, Images<br>
-                                        Please Submit Color Copy
-                                    </div>
-                                    <div class="document-file-info" id="medical-report-file-info"></div>
-                                </div>
-                                {% if form.medical_report.errors %}
-                                <div class="field-error">
-                                    <span>⚠️</span>
-                                    {{ form.medical_report.errors.0 }}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label required">TB Status</label>
-                                <div class="radio-group">
-                                    <div class="radio-option">
-                                        <input type="radio" id="tb_positive" name="tb_status" value="positive">
-                                        <label for="tb_positive">Positive</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="tb_negative" name="tb_status" value="negative">
-                                        <label for="tb_negative">Negative</label>
-                                    </div>
-                                </div>
-                                {% if form.tb_status.errors %}
-                                <div class="field-error">
-                                    <span>⚠️</span>
-                                    {{ form.tb_status.errors.0 }}
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <!-- Visa Information -->
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="id_visa_apply_record" class="form-label required">Past Visa Apply
-                                    Record</label>
-                                <select id="id_visa_apply_record" name="visa_apply_record" class="form-control">
-                                    <option value="">Select Option</option>
-                                    <option value="yes">Yes</option>
-                                    <option value="no">No</option>
-                                </select>
-                                {% if form.visa_apply_record.errors %}
-                                <div class="field-error">
-                                    <span>⚠️</span>
-                                    {{ form.visa_apply_record.errors.0 }}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="form-group" id="visaDetailsContainer" style="display: none;">
-                                <label for="id_visa_details" class="form-label required">Visa Details (if Yes)</label>
-                                {{ form.visa_details }}
-                                <div class="helper-text">Apply No. & Result</div>
-                                {% if form.visa_details.errors %}
-                                <div class="field-error">
-                                    <span>⚠️</span>
-                                    {{ form.visa_details.errors.0 }}
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contact Information -->
-                    <div class="form-section">
-                        <div class="section-header">
-                            <div class="section-icon">📱</div>
-                            <div>
-                                <h3 class="section-title">Contact Information</h3>
-                                <p class="section-subtitle">Primary contact details</p>
-                            </div>
-                        </div>
-
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="id_email" class="form-label required">Email ID</label>
-                                {{ form.email }}
-                                {% if form.email.errors %}
-                                <div class="field-error">
-                                    <span>⚠️</span>
-                                    {{ form.email.errors.0 }}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="form-group">
-                                <label for="id_phone" class="form-label required">Phone No.</label>
-                                {{ form.phone }}
-                                {% if form.phone.errors %}
-                                <div class="field-error">
-                                    <span>⚠️</span>
-                                    {{ form.phone.errors.0 }}
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 2: Educational History -->
-            <div class="form-step" id="step-2">
-                <div class="form-section">
-                    <div class="section-header">
-                        <div class="section-icon">🎓</div>
-                        <div>
-                            <h3 class="section-title">Educational History</h3>
-                            <p class="section-subtitle">Complete your academic background</p>
-                        </div>
-                    </div>
-
-                    <div class="table-container">
-                        <table class="form-table">
-                            <thead>
-                                <tr>
-                                    <th rowspan="2">Pass Level</th>
-                                    <th rowspan="2">Name of School</th>
-                                    <th colspan="2">Admission</th>
-                                    <th colspan="2">Graduation</th>
-                                    <th rowspan="2">Enrolled Years</th>
-                                </tr>
-                                <tr class="subheader">
-                                    <th>Year</th>
-                                    <th>Month</th>
-                                    <th>Year</th>
-                                    <th>Month</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Primary School</td>
-                                    <td>{{ form.school_primary_school }}</td>
-                                    <td>{{ form.admission_year_primary_school }}</td>
-                                    <td>{{ form.admission_month_primary_school }}</td>
-                                    <td>{{ form.graduation_year_primary_school }}</td>
-                                    <td>{{ form.graduation_month_primary_school }}</td>
-                                    <td>{{ form.enrolled_years_primary_school }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Junior H. School</td>
-                                    <td>{{ form.school_junior_h_school }}</td>
-                                    <td>{{ form.admission_year_junior_h_school }}</td>
-                                    <td>{{ form.admission_month_junior_h_school }}</td>
-                                    <td>{{ form.graduation_year_junior_h_school }}</td>
-                                    <td>{{ form.graduation_month_junior_h_school }}</td>
-                                    <td>{{ form.enrolled_years_junior_h_school }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Higher S. School</td>
-                                    <td>{{ form.school_higher_s_school }}</td>
-                                    <td>{{ form.admission_year_higher_s_school }}</td>
-                                    <td>{{ form.admission_month_higher_s_school }}</td>
-                                    <td>{{ form.graduation_year_higher_s_school }}</td>
-                                    <td>{{ form.graduation_month_higher_s_school }}</td>
-                                    <td>{{ form.enrolled_years_higher_s_school }}</td>
-                                </tr>
-                                <tr>
-                                    <td>College / University</td>
-                                    <td>{{ form.school_college_university }}</td>
-                                    <td>{{ form.admission_year_college_university }}</td>
-                                    <td>{{ form.admission_month_college_university }}</td>
-                                    <td>{{ form.graduation_year_college_university }}</td>
-                                    <td>{{ form.graduation_month_college_university }}</td>
-                                    <td>{{ form.enrolled_years_college_university }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Graduate University</td>
-                                    <td>{{ form.school_graduate_university }}</td>
-                                    <td>{{ form.admission_year_graduate_university }}</td>
-                                    <td>{{ form.admission_month_graduate_university }}</td>
-                                    <td>{{ form.graduation_year_graduate_university }}</td>
-                                    <td>{{ form.graduation_month_graduate_university }}</td>
-                                    <td>{{ form.enrolled_years_graduate_university }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Other School</td>
-                                    <td>{{ form.school_other_school }}</td>
-                                    <td>{{ form.admission_year_other_school }}</td>
-                                    <td>{{ form.admission_month_other_school }}</td>
-                                    <td>{{ form.graduation_year_other_school }}</td>
-                                    <td>{{ form.graduation_month_other_school }}</td>
-                                    <td>{{ form.enrolled_years_other_school }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step 3: Working Experience & Certificates -->
-            <div class="form-step" id="step-3">
-                <!-- Working Experience -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <div class="section-icon">💼</div>
-                        <div>
-                            <h3 class="section-title">Working Experience</h3>
-                            <p class="section-subtitle">Your professional work history</p>
-                        </div>
-                    </div>
-
-                    <div class="table-container">
-                        <table class="form-table">
-                            <thead>
-                                <tr>
-                                    <th>Type of Work</th>
-                                    <th>Name of Working Company</th>
-                                    <th>Date of Join</th>
-                                    <th>Date of Resign</th>
-                                    <th>Working Years</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>{{ form.work_type_1 }}</td>
-                                    <td>{{ form.company_name_1 }}</td>
-                                    <td>{{ form.join_date_1 }}</td>
-                                    <td>{{ form.resign_date_1 }}</td>
-                                    <td>{{ form.working_years_1 }}</td>
-                                </tr>
-                                <tr>
-                                    <td>{{ form.work_type_2 }}</td>
-                                    <td>{{ form.company_name_2 }}</td>
-                                    <td>{{ form.join_date_2 }}</td>
-                                    <td>{{ form.resign_date_2 }}</td>
-                                    <td>{{ form.working_years_2 }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Certificates & Skills -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <div class="section-icon">🏆</div>
-                        <div>
-                            <h3 class="section-title">Certificates & Skills</h3>
-                            <p class="section-subtitle">Your qualifications and abilities</p>
-                        </div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="id_certificate_pass_year" class="form-label">Pass Year & Month</label>
-                            {{ form.certificate_pass_year }}
-                            {% if form.certificate_pass_year.errors %}
-                            <div class="field-error">
-                                <span>⚠️</span>
-                                {{ form.certificate_pass_year.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
 
                         <div class="form-group">
-                            <label for="id_certificate_name" class="form-label">Name of Certificate</label>
-                            {{ form.certificate_name }}
-                            {% if form.certificate_name.errors %}
+                            <label class="form-label required">TB Status</label>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <input type="radio" id="tb_positive" name="tb_status" value="positive">
+                                    <label for="tb_positive">Positive</label>
+                                </div>
+                                <div class="radio-option">
+                                    <input type="radio" id="tb_negative" name="tb_status" value="negative">
+                                    <label for="tb_negative">Negative</label>
+                                </div>
+                            </div>
+                            {% if form.tb_status.errors %}
                             <div class="field-error">
                                 <span>⚠️</span>
-                                {{ form.certificate_name.errors.0 }}
+                                {{ form.tb_status.errors.0 }}
                             </div>
                             {% endif %}
                         </div>
                     </div>
 
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="id_language_join_year" class="form-label">Language Join Year & Month</label>
-                            {{ form.language_join_year }}
-                            {% if form.language_join_year.errors %}
-                            <div class="field-error">
-                                <span>⚠️</span>
-                                {{ form.language_join_year.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="form-group">
-                            <label for="id_organization" class="form-label">Organization</label>
-                            {{ form.organization }}
-                            {% if form.organization.errors %}
-                            <div class="field-error">
-                                <span>⚠️</span>
-                                {{ form.organization.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Driving License -->
-                    <div class="form-section" style="margin-top: 20px;">
-                        <div class="section-header">
-                            <div class="section-icon">🚗</div>
-                            <h3 class="section-title">Driving License</h3>
-                        </div>
-
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="id_driving_license" class="form-label">Driving License</label>
-                                {{ form.driving_license }}
-                                {% if form.driving_license.errors %}
-                                <div class="field-error">
-                                    <span>⚠️</span>
-                                    {{ form.driving_license.errors.0 }}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="form-group">
-                                <label for="id_license_pass_year" class="form-label">Pass Year & Month</label>
-                                {{ form.license_pass_year }}
-                                {% if form.license_pass_year.errors %}
-                                <div class="field-error">
-                                    <span>⚠️</span>
-                                    {{ form.license_pass_year.errors.0 }}
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="form-group">
-                                <label for="id_license_discretion" class="form-label">License Discretion</label>
-                                {{ form.license_discretion }}
-                                {% if form.license_discretion.errors %}
-                                <div class="field-error">
-                                    <span>⚠️</span>
-                                    {{ form.license_discretion.errors.0 }}
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Hobbies & Motivation -->
+                    <!-- Visa Information -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="id_hobbies" class="form-label required">Hobbies & Special Skills</label>
-                            {{ form.hobbies }}
-                            <div class="helper-text">List your hobbies and special skills</div>
-                            {% if form.hobbies.errors %}
+                            <label for="id_visa_apply_record" class="form-label required">Past Visa Apply
+                                Record</label>
+                            <select id="id_visa_apply_record" name="visa_apply_record" class="form-control">
+                                <option value="">Select Option</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                            {% if form.visa_apply_record.errors %}
                             <div class="field-error">
                                 <span>⚠️</span>
-                                {{ form.hobbies.errors.0 }}
+                                {{ form.visa_apply_record.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group" id="visaDetailsContainer" style="display: none;">
+                            <label for="id_visa_details" class="form-label required" id="label_visa_details">Visa
+                                Details (if Yes)</label>
+                            {{ form.visa_details }}
+                            <div class="helper-text">Apply No. & Result</div>
+                            {% if form.visa_details.errors %}
+                            <div class="field-error">
+                                <span>⚠️</span>
+                                {{ form.visa_details.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <div class="section-icon">📱</div>
+                        <div>
+                            <h3 class="section-title">Contact Information</h3>
+                            <p class="section-subtitle">Primary contact details</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="id_email" class="form-label required">Email ID</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="field-error">
+                                <span>⚠️</span>
+                                {{ form.email.errors.0 }}
                             </div>
                             {% endif %}
                         </div>
 
                         <div class="form-group">
-                            <label for="id_motivation" class="form-label required">Motivation & Self-Promotion</label>
-                            {{ form.motivation }}
-                            <div class="helper-text">Describe your motivation for this program</div>
-                            {% if form.motivation.errors %}
+                            <label for="id_phone" class="form-label required">Phone No.</label>
+                            <input type="tel" name="phone" id="id_phone" class="form-control" required
+                                pattern="[0-9]{10}" title="Please enter a 10-digit phone number"
+                                placeholder="e.g. 9812345678">
+                            {% if form.phone.errors %}
                             <div class="field-error">
                                 <span>⚠️</span>
-                                {{ form.motivation.errors.0 }}
+                                {{ form.phone.errors.0 }}
                             </div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
+    </div>
 
-            <!-- Step 4: Documents Upload -->
-            <div class="form-step" id="step-4">
-                <div class="form-section">
-                    <div class="section-header">
-                        <div class="section-icon">📁</div>
-                        <div>
-                            <h3 class="section-title">Required Documents for Admission</h3>
-                            <p class="section-subtitle">Upload all necessary documents in color copy</p>
-                        </div>
-                    </div>
-
-                    <div class="document-grid">
-                        <div class="document-card" data-doc="passport">
-                            <div class="document-icon">🛂</div>
-                            <div class="document-title">PASSPORT</div>
-                            <input type="file" id="id_bio_data_file" name="bio_data_file"
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
-                            <div class="document-requirements">
-                                PDF, Word, Images<br>
-                                Please Submit Color Copy
-                            </div>
-                            <div class="document-file-info" id="passport-file-info"></div>
-                        </div>
-
-                        <div class="document-card" data-doc="graduation">
-                            <div class="document-icon">🎓</div>
-                            <div class="document-title">CITIZENSHIP / DRIVING</div>
-                            <input type="file" id="id_id_info_file" name="id_info_file"
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
-                            <div class="document-requirements">
-                                PDF, Word, Images<br>
-                                Please Submit Color Copy
-                            </div>
-                            <div class="document-file-info" id="graduation-file-info"></div>
-                        </div>
-
-                        <div class="document-card" data-doc="citizenship">
-                            <div class="document-icon">🏠</div>
-                            <div class="document-title">GRADUATION / TRANSCRIPT</div>
-                            <input type="file" id="id_educational_doc_file" name="educational_doc_file"
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
-                            <div class="document-requirements">
-                                PDF, Word, Images<br>
-                                Please Submit Color Copy
-                            </div>
-                            <div class="document-file-info" id="citizenship-file-info"></div>
-                        </div>
-
-                        <div class="document-card" data-doc="medical">
-                            <div class="document-icon">⚕️</div>
-                            <div class="document-title">MEDICAL REPORT</div>
-                            <input type="file" id="id_report_file" name="report_file"
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
-                            <div class="document-requirements">
-                                PDF, Word, Images<br>
-                                Please Submit Color Copy
-                            </div>
-                            <div class="document-file-info" id="medical-file-info"></div>
-                        </div>
-
-                        <div class="document-card" data-doc="other">
-                            <div class="document-icon">📄</div>
-                            <div class="document-title">Other PDF</div>
-                            <input type="file" id="id_other_file" name="other_file"
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
-                            <div class="document-requirements">
-                                PDF, Word, Images<br>
-                                Please Submit Color Copy
-                            </div>
-                            <div class="document-file-info" id="other-file-info"></div>
-                        </div>
-                    </div>
+    <!-- Step 2: Educational History -->
+    <div class="form-step" id="step-2">
+        <div class="form-section">
+            <div class="section-header">
+                <div class="section-icon">🎓</div>
+                <div>
+                    <h3 class="section-title">Educational History</h3>
+                    <p class="section-subtitle">Complete your academic background</p>
                 </div>
             </div>
 
-            <!-- Step 5: Review & Submit -->
-            <div class="form-step" id="step-5">
-                <div class="form-section">
-                    <div class="section-header">
-                        <div class="section-icon">✅</div>
-                        <div>
-                            <h3 class="section-title">Review & Submit</h3>
-                            <p class="section-subtitle">Please review your information before submission</p>
-                        </div>
-                    </div>
-
-                    <div style="text-align: center; padding: 40px 20px;">
-                        <div style="font-size: 72px; margin-bottom: 20px;">📋</div>
-                        <h3 style="color: var(--primary-color); margin-bottom: 15px;">Ready to Submit Your Application
-                        </h3>
-                        <p
-                            style="color: var(--text-light); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">
-                            Please ensure all information is correct. Once submitted, you cannot edit your application.
-                            Your application will be processed within 3-5 business days.
-                        </p>
-
-                        <div
-                            style="background: #f8f9ff; border-radius: 10px; padding: 25px; margin-bottom: 30px; text-align: left;">
-                            <h4 style="color: var(--primary-color); margin-bottom: 15px;">📌 Submission Checklist:</h4>
-                            <div
-                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                                <div class="checkbox-option" style="background: white;">
-                                    <input type="checkbox" id="check_personal" checked disabled>
-                                    <label for="check_personal">Personal Information Complete</label>
-                                </div>
-                                <div class="checkbox-option" style="background: white;">
-                                    <input type="checkbox" id="check_education" disabled>
-                                    <label for="check_education">Educational History Filled</label>
-                                </div>
-                                <div class="checkbox-option" style="background: white;">
-                                    <input type="checkbox" id="check_experience" disabled>
-                                    <label for="check_experience">Work Experience Added</label>
-                                </div>
-                                <div class="checkbox-option" style="background: white;">
-                                    <input type="checkbox" id="check_documents" disabled>
-                                    <label for="check_documents">Documents Uploaded</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                            <button type="button" class="btn btn-outline" id="reviewAllBtn">
-                                👁️ Review All Information
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="finalSubmitBtn">
-                                ✅ Submit Application
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div class="table-container">
+                <table class="form-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Pass Level</th>
+                            <th rowspan="2">Name of School</th>
+                            <th colspan="2">Admission</th>
+                            <th colspan="2">Graduation</th>
+                            <th rowspan="2">Enrolled Years</th>
+                        </tr>
+                        <tr class="subheader">
+                            <th>Year</th>
+                            <th>Month</th>
+                            <th>Year</th>
+                            <th>Month</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Primary School</td>
+                            <td>{{ form.school_primary_school }}</td>
+                            <td>{{ form.admission_year_primary_school }}</td>
+                            <td>{{ form.admission_month_primary_school }}</td>
+                            <td>{{ form.graduation_year_primary_school }}</td>
+                            <td>{{ form.graduation_month_primary_school }}</td>
+                            <td>{{ form.enrolled_years_primary_school }}</td>
+                        </tr>
+                        <tr>
+                            <td>Junior H. School</td>
+                            <td>{{ form.school_junior_h_school }}</td>
+                            <td>{{ form.admission_year_junior_h_school }}</td>
+                            <td>{{ form.admission_month_junior_h_school }}</td>
+                            <td>{{ form.graduation_year_junior_h_school }}</td>
+                            <td>{{ form.graduation_month_junior_h_school }}</td>
+                            <td>{{ form.enrolled_years_junior_h_school }}</td>
+                        </tr>
+                        <tr>
+                            <td>Higher S. School</td>
+                            <td>{{ form.school_higher_s_school }}</td>
+                            <td>{{ form.admission_year_higher_s_school }}</td>
+                            <td>{{ form.admission_month_higher_s_school }}</td>
+                            <td>{{ form.graduation_year_higher_s_school }}</td>
+                            <td>{{ form.graduation_month_higher_s_school }}</td>
+                            <td>{{ form.enrolled_years_higher_s_school }}</td>
+                        </tr>
+                        <tr>
+                            <td>College / University</td>
+                            <td>{{ form.school_college_university }}</td>
+                            <td>{{ form.admission_year_college_university }}</td>
+                            <td>{{ form.admission_month_college_university }}</td>
+                            <td>{{ form.graduation_year_college_university }}</td>
+                            <td>{{ form.graduation_month_college_university }}</td>
+                            <td>{{ form.enrolled_years_college_university }}</td>
+                        </tr>
+                        <tr>
+                            <td>Graduate University</td>
+                            <td>{{ form.school_graduate_university }}</td>
+                            <td>{{ form.admission_year_graduate_university }}</td>
+                            <td>{{ form.admission_month_graduate_university }}</td>
+                            <td>{{ form.graduation_year_graduate_university }}</td>
+                            <td>{{ form.graduation_month_graduate_university }}</td>
+                            <td>{{ form.enrolled_years_graduate_university }}</td>
+                        </tr>
+                        <tr>
+                            <td>Other School</td>
+                            <td>{{ form.school_other_school }}</td>
+                            <td>{{ form.admission_year_other_school }}</td>
+                            <td>{{ form.admission_month_other_school }}</td>
+                            <td>{{ form.graduation_year_other_school }}</td>
+                            <td>{{ form.graduation_month_other_school }}</td>
+                            <td>{{ form.enrolled_years_other_school }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-
-            <!-- Navigation Buttons -->
-            <div class="form-navigation">
-                <div class="nav-buttons">
-                    <button type="button" class="btn btn-outline" id="prevBtn">← Previous</button>
-                    <button type="button" class="btn btn-primary" id="nextBtn">Next →</button>
-                </div>
-                <div class="nav-buttons">
-                    <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Submit
-                        Registration</button>
-                    {% comment %} <button type="reset" class="btn btn-reset">Reset Form</button> {% endcomment %}
-                </div>
-            </div>
-
-        </form>
-
-        <!-- Footer -->
-        <div style="text-align: center; margin-top: 40px; padding: 20px; color: rgba(255,255,255,0.8);">
-            <p>Need help? Contact support at <a href="mailto:support@aqua.edu"
-                    style="color: white; text-decoration: underline;">support@aqua.edu</a></p>
-            <p>Copyright © Aqua Group, All Rights Reserved</p>
         </div>
+    </div>
+
+    <!-- Step 3: Working Experience & Certificates -->
+    <div class="form-step" id="step-3">
+        <!-- Working Experience -->
+        <div class="form-section">
+            <div class="section-header">
+                <div class="section-icon">💼</div>
+                <div>
+                    <h3 class="section-title">Working Experience</h3>
+                    <p class="section-subtitle">Your professional work history</p>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="form-table">
+                    <thead>
+                        <tr>
+                            <th>Type of Work</th>
+                            <th>Name of Working Company</th>
+                            <th>Date of Join</th>
+                            <th>Date of Resign</th>
+                            <th>Working Years</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ form.work_type_1 }}</td>
+                            <td>{{ form.company_name_1 }}</td>
+                            <td>{{ form.join_date_1 }}</td>
+                            <td>{{ form.resign_date_1 }}</td>
+                            <td>{{ form.working_years_1 }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ form.work_type_2 }}</td>
+                            <td>{{ form.company_name_2 }}</td>
+                            <td>{{ form.join_date_2 }}</td>
+                            <td>{{ form.resign_date_2 }}</td>
+                            <td>{{ form.working_years_2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Certificates & Skills -->
+        <div class="form-section">
+            <div class="section-header">
+                <div class="section-icon">🏆</div>
+                <div>
+                    <h3 class="section-title">Certificates & Skills</h3>
+                    <p class="section-subtitle">Your qualifications and abilities</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_certificate_pass_year" class="form-label">Pass Year & Month</label>
+                    {{ form.certificate_pass_year }}
+                    {% if form.certificate_pass_year.errors %}
+                    <div class="field-error">
+                        <span>⚠️</span>
+                        {{ form.certificate_pass_year.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_certificate_name" class="form-label">Name of Certificate</label>
+                    {{ form.certificate_name }}
+                    {% if form.certificate_name.errors %}
+                    <div class="field-error">
+                        <span>⚠️</span>
+                        {{ form.certificate_name.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_language_join_year" class="form-label">Language Join Year & Month</label>
+                    {{ form.language_join_year }}
+                    {% if form.language_join_year.errors %}
+                    <div class="field-error">
+                        <span>⚠️</span>
+                        {{ form.language_join_year.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_organization" class="form-label">Organization</label>
+                    {{ form.organization }}
+                    {% if form.organization.errors %}
+                    <div class="field-error">
+                        <span>⚠️</span>
+                        {{ form.organization.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Driving License -->
+            <div class="form-section" style="margin-top: 20px;">
+                <div class="section-header">
+                    <div class="section-icon">🚗</div>
+                    <h3 class="section-title">Driving License</h3>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id_driving_license" class="form-label">Driving License</label>
+                        {{ form.driving_license }}
+                        {% if form.driving_license.errors %}
+                        <div class="field-error">
+                            <span>⚠️</span>
+                            {{ form.driving_license.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_license_pass_year" class="form-label">Pass Year & Month</label>
+                        {{ form.license_pass_year }}
+                        {% if form.license_pass_year.errors %}
+                        <div class="field-error">
+                            <span>⚠️</span>
+                            {{ form.license_pass_year.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_license_discretion" class="form-label">License Discretion</label>
+                        {{ form.license_discretion }}
+                        {% if form.license_discretion.errors %}
+                        <div class="field-error">
+                            <span>⚠️</span>
+                            {{ form.license_discretion.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hobbies & Motivation -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_hobbies" class="form-label required">Hobbies & Special Skills</label>
+                    {{ form.hobbies }}
+                    <div class="helper-text">List your hobbies and special skills</div>
+                    {% if form.hobbies.errors %}
+                    <div class="field-error">
+                        <span>⚠️</span>
+                        {{ form.hobbies.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_motivation" class="form-label required">Motivation & Self-Promotion</label>
+                    {{ form.motivation }}
+                    <div class="helper-text">Describe your motivation for this program</div>
+                    {% if form.motivation.errors %}
+                    <div class="field-error">
+                        <span>⚠️</span>
+                        {{ form.motivation.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Documents Upload -->
+    <div class="form-step" id="step-4">
+        <div class="form-section">
+            <div class="section-header">
+                <div class="section-icon">📁</div>
+                <div>
+                    <h3 class="section-title">Required Documents for Admission</h3>
+                    <p class="section-subtitle">Upload all necessary documents in color copy</p>
+                </div>
+            </div>
+
+            <div class="document-grid">
+                <div class="document-card" data-doc="passport">
+                    <div class="document-icon">🛂</div>
+                    <div class="document-title form-label required">PASSPORT</div>
+                    <input type="file" id="id_bio_data_file" name="bio_data_file"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;" required>
+                    <div class="document-requirements">
+                        PDF, Word, Images<br>
+                        Please Submit Color Copy
+                    </div>
+                    <div class="document-file-info" id="passport-file-info"></div>
+                </div>
+
+                <div class="document-card" data-doc="graduation">
+                    <div class="document-icon">🎓</div>
+                    <div class="document-title form-label required">CITIZENSHIP / DRIVING</div>
+                    <input type="file" id="id_id_info_file" name="id_info_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        style="display: none;" required>
+                    <div class="document-requirements">
+                        PDF, Word, Images<br>
+                        Please Submit Color Copy
+                    </div>
+                    <div class="document-file-info" id="graduation-file-info"></div>
+                </div>
+
+                <div class="document-card" data-doc="citizenship">
+                    <div class="document-icon">🏠</div>
+                    <div class="document-title form-label required">GRADUATION / TRANSCRIPT</div>
+                    <input type="file" id="id_educational_doc_file" name="educational_doc_file"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;" required>
+                    <div class="document-requirements">
+                        PDF, Word, Images<br>
+                        Please Submit Color Copy
+                    </div>
+                    <div class="document-file-info" id="citizenship-file-info"></div>
+                </div>
+
+                <div class="document-card" data-doc="medical">
+                    <div class="document-icon">⚕️</div>
+                    <div class="document-title form-label required">MEDICAL REPORT</div>
+                    <input type="file" id="id_report_file" name="report_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        style="display: none;" required>
+                    <div class="document-requirements">
+                        PDF, Word, Images<br>
+                        Please Submit Color Copy
+                    </div>
+                    <div class="document-file-info" id="medical-file-info"></div>
+                </div>
+
+                <div class="document-card" data-doc="other">
+                    <div class="document-icon">📄</div>
+                    <div class="document-title">Other PDF</div>
+                    <input type="file" id="id_other_file" name="other_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        style="display: none;">
+                    <div class="document-requirements">
+                        PDF, Word, Images<br>
+                        Please Submit Color Copy
+                    </div>
+                    <div class="document-file-info" id="other-file-info"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 5: Review & Submit -->
+    <div class="form-step" id="step-5">
+        <div class="form-section">
+            <div class="section-header">
+                <div class="section-icon">✅</div>
+                <div>
+                    <h3 class="section-title">Review & Submit</h3>
+                    <p class="section-subtitle">Please review your information before submission</p>
+                </div>
+            </div>
+
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 72px; margin-bottom: 20px;">📋</div>
+                <h3 style="color: var(--primary-color); margin-bottom: 15px;">Ready to Submit Your Application
+                </h3>
+                <p
+                    style="color: var(--text-light); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    Please ensure all information is correct. Once submitted, you cannot edit your application.
+                    Your application will be processed within 3-5 business days.
+                </p>
+
+                <div
+                    style="background: #f8f9ff; border-radius: 10px; padding: 25px; margin-bottom: 30px; text-align: left;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 15px;">📌 Submission Checklist:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        <div class="checkbox-option" style="background: white;">
+                            <input type="checkbox" id="check_personal" checked disabled>
+                            <label for="check_personal">Personal Information Complete</label>
+                        </div>
+                        <div class="checkbox-option" style="background: white;">
+                            <input type="checkbox" id="check_education" disabled>
+                            <label for="check_education">Educational History Filled</label>
+                        </div>
+                        <div class="checkbox-option" style="background: white;">
+                            <input type="checkbox" id="check_experience" disabled>
+                            <label for="check_experience">Work Experience Added</label>
+                        </div>
+                        <div class="checkbox-option" style="background: white;">
+                            <input type="checkbox" id="check_documents" disabled>
+                            <label for="check_documents">Documents Uploaded</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-outline" id="reviewAllBtn">
+                        👁️ Review All Information
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="finalSubmitBtn">
+                        ✅ Submit Application
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="form-navigation">
+        <div class="nav-buttons">
+            <button type="button" class="btn btn-outline" id="prevBtn">← Previous</button>
+            <button type="button" class="btn btn-primary" id="nextBtn">Next →</button>
+        </div>
+        <div class="nav-buttons">
+            <button type="submit" class="btn btn-primary" id="submitBtn" style="display: none;">Submit
+                Registration</button>
+            {% comment %} <button type="reset" class="btn btn-reset">Reset Form</button> {% endcomment %}
+        </div>
+    </div>
+
+    </form>
+
+    <!-- Footer -->
+    <div style="text-align: center; margin-top: 40px; padding: 20px; color: rgba(255,255,255,0.8);">
+        <p>Need help? Contact support at <a href="mailto:support@aqua.edu"
+                style="color: white; text-decoration: underline;">support@aqua.edu</a></p>
+        <p>Copyright © Aqua Group, All Rights Reserved</p>
+    </div>
     </div>
 
     <script>
@@ -1889,22 +1885,86 @@
 
             function validateStep(stepIndex) {
                 const currentStepElement = steps[stepIndex];
+
+                // Dynamically handle conditional required fields
+                const visaRecord = document.getElementById('id_visa_apply_record');
+                const visaDetails = document.getElementById('id_visa_details');
+                if (visaRecord && visaDetails) {
+                    if (visaRecord.value === 'yes') {
+                        visaDetails.setAttribute('required', 'required');
+                        const label = document.getElementById('label_visa_details');
+                        if (label) label.classList.add('required');
+                    } else {
+                        visaDetails.removeAttribute('required');
+                        const label = document.getElementById('label_visa_details');
+                        if (label) label.classList.remove('required');
+                    }
+                }
+
+                const maritalStatus = document.getElementById('id_marital_status');
+                const spouseFields = {
+                    'id_spouse_name': 'label_spouse_name',
+                    'id_spouse_contact': 'label_spouse_contact'
+                };
+                if (maritalStatus) {
+                    const isMarried = maritalStatus.value === 'married';
+                    Object.keys(spouseFields).forEach(fieldId => {
+                        const input = document.getElementById(fieldId);
+                        const label = document.getElementById(spouseFields[fieldId]);
+                        if (input) {
+                            if (isMarried) {
+                                input.setAttribute('required', 'required');
+                                if (label) label.classList.add('required');
+                            } else {
+                                input.removeAttribute('required');
+                                if (label) label.classList.remove('required');
+                            }
+                        }
+                    });
+                }
+
                 const requiredFields = currentStepElement.querySelectorAll('[required]');
                 let isValid = true;
 
                 requiredFields.forEach(field => {
-                    if (!field.value.trim()) {
+                    validateField(field);
+                });
+
+                function validateField(field) {
+                    let fieldValid = true;
+                    const val = field.value.trim();
+
+                    // Conditional Visa Details check (not just if it has 'required' attribute)
+                    const isVisaDetails = field.id === 'id_visa_details';
+                    const visaRecordVal = document.getElementById('id_visa_apply_record')?.value;
+                    const isActuallyRequired = field.hasAttribute('required') || (isVisaDetails && visaRecordVal === 'yes');
+
+                    if (isActuallyRequired && !val) {
+                        fieldValid = false;
+                    }
+                    else if (field.hasAttribute('pattern') && val) {
+                        const regex = new RegExp('^' + field.getAttribute('pattern') + '$');
+                        if (!regex.test(val)) {
+                            fieldValid = false;
+                        }
+                    }
+
+                    if (!fieldValid) {
                         field.classList.add('error');
                         isValid = false;
 
-                        // Show error message
-                        const errorDiv = field.parentElement.querySelector('.field-error');
+                        let errorDiv = field.parentElement.querySelector('.field-error');
                         if (!errorDiv) {
-                            const errorMessage = document.createElement('div');
-                            errorMessage.className = 'field-error';
-                            errorMessage.innerHTML = '<span>⚠️</span> This field is required';
-                            field.parentElement.appendChild(errorMessage);
+                            errorDiv = document.createElement('div');
+                            errorDiv.className = 'field-error';
+                            field.parentElement.appendChild(errorDiv);
                         }
+
+                        const errorMsg = (field.hasAttribute('pattern') && val)
+                            ? field.getAttribute('title') || 'Invalid format'
+                            : 'This field is required';
+
+                        errorDiv.innerHTML = `<span>⚠️</span> ${errorMsg}`;
                     } else {
                         field.classList.remove('error');
                         const errorDiv = field.parentElement.querySelector('.field-error');
@@ -1912,10 +1972,24 @@
                             errorDiv.remove();
                         }
                     }
+                    return fieldValid;
+                }
+
+                // Attach real-time validation to all inputs in this step
+                const allInputs = currentStepElement.querySelectorAll('input, select, textarea');
+                allInputs.forEach(input => {
+                    if (!input.dataset.validationAttached) {
+                        input.addEventListener('blur', () => validateField(input));
+                        input.addEventListener('input', () => {
+                            if (input.classList.contains('error')) {
+                                validateField(input);
+                            }
+                        });
+                        input.dataset.validationAttached = 'true';
+                    }
                 });
 
                 if (!isValid) {
-                    // Scroll to first error
                     const firstError = currentStepElement.querySelector('.error');
                     if (firstError) {
                         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2137,6 +2211,14 @@
                     } else {
                         visaDetailsContainer.style.display = 'none';
                     }
+                });
+            }
+
+            const maritalStatusField = document.getElementById('id_marital_status');
+            if (maritalStatusField) {
+                maritalStatusField.addEventListener('change', function () {
+                    // Trigger validation logic for current step to update indicators
+                    validateStep(currentStep);
                 });
             }
 
