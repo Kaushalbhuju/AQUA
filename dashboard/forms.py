@@ -78,58 +78,58 @@ class StudentForm(forms.ModelForm):
     # Educational history fields
     school_primary_school = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
     admission_year_primary_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    admission_month_primary_school = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
+    admission_month_primary_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
     graduation_year_primary_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    graduation_month_primary_school = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
-    enrolled_years_primary_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Years'}))
+    graduation_month_primary_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
+    enrolled_years_primary_school = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 6.0)'}))
     
     school_junior_h_school = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
     admission_year_junior_h_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    admission_month_junior_h_school = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
+    admission_month_junior_h_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
     graduation_year_junior_h_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    graduation_month_junior_h_school = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
-    enrolled_years_junior_h_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Years'}))
+    graduation_month_junior_h_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
+    enrolled_years_junior_h_school = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 3.0)'}))
     
     school_higher_s_school = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
     admission_year_higher_s_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    admission_month_higher_s_school = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
+    admission_month_higher_s_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
     graduation_year_higher_s_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    graduation_month_higher_s_school = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
-    enrolled_years_higher_s_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Years'}))
+    graduation_month_higher_s_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
+    enrolled_years_higher_s_school = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 2.0)'}))
     
     school_college_university = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
     admission_year_college_university = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    admission_month_college_university = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
+    admission_month_college_university = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
     graduation_year_college_university = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    graduation_month_college_university = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
-    enrolled_years_college_university = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Years'}))
+    graduation_month_college_university = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
+    enrolled_years_college_university = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 4.0)'}))
     
     school_graduate_university = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
     admission_year_graduate_university = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    admission_month_graduate_university = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
+    admission_month_graduate_university = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
     graduation_year_graduate_university = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    graduation_month_graduate_university = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
-    enrolled_years_graduate_university = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Years'}))
+    graduation_month_graduate_university = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
+    enrolled_years_graduate_university = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 2.0)'}))
     
     school_other_school = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
     admission_year_other_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    admission_month_other_school = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
+    admission_month_other_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
     graduation_year_other_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    graduation_month_other_school = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Month'}))
-    enrolled_years_other_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Years'}))
+    graduation_month_other_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
+    enrolled_years_other_school = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 1.0)'}))
     
     # Work experience fields
     work_type_1 = forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Work Type'}))
     company_name_1 = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Company Name'}))
     join_date_1 = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Join Date'}))
     resign_date_1 = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Resign Date'}))
-    working_years_1 = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Years'}))
+    working_years_1 = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 2.6)'}))
     
     work_type_2 = forms.CharField(max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Work Type'}))
     company_name_2 = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Company Name'}))
     join_date_2 = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Join Date'}))
     resign_date_2 = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Resign Date'}))
-    working_years_2 = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Years'}))
+    working_years_2 = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 1.3)'}))
     
     # Document fields
     bio_data_file = forms.FileField(label="Passport", required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
@@ -263,8 +263,15 @@ class StudentForm(forms.ModelForm):
         for level in ['primary_school', 'junior_h_school', 'higher_s_school', 'college_university', 'graduate_university', 'other_school']:
             adm_yr = cleaned_data.get(f'admission_year_{level}')
             grad_yr = cleaned_data.get(f'graduation_year_{level}')
-            if adm_yr and grad_yr and grad_yr < adm_yr:
-                self.add_error(f'graduation_year_{level}', 'Graduation year cannot be earlier than admission year.')
+            adm_mo = cleaned_data.get(f'admission_month_{level}')
+            grad_mo = cleaned_data.get(f'graduation_month_{level}')
+            
+            if adm_yr and grad_yr:
+                adm_total = int(adm_yr) * 12 + int(adm_mo or 1)
+                grad_total = int(grad_yr) * 12 + int(grad_mo or 1)
+                
+                if grad_total < adm_total:
+                    self.add_error(f'graduation_year_{level}', 'Graduation date cannot be earlier than admission date.')
 
         return cleaned_data
 

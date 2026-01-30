@@ -1164,7 +1164,7 @@
                             {% endif %}
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" id="spouseNameContainer" style="display: none;">
                             <label for="id_spouse_name" class="form-label" id="label_spouse_name">Spouse Name</label>
                             {{ form.spouse_name }}
                             {% if form.spouse_name.errors %}
@@ -1175,7 +1175,7 @@
                             {% endif %}
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" id="spouseContactContainer" style="display: none;">
                             <label for="id_spouse_contact" class="form-label" id="label_spouse_contact">Spouse Contact
                                 No.</label>
                             {{ form.spouse_contact }}
@@ -2214,12 +2214,31 @@
                 });
             }
 
+            // Spouse details toggle
             const maritalStatusField = document.getElementById('id_marital_status');
-            if (maritalStatusField) {
+            const spouseNameContainer = document.getElementById('spouseNameContainer');
+            const spouseContactContainer = document.getElementById('spouseContactContainer');
+
+            function toggleSpouseFields() {
+                if (maritalStatusField.value === 'married') {
+                    spouseNameContainer.style.display = 'block';
+                    spouseContactContainer.style.display = 'block';
+                } else {
+                    spouseNameContainer.style.display = 'none';
+                    spouseContactContainer.style.display = 'none';
+                }
+            }
+
+            if (maritalStatusField && spouseNameContainer && spouseContactContainer) {
                 maritalStatusField.addEventListener('change', function () {
+                    toggleSpouseFields();
                     // Trigger validation logic for current step to update indicators
-                    validateStep(currentStep);
+                    if (typeof validateStep === 'function') {
+                        validateStep(currentStep);
+                    }
                 });
+                // Initial check
+                toggleSpouseFields();
             }
 
             // Review all information button
@@ -2401,15 +2420,20 @@
                 const enrolledInput = document.getElementById(`id_enrolled_years_${level}`);
 
                 function calculateEnrolled() {
-                    const admission = parseInt(adminInput.value);
-                    const graduation = parseInt(gradInput.value);
+                    const admissionYear = parseInt(adminInput.value);
+                    const graduationYear = parseInt(gradInput.value);
+                    const admissionMonth = parseInt(document.getElementById(`id_admission_month_${level}`).value) || 1;
+                    const graduationMonth = parseInt(document.getElementById(`id_graduation_month_${level}`).value) || 1;
 
-                    if (!isNaN(admission) && !isNaN(graduation)) {
-                        const diff = graduation - admission;
+                    if (!isNaN(admissionYear) && !isNaN(graduationYear)) {
+                        const admTotalMonths = admissionYear * 12 + admissionMonth;
+                        const gradTotalMonths = graduationYear * 12 + graduationMonth;
+                        const diff = gradTotalMonths - admTotalMonths;
+
                         if (diff >= 0) {
-                            enrolledInput.value = diff;
-                            // Make enrolled read-only to prevent manual override if desired, 
-                            // but usually it's good to keep it editable in case of edge cases.
+                            const years = Math.floor(diff / 12);
+                            const months = diff % 12;
+                            enrolledInput.value = `${years}.${months}`;
                             enrolledInput.setAttribute('readonly', true);
                             enrolledInput.style.backgroundColor = '#f8f9fa';
                         } else {
@@ -2421,6 +2445,12 @@
                 if (adminInput && gradInput && enrolledInput) {
                     adminInput.addEventListener('input', calculateEnrolled);
                     gradInput.addEventListener('input', calculateEnrolled);
+
+                    const admMonthInput = document.getElementById(`id_admission_month_${level}`);
+                    const gradMonthInput = document.getElementById(`id_graduation_month_${level}`);
+
+                    if (admMonthInput) admMonthInput.addEventListener('change', calculateEnrolled);
+                    if (gradMonthInput) gradMonthInput.addEventListener('change', calculateEnrolled);
                 }
             });
         });

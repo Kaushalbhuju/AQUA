@@ -163,7 +163,7 @@ class EducationalHistory(models.Model):
     admission_month = models.CharField(max_length=20, blank=True, null=True)
     graduation_year = models.IntegerField(blank=True, null=True)
     graduation_month = models.CharField(max_length=20, blank=True, null=True)
-    enrolled_years = models.IntegerField(blank=True, null=True)
+    enrolled_years = models.CharField(max_length=10, blank=True, null=True)
     
     def __str__(self):
         return f"{self.student.full_name} - {self.pass_level}"
@@ -174,7 +174,7 @@ class WorkExperience(models.Model):
     company_name = models.CharField(max_length=200)
     join_date = models.CharField(max_length=50, blank=True, null=True)
     resign_date = models.CharField(max_length=50, blank=True, null=True)
-    working_years = models.IntegerField(blank=True, null=True)
+    working_years = models.CharField(max_length=10, blank=True, null=True)
     
     def __str__(self):
         return f"{self.student.full_name} - {self.company_name}"
