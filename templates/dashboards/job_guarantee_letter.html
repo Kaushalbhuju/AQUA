@@ -7,7 +7,7 @@
     <style>
         @page {
             size: A4;
-            margin: 20mm;
+            margin: 15mm;
         }
 
         body {
@@ -135,7 +135,7 @@
     </div>
 
     <div class="candidate-info">
-        <div>MR. {{ student.full_name|upper }}</div>
+        <div>{% if student.gender == 'female' %}MS.{% else %}MR.{% endif %} {{ student.full_name|upper }}</div>
         <div>Date of Birth: {{ student.date_of_birth|date:"d, M Y"|upper }}</div>
     </div>
 
@@ -150,7 +150,7 @@
         HIRE TERM AND CONDITION
     </div>
 
-    <ol>
+    <ol style="margin-bottom: 10px;">
         <li>You must complete the <b>Six (6) months Japanese Language Course</b> at Aqua Education and Training Academy
             Pvt. Ltd located in Lazimpat-02, Kathmandu Nepal.</li>
         <li>You must pass the <b>Japanese Language Test N4 and N3 Level</b> before Interview in Nepal.</li>
