@@ -11,6 +11,8 @@ def check_role(*allowed_roles):
             if user_role in allowed_roles:
                 return view_func(request, *args, **kwargs)
 
-            return redirect('no_permission')
+            from django.contrib import messages
+            messages.error(request, "You do not have permission to access this page.")
+            return redirect('dashboard:home')
         return wrapper
     return decorator

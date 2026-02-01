@@ -5,8 +5,7 @@ from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib import messages
 from django.urls import reverse
 from dashboard.models import Student
-from django.contrib.auth.decorators import login_required
-from  dashboard.decorators import check_role
+from dashboard.decorators import check_role
 
 
 
