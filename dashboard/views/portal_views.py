@@ -30,31 +30,30 @@ class PortalStudentRegistrationView(View):
     
     def post(self, request):
         # Check if this is a login attempt or registration submission
-        if 'agent_code' in request.POST and 'pin_code' in request.POST:
-            # Handle agent login for candidate
+        # Registration form has full_name, login form only has agent_code
+        if 'agent_code' in request.POST and 'full_name' not in request.POST:
+            # Handle agent login for candidate (promo code only)
             return self._handle_agent_login(request)
         else:
             # Handle student registration form
             return self._handle_student_registration(request)
     
     def _handle_agent_login(self, request):
-        """Authenticate agent for candidate registration"""
+        """Authenticate agent for candidate registration using promo code only"""
         agent_code = request.POST.get('agent_code', '').strip().upper()
-        pin_code = request.POST.get('pin_code', '').strip()
         
-        if agent_code and pin_code:
+        if agent_code:
             try:
-                # Validate agent credentials directly
+                # Validate agent credentials using promo code only
                 agent = Agent.objects.get(
                     agent_code=agent_code,
-                    pin_code=pin_code,
                     is_active=True
                 )
                 
                 # Check if agent has available slots
                 if not agent.can_register_candidate():
                     return render(request, 'candidate_portal/candidate_login.html', {
-                        'error_message': f'Agent {agent.agent_code} has reached maximum candidate limit ({agent.max_candidates}).',
+                        'error_message': f'Promo code {agent.agent_code} has reached maximum registration limit ({agent.max_candidates}).',
                         'page_title': 'Student Registration Portal'
                     })
                 
@@ -62,7 +61,6 @@ class PortalStudentRegistrationView(View):
                 request.session['portal_agent_id'] = agent.id
                 request.session['portal_agent_code'] = agent.agent_code
                 request.session['portal_agent_name'] = agent.name
-                request.session['portal_agent_pin'] = agent.pin_code
                 
                 # Show registration form
                 form = StudentRegistrationForm(agent=agent)
@@ -75,12 +73,12 @@ class PortalStudentRegistrationView(View):
                 
             except Agent.DoesNotExist:
                 return render(request, 'candidate_portal/candidate_login.html', {
-                    'error_message': 'Invalid agent code or PIN. Please try again.',
+                    'error_message': 'Invalid promo code. Please try again.',
                     'page_title': 'Student Registration Portal'
                 })
         else:
             return render(request, 'candidate_portal/candidate_login.html', {
-                'error_message': 'Please enter both agent code and PIN.',
+                'error_message': 'Please enter a promo code.',
                 'page_title': 'Student Registration Portal'
             })
     

@@ -650,10 +650,10 @@
                             class="btn btn-pdf">
                             📄 PDF
                         </a>
-                        {% if request.user.is_authenticated and request.user.role == 'manager' and student.status == 'approved' %}
+                        {% if request.user.is_authenticated and request.user.role == 'manager' and student.status == 'approved' %}
                         <a href="{% url 'guarantee_letter:issue_for_student' student.id %}" target="_blank"
                             class="btn btn-view">
-                            Issue Job Gurantee Letter
+                            Issue Job Guarantee Letter
                         </a>
                         {% endif %}
                         <a href="{% url 'dashboard:student_application_detail' student.id %}" class="btn btn-view">
@@ -807,7 +807,13 @@
         }
 
         window.onload = function () {
-            filterByStatus("all");
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam && ['pending', 'approved', 'declined'].includes(tabParam)) {
+                showTab(tabParam);
+            } else {
+                showTab('all');
+            }
         };
     </script>
 </body>

@@ -1,142 +1,268 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page_title }}</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
-        
-        .login-container {
+
+        .main-container {
+            text-align: center;
+            color: white;
+        }
+
+        .main-container h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-container p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .start-btn {
             background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 400px;
-            width: 100%;
+            color: #667eea;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
-        
-        .login-header {
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Modal Styles */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            position: relative;
+            animation: slideDown 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-header {
             text-align: center;
             margin-bottom: 30px;
         }
-        
-        .login-header h1 {
+
+        .modal-header h2 {
             color: #2c3e50;
             margin-bottom: 10px;
+            font-size: 1.8em;
         }
-        
-        .login-header p {
+
+        .modal-header p {
             color: #7f8c8d;
             margin: 0;
+            font-size: 1em;
         }
-        
+
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: #2c3e50;
+            text-align: left;
         }
-        
+
         .form-control {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: 2px solid #e9ecef;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s ease;
         }
-        
+
         .form-control:focus {
-            border-color: #3498db;
+            border-color: #667eea;
             outline: none;
         }
-        
-        .btn {
+
+        .btn-submit {
             width: 100%;
-            padding: 12px;
-            background: #3498db;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
         }
-        
-        .btn:hover {
-            background: #2980b9;
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
-        
+
         .error-message {
-            background: #f8d7da;
-            color: #721c24;
+            background: #fee;
+            color: #c33;
             padding: 12px;
-            border-radius: 5px;
+            border-radius: 8px;
             margin-bottom: 20px;
             border-left: 4px solid #e74c3c;
+            text-align: left;
         }
-        
+
         .info-box {
-            background: #d1ecf1;
+            background: #e8f4f8;
             color: #0c5460;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 8px;
             margin-top: 20px;
             font-size: 14px;
+            text-align: left;
+            border-left: 4px solid #17a2b8;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <h1>Student Registration</h1>
-            <p>Enter your Partner's access codes</p>
-        </div>
-        
-        {% if error_message %}
-        <div class="error-message">
-            {{ error_message }}
-        </div>
-        {% endif %}
-        
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="agent_code">Partner's Code *</label>
-                <input type="text" name="agent_code" id="agent_code" class="form-control" 
-                       placeholder="Enter agent code (e.g., AGT585095)" required
-                       value="{{ request.POST.agent_code|default:'' }}">
+    <!-- Main Landing Section -->
+    <div class="main-container">
+        <!-- Background only, no button needed as popup opens automatically -->
+    </div>
+
+    <!-- Modal Backdrop and Modal -->
+    <div class="modal-backdrop" id="modalBackdrop">
+        <div class="modal">
+
+            <div class="modal-header">
+                <h2>Enter Promo Code</h2>
+                <p>Please enter your promo code to continue</p>
             </div>
-            
-            <div class="form-group">
-                <label for="pin_code">PIN Code *</label>
-                <input type="password" name="pin_code" id="pin_code" class="form-control" 
-                       placeholder="Enter PIN code" required>
+
+            {% if error_message %}
+            <div class="error-message">
+                {{ error_message }}
             </div>
-            
-            <button type="submit" class="btn">Continue to Registration</button>
-        </form>
-        
-        <div class="info-box">
-            <strong>Note:</strong> You need valid partner credentials to register students. 
-            Contact your education agent if you don't have these codes.
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="agent_code">Promo Code *</label>
+                    <input type="text" name="agent_code" id="agent_code" class="form-control"
+                        placeholder="Enter your promo code (e.g., AGT585095)" required
+                        value="{{ request.POST.agent_code|default:'' }}">
+                </div>
+
+                <button type="submit" class="btn-submit">Continue to Registration</button>
+            </form>
+
+            <div class="info-box">
+                <strong>Note:</strong>Please confirm your Promo Code.
+            </div>
         </div>
     </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('modalBackdrop').classList.add('active');
+            document.getElementById('agent_code').focus();
+        }
+
+        // Show modal automatically on page load
+        window.onload = function () {
+            openModal();
+        };
+    </script>
 </body>
+
 </html>

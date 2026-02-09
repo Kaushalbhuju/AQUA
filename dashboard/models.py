@@ -84,9 +84,9 @@ class Student(models.Model):
     family_records = models.TextField(blank=True, null=True)
     
     # Passport Information
-    passport_no = models.CharField(max_length=20)
-    passport_issue_date = models.DateField()
-    passport_expiry_date = models.DateField()
+    passport_no = models.CharField(max_length=20, blank=True, null=True)
+    passport_issue_date = models.DateField(blank=True, null=True)
+    passport_expiry_date = models.DateField(blank=True, null=True)
 
     # Physical Information
     height = models.CharField(max_length=20)

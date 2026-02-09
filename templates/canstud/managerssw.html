@@ -1,30 +1,45 @@
-{% load i18n %}
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SSW Workflow Interface</title>
 
   <style>
-    .logout-btn {
-      background-color: #d9534f;
+    .logout-btn,
+    .back-btn {
       color: white;
       border: none;
       padding: 8px 16px;
       cursor: pointer;
       border-radius: 4px;
       font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
     }
+
+    .logout-btn {
+      background-color: #d9534f;
+    }
+
     .logout-btn:hover {
       background-color: #c9302c;
+    }
+
+    .back-btn {
+      background-color: #5cb85c;
+      margin-left: 10px;
+    }
+
+    .back-btn:hover {
+      background-color: #4cae4c;
     }
 
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      background-color:rgb(236, 234, 234);
+      background-color: rgb(236, 234, 234);
       color: #333;
     }
 
@@ -34,9 +49,10 @@
       padding: 1rem 1.5rem;
       display: flex;
       align-items: center;
-      justify-content: center; /* keeps title centered */
+      justify-content: center;
+      /* keeps title centered */
       position: relative;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     header h1 {
@@ -44,12 +60,13 @@
       font-size: 2rem;
     }
 
-    /* Position logout button absolutely in top-left corner */
-    header .logout-btn {
+    /* Position nav container absolutely in top-left corner */
+    header .nav-container {
       position: absolute;
       left: 1.5rem;
       top: 50%;
       transform: translateY(-50%);
+      display: flex;
     }
 
     main {
@@ -107,15 +124,19 @@
     footer {
       text-align: center;
       padding: 2rem;
-      background-color:rgb(250, 249, 249);
+      background-color: rgb(250, 249, 249);
       font-size: 1rem;
       margin-top: auto;
     }
   </style>
 </head>
+
 <body>
   <header>
-    <a href="{% url 'accounts:login' %}" class="logout-btn">{% trans "Logout" %}</a>
+    <div class="nav-container">
+      <a href="{% url 'accounts:login_view' %}" class="logout-btn">Logout</a>
+      <a href="{% url 'dashboard:manager_dashboard' %}" class="back-btn">Back to Dashboard</a>
+    </div>
     <h1>SSW Workflow Interface</h1>
   </header>
 
@@ -123,26 +144,26 @@
     <section>
       <h2>① SSW and Working Business Operation</h2>
       <div class="button-grid">
-        <a href="{% url 'regcompany:company_list' %}" class="workflow-button">{% trans "COMPANY REGISTRATION" %}</a>
-        <a href="{% url 'dashboard:student_registration' %}" class="workflow-button">{% trans "CANDIDATE REGISTRATION" %}</a>
-        <a href="{% url 'coe_visa:seoandvisa_dashboard' %}" class="workflow-button">{% trans "COE & VISA RECORDS" %}</a>
-        <a href="{% url 'year_buttons' %}" class="workflow-button">{% trans "AGREEMENTS DOCUMENTS" %}</a>
-        <a href="{% url 'sswdashboard:professional_dashboard' %}" class="workflow-button">{% trans "ADMISSION & FEE PAYMENT" %}</a>
-        <a href="{% url 'letter_list' %}" class="workflow-button">{% trans "JOB DEMAND" %}</a>
-        <a href="#" class="workflow-button">{% trans "LANGUAGE & SSW SKILL EXAM" %}</a>
-        <a href="#" class="workflow-button">{% trans "INTERVIEW SCHEDULE" %}</a>
+        <a href="{% url 'regcompany:company_list' %}" class="workflow-button">COMPANY REGISTRATION</a>
+        <a href="{% url 'dashboard:student_registration' %}" class="workflow-button">CANDIDATE REGISTRATION</a>
+        <a href="{% url 'coe_visa:seoandvisa_dashboard' %}" class="workflow-button">COE & VISA RECORDS</a>
+        <a href="{% url 'year_buttons' %}" class="workflow-button">AGREEMENTS DOCUMENTS</a>
+        <a href="{% url 'sswdashboard:professional_dashboard' %}" class="workflow-button">ADMISSION & FEE PAYMENT</a>
+        <a href="{% url 'letter_list' %}" class="workflow-button">JOB DEMAND</a>
+        <a href="#" class="workflow-button">LANGUAGE & SSW SKILL EXAM</a>
+        <a href="#" class="workflow-button">INTERVIEW SCHEDULE</a>
       </div>
     </section>
 
     <section>
-      <h2>{% trans "Document Issue and Manage" %}</h2>
+      <h2>Document Issue and Manage</h2>
       <div class="button-grid">
-        <a href="{% url 'guarantee_letter:letter_list_list' %}" class="workflow-button">{% trans "JOB GUARANTEE LETTER" %}</a>
-        <a href="#" class="workflow-button">{% trans "COMPANY APPLICATION FORM" %}</a>
-        <a href="{% url 'dashboard:student_list' %}" class="workflow-button">{% trans "CANDIDATE BIO-DATA" %}</a>
-        <a href="#" class="workflow-button">{% trans "LANGUAGE LEARNING CERTIFICATE" %}</a>
-        <a href="#" class="workflow-button">{% trans "SCAN DOCUMENTS" %}</a>
-        <a href="{% url 'document_list' %}" class="workflow-button">{% trans "OTHER DOCUMENTS" %}</a>
+        <a href="{% url 'guarantee_letter:letter_list_list' %}" class="workflow-button">JOB GUARANTEE LETTER</a>
+        <a href="#" class="workflow-button">COMPANY APPLICATION FORM</a>
+        <a href="{% url 'dashboard:student_list' %}" class="workflow-button">CANDIDATE BIO-DATA</a>
+        <a href="#" class="workflow-button">LANGUAGE LEARNING CERTIFICATE</a>
+        <a href="#" class="workflow-button">SCAN DOCUMENTS</a>
+        <a href="{% url 'document_list' %}" class="workflow-button">OTHER DOCUMENTS</a>
       </div>
     </section>
   </main>
@@ -151,5 +172,5 @@
     <p>© Aqua Group, All Rights Reserved.</p>
   </footer>
 </body>
+
 </html>
- 

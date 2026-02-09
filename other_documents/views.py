@@ -11,6 +11,10 @@ from .forms import FinancialDocumentForm, DocumentCommentForm
 def document_list(request):
     documents = FinancialDocument.objects.all()
     
+    # Restrict confidential documents to managers only
+    if not hasattr(request.user, 'role') or request.user.role != 'manager':
+        documents = documents.filter(is_confidential=False)
+    
     # Simple search
     search_query = request.GET.get('search', '')
     if search_query:
@@ -82,6 +86,11 @@ def upload_document(request):
 @login_required
 def document_detail(request, pk):
     document = get_object_or_404(FinancialDocument, pk=pk)
+
+    # Check for confidential access
+    if document.is_confidential and (not hasattr(request.user, 'role') or request.user.role != 'manager'):
+        messages.error(request, 'Access denied: This document is confidential and restricted to managers only.')
+        return redirect('document_list')
     
     # Handle comments
     if request.method == 'POST':
@@ -103,3 +112,42 @@ def document_detail(request, pk):
         'comments': comments,
         'comment_form': comment_form,
     })
+
+@login_required
+def edit_document(request, pk):
+    document = get_object_or_404(FinancialDocument, pk=pk)
+    
+    # Check permission
+    if not (request.user.is_staff or document.uploaded_by == request.user):
+        messages.error(request, 'You do not have permission to edit this document.')
+        return redirect('document_list')
+    
+    if request.method == 'POST':
+        form = FinancialDocumentForm(request.POST, request.FILES, instance=document)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Document updated successfully!')
+            return redirect('document_detail', pk=pk)
+    else:
+        form = FinancialDocumentForm(instance=document)
+    
+    return render(request, 'other_document/edit_document.html', {
+        'form': form,
+        'document': document,
+    })
+
+@login_required
+def delete_document(request, pk):
+    document = get_object_or_404(FinancialDocument, pk=pk)
+    
+    # Check permission
+    if not (request.user.is_staff or document.uploaded_by == request.user):
+        messages.error(request, 'You do not have permission to delete this document.')
+        return redirect('document_list')
+    
+    if request.method == 'POST':
+        document.delete()
+        messages.success(request, 'Document deleted successfully!')
+        return redirect('document_list')
+    
+    return render(request, 'other_document/confirm_delete.html', {'document': document})

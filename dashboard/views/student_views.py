@@ -499,12 +499,21 @@ def _approval_page(request, student_id, action):
     page_title = 'Approve Student Application' if action == 'approve' else 'Decline Student Application'
     button_text = 'Confirm Approval' if action == 'approve' else 'Confirm Decline'
     button_class = 'btn-success' if action == 'approve' else 'btn-danger'
+    
+    # Determine back link based on user role
+    user_role = getattr(request.user, 'role', '')
+    if user_role in ['staff', 'manager', 'admin']:
+        back_url = 'dashboard:student_list'
+    else:
+        back_url = 'dashboard:recruitment_client_dashboard'
+        
     return render(request, 'dashboards/approval_page.html', {
         'student': student,
         'action': action,
         'page_title': page_title,
         'button_text': button_text,
-        'button_class': button_class
+        'button_class': button_class,
+        'back_url': back_url
     })
 
 @login_required
@@ -599,6 +608,7 @@ def test_form_submission(request):
 
 
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -626,13 +636,25 @@ def update_student_status(request, student_id, status=None):
 
             messages.success(request, f'Student {student.full_name} has been {student.status}.')
 
-            # Redirect to success page for approval, dashboard for decline
+            # Redirect logic
             if student.status == 'approved':
                 return redirect('dashboard:approval_success', student_id=student.id)
+            elif student.status == 'declined':
+                # For staff/managers, go back to student list with declined tab
+                user_role = getattr(request.user, 'role', '')
+                if user_role in ['staff', 'manager', 'admin']:
+                    return redirect(f"{reverse('dashboard:student_list')}?tab=declined")
+                else:
+                    return redirect('dashboard:recruitment_client_dashboard')
         else:
             messages.error(request, 'Invalid action.')
 
-    return redirect('dashboard:recruitment_client_dashboard')
+    # Fallback redirect if not POST or invalid action
+    user_role = getattr(request.user, 'role', '')
+    if user_role in ['staff', 'manager', 'admin']:
+         return redirect('dashboard:student_list')
+    else:
+        return redirect('dashboard:recruitment_client_dashboard')
 
 @login_required
 def approval_success(request, student_id):

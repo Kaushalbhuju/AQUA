@@ -2,9 +2,10 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% trans "SSW & Working Visa Checklist" %}</title>
   <style>
     body {
@@ -19,12 +20,61 @@
       color: white;
       padding: 1.5rem;
       text-align: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .logout-btn,
+    .back-btn {
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 1rem;
+    }
+
+    .logout-btn {
+      background-color: #d9534f;
+    }
+
+    .logout-btn:hover {
+      background-color: #c9302c;
+    }
+
+    .back-btn {
+      background-color: #5cb85c;
+      margin-left: 10px;
+    }
+
+    .back-btn:hover {
+      background-color: #4cae4c;
+    }
+
+    header .nav-container {
+      position: absolute;
+      left: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+    }
+
+    /* Quick fix for mobile to stack nav/title */
+    @media (max-width: 768px) {
+      header .nav-container {
+        position: static;
+        transform: none;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
     }
 
     header h1 {
-        margin: 0;
-        font-size: 2rem;
+      margin: 0;
+      font-size: 2rem;
     }
 
     main {
@@ -53,31 +103,34 @@
     .button-list {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem; /* Increased gap between vertical buttons */
+      gap: 1.5rem;
+      /* Increased gap between vertical buttons */
     }
 
     .workflow-button {
-      display: flex; /* Centers text vertically and horizontally */
+      display: flex;
+      /* Centers text vertically and horizontally */
       justify-content: center;
       align-items: center;
       text-align: center;
-      
+
       background-color: #ffffff;
-      border: 3px solid #0077b6; /* Thicker border */
+      border: 3px solid #0077b6;
+      /* Thicker border */
       color: #0077b6;
-      
+
       /* BULKINESS SETTINGS */
       padding: 2rem 1.5rem;
       min-height: 80px;
       border-radius: 12px;
-      
+
       /* TEXT SETTINGS */
       font-size: 1.2rem;
       font-weight: 700;
       text-decoration: none;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      
+
       /* DEPTH */
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       transition: all 0.2s ease-in-out;
@@ -97,21 +150,27 @@
       font-size: 1rem;
       margin-top: 3rem;
     }
-    
+
     /* Small tweak for mobile screens to handle the bulky buttons */
     @media (max-width: 500px) {
-        .grid-container {
-            grid-template-columns: 1fr;
-        }
-        .workflow-button {
-            padding: 1.5rem 1rem;
-            font-size: 1rem;
-        }
+      .grid-container {
+        grid-template-columns: 1fr;
+      }
+
+      .workflow-button {
+        padding: 1.5rem 1rem;
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
+
 <body>
   <header>
+    <div class="nav-container">
+      <a href="{% url 'accounts:login_view' %}" class="logout-btn">{% trans "Logout" %}</a>
+      <a href="{% url 'dashboard:staff_dashboard' %}" class="back-btn">{% trans "Back to Dashboard" %}</a>
+    </div>
     <h1>{% trans "STUDENT VISA & DOCUMENT" %}</h1>
   </header>
 
@@ -119,7 +178,8 @@
     <h2>{% trans "Required Steps & Documents" %}</h2>
     <div class="grid-container">
       <div class="button-list">
-        <a href="{% url 'dashboard:student_registration' %}" class="workflow-button">{% trans "STUDENT REGISTRATION" %}</a>
+        <a href="{% url 'dashboard:student_registration' %}" class="workflow-button">{% trans "STUDENT REGISTRATION"
+          %}</a>
         <a href="#" class="workflow-button">{% trans "STUDENT BIO-DATA" %}</a>
         <a href="#" class="workflow-button">{% trans "COLLEGE APPLICATION FORM" %}</a>
         <a href="#" class="workflow-button">{% trans "COE & VISA REPORT" %}</a>
@@ -140,4 +200,5 @@
     <p>© Aqua Group, All Rights Reserved.</p>
   </footer>
 </body>
+
 </html>

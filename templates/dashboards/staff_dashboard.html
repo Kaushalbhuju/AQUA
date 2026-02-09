@@ -3,125 +3,155 @@
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Visa Navigation Portal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <style>
-      body {
-        background-color: #f8f9fa;
-      }
-      .navbar {
-        padding-top: 1.5rem;  /* increase top spacing */
-        padding-bottom: 1.5rem; /* increase bottom spacing */
-      }
-      .logout-btn {
-        background-color: #d9534f;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        cursor: pointer;
-        border-radius: 4px;
-        font-weight: bold;
-      }
-      .logout-btn:hover {
-        background-color: #c9302c;
-      }
-      
-      
-      /* Navbar custom dark blue */
-      .bg-custom {
-        background-color: #004E89 !important;
-      }
-      
-      .hero {
-        padding: 4rem 4rem;
-        text-align: center;
-        background-color: #e9ecef;
-        border-bottom: 30px solid #dee2e6;
-      }
-      .btn-group {
-        margin-top: 8rem;
-        display: flex;
-        flex-direction: column; /* stack vertically */
-        align-items: center;
-        gap: 2rem; /* more spacing between buttons */
-        width: 100%;
-        max-width: 800px; /* wider container */
-        margin-left: auto;
-        margin-right: auto;
-      }
-      .btn-xxl {
-        padding: 2rem 4rem;   /* much bigger padding */
-        font-size: 2rem;      /* oversized text */
-        border-radius: 0.75rem;
-        width: 100%;          /* full width */
-        font-weight: bold;    /* bold text */
-      }
-      .footer {
-        background-color:rgb(255, 255, 255) !important; /* dark blue background */
-        border-top: 1px solidrgb(255, 255, 255);        /* subtle darker border */
-      }
-      
-      .footer small,
-      .footer a {
-        color:rgb(56, 59, 54) !important;            /* light text for contrast */
-      }
-      
-      .footer a:hover {
-        color:rgb(66, 79, 86);                       /* aqua hover effect */
-        text-decoration: underline;
-      }
-      
-    </style>
-  </head>
-  <body>
-    <!-- Navigation Header -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-custom">
-      <div class="container-fluid d-flex justify-content-between align-items-center">
-        
-        <!-- Left: Logout -->
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
-          </li>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visa Navigation Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .navbar {
+      padding-top: 1.5rem;
+      /* increase top spacing */
+      padding-bottom: 1.5rem;
+      /* increase bottom spacing */
+    }
+
+    .logout-btn {
+      background-color: #d9534f;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .logout-btn:hover {
+      background-color: #c9302c;
+    }
+
+
+    /* Navbar custom dark blue */
+    .bg-custom {
+      background-color: #004E89 !important;
+    }
+
+    .hero {
+      padding: 4rem 4rem;
+      text-align: center;
+      background-color: #e9ecef;
+      border-bottom: 30px solid #dee2e6;
+    }
+
+    .btn-group {
+      margin-top: 8rem;
+      display: flex;
+      flex-direction: column;
+      /* stack vertically */
+      align-items: center;
+      gap: 2rem;
+      /* more spacing between buttons */
+      width: 100%;
+      max-width: 800px;
+      /* wider container */
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .btn-xxl {
+      padding: 2rem 4rem;
+      /* much bigger padding */
+      font-size: 2rem;
+      /* oversized text */
+      border-radius: 0.75rem;
+      width: 100%;
+      /* full width */
+      font-weight: bold;
+      /* bold text */
+    }
+
+    .footer {
+      background-color: rgb(255, 255, 255) !important;
+      /* dark blue background */
+      border-top: 1px solidrgb(255, 255, 255);
+      /* subtle darker border */
+    }
+
+    .footer small,
+    .footer a {
+      color: rgb(56, 59, 54) !important;
+      /* light text for contrast */
+    }
+
+    .footer a:hover {
+      color: rgb(66, 79, 86);
+      /* aqua hover effect */
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navigation Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-custom">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+
+      <!-- Left: Logout & Switch -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="logout-btn me-2" href="{% url 'accounts:login_view' %}">Logout</a>
+        </li>
+        {% if user.role == 'manager' or user.role == 'operation_head' %}
+        <li class="nav-item">
+          <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:manager_dashboard' %}">Switch to Manager
+            View</a>
+        </li>
+        {% endif %}
+      </ul>
+
+
+      <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
+        <h4>RECRUITMENT MANAGEMENT CONTROLLING SYSTEM</h4>
+      </a>
+
+      <!-- Right: optional links (empty for now) -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <!-- Add right-side items here if needed -->
         </ul>
-    
-        
-        <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
-          <h4>RECRUITMENT MANAGEMENT CONTROLLING SYSTEM</h4>
-        </a> 
-    
-        <!-- Right: optional links (empty for now) -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <!-- Add right-side items here if needed -->
-          </ul>
-        </div>
-      </div>
-    </nav>
-    <!-- Hero Section -->
-    <div class="hero">
-      <h1 class="display-5 fw-bold">Where are you going to?</h1>
-      <p class="lead">Choose your visa category to proceed with registration and documentation.</p>
-      <div class="btn-group">
-        <a href="{% url 'staff_ssw_working_visa' %}" class="btn btn-outline-primary btn-xxl">SSW & Working Visa</a>
-        <a href="{% url 'staff_student_visa' %}" class="btn btn-outline-success btn-xxl">Student Visa</a>
-        <a href="{% url 'dashboard' %}" class="btn btn-outline-success btn-xxl">Appointments</a>
       </div>
     </div>
+  </nav>
+  <!-- Hero Section -->
+  <div class="hero">
+    <h1 class="display-5 fw-bold">Where are you going to?</h1>
+    <p class="lead">Choose your visa category to proceed with registration and documentation.</p>
+    <div class="btn-group">
+      <a href="{% url 'staff_ssw_working_visa' %}" class="btn btn-outline-primary btn-xxl">SSW & Working Visa</a>
+      <a href="{% url 'staff_student_visa' %}" class="btn btn-outline-success btn-xxl">Student Visa</a>
+      <a href="{% url 'dashboard' %}" class="btn btn-outline-success btn-xxl">Appointments</a>
+    </div>
+  </div>
 
 
-      <!-- Footer -->
-      <footer class="footer mt-auto py-3">
-        <div class="container text-center">
-          <small class="text-muted">
-            &copy; {{ now|date:"Y" }} {% trans "Aqua Group" %}. {% trans "All Rights Reserved." %}
-          </small>
-        </div>
-      </footer>
+  <!-- Footer -->
+  <footer class="footer mt-auto py-3">
+    <div class="container text-center">
+      <small class="text-muted">
+        &copy; {{ now|date:"Y" }} {% trans "Aqua Group" %}. {% trans "All Rights Reserved." %}
+      </small>
+    </div>
+  </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-  </body>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"></script>
+</body>
+
 </html>

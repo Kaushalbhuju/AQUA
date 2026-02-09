@@ -76,26 +76,26 @@ class StudentForm(forms.ModelForm):
     
     
     # Educational history fields
-    school_primary_school = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
-    admission_year_primary_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    admission_month_primary_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
-    graduation_year_primary_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    graduation_month_primary_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
-    enrolled_years_primary_school = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 6.0)'}))
+    school_primary_school = forms.CharField(max_length=200, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
+    admission_year_primary_school = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
+    admission_month_primary_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=True, widget=forms.Select(attrs={'class': 'form-control'}))
+    graduation_year_primary_school = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
+    graduation_month_primary_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=True, widget=forms.Select(attrs={'class': 'form-control'}))
+    enrolled_years_primary_school = forms.CharField(required=True, initial='5', widget=forms.TextInput(attrs={'class': 'form-control readonly', 'readonly': 'readonly', 'placeholder': 'Years (e.g. 5.0)'}))
     
-    school_junior_h_school = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
-    admission_year_junior_h_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    admission_month_junior_h_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
-    graduation_year_junior_h_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    graduation_month_junior_h_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
-    enrolled_years_junior_h_school = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 3.0)'}))
+    school_junior_h_school = forms.CharField(max_length=200, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
+    admission_year_junior_h_school = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
+    admission_month_junior_h_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=True, widget=forms.Select(attrs={'class': 'form-control'}))
+    graduation_year_junior_h_school = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
+    graduation_month_junior_h_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=True, widget=forms.Select(attrs={'class': 'form-control'}))
+    enrolled_years_junior_h_school = forms.CharField(required=True, initial='5', widget=forms.TextInput(attrs={'class': 'form-control readonly', 'readonly': 'readonly', 'placeholder': 'Years (e.g. 5.0)'}))
     
-    school_higher_s_school = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
-    admission_year_higher_s_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    admission_month_higher_s_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
-    graduation_year_higher_s_school = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
-    graduation_month_higher_s_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=False, widget=forms.Select(attrs={'class': 'form-control'}))
-    enrolled_years_higher_s_school = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 2.0)'}))
+    school_higher_s_school = forms.CharField(max_length=200, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
+    admission_year_higher_s_school = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
+    admission_month_higher_s_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=True, widget=forms.Select(attrs={'class': 'form-control'}))
+    graduation_year_higher_s_school = forms.IntegerField(required=True, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
+    graduation_month_higher_s_school = forms.ChoiceField(choices=[(i, str(i)) for i in range(1, 13)], required=True, widget=forms.Select(attrs={'class': 'form-control'}))
+    enrolled_years_higher_s_school = forms.CharField(required=True, initial='2', widget=forms.TextInput(attrs={'class': 'form-control readonly', 'readonly': 'readonly', 'placeholder': 'Years (e.g. 2.0)'}))
     
     school_college_university = forms.CharField(max_length=200, required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Name'}))
     admission_year_college_university = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Year'}))
@@ -132,7 +132,7 @@ class StudentForm(forms.ModelForm):
     working_years_2 = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Years (e.g. 1.3)'}))
     
     # Document fields
-    bio_data_file = forms.FileField(label="Passport", required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
+    bio_data_file = forms.FileField(label="Passport", required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
     id_info_file = forms.FileField(label="Citizenship/Driving", required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
     educational_doc_file = forms.FileField(label="Graduation/Transcript", required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
     report_file = forms.FileField(label="Medical Report", required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
@@ -164,8 +164,8 @@ class StudentForm(forms.ModelForm):
         exclude = ['status', 'reviewed_at', 'review_notes', 'candidate', 'agent', 'student_id']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'required': 'required'}),
-            'passport_issue_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'required': 'required'}),
-            'passport_expiry_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'required': 'required'}),
+            'passport_issue_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'passport_expiry_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'permanent_address': forms.Textarea(attrs={'rows': 2, 'class': 'form-control', 'required': 'required'}),
             'present_address': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
             'family_records': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
@@ -216,8 +216,7 @@ class StudentForm(forms.ModelForm):
             'full_name', 'date_of_birth', 'permanent_address', 
             'marital_status', 'email', 'phone', 'gender',
             'hobbies', 'motivation', 'height', 'weight',
-            'eye_lens_right', 'eye_lens_left', 'blood_group',
-            'passport_no', 'passport_issue_date', 'passport_expiry_date'
+            'eye_lens_right', 'eye_lens_left', 'blood_group'
         ]
         
         for field_name in required_fields:
@@ -259,19 +258,10 @@ class StudentForm(forms.ModelForm):
             if not spouse_contact:
                 self.add_error('spouse_contact', 'Spouse contact is mandatory if you are married.')
 
-        # Education history years validation
-        for level in ['primary_school', 'junior_h_school', 'higher_s_school', 'college_university', 'graduate_university', 'other_school']:
-            adm_yr = cleaned_data.get(f'admission_year_{level}')
-            grad_yr = cleaned_data.get(f'graduation_year_{level}')
-            adm_mo = cleaned_data.get(f'admission_month_{level}')
-            grad_mo = cleaned_data.get(f'graduation_month_{level}')
-            
-            if adm_yr and grad_yr:
-                adm_total = int(adm_yr) * 12 + int(adm_mo or 1)
-                grad_total = int(grad_yr) * 12 + int(grad_mo or 1)
-                
-                if grad_total < adm_total:
-                    self.add_error(f'graduation_year_{level}', 'Graduation date cannot be earlier than admission date.')
+        # Ensure default enrolled years are permanent for mandatory schools
+        cleaned_data['enrolled_years_primary_school'] = '5'
+        cleaned_data['enrolled_years_junior_h_school'] = '5'
+        cleaned_data['enrolled_years_higher_s_school'] = '2'
 
         return cleaned_data
 

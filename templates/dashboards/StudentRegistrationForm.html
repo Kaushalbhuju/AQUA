@@ -246,7 +246,8 @@
             font-size: 0.95rem;
         }
 
-        .form-label.required::after {
+        .form-label.required::after,
+        th.required::after {
             content: " *";
             color: var(--danger-color);
         }
@@ -1192,7 +1193,7 @@
                         <div class="form-group">
                             <label for="id_family_records" class="form-label">Family Records</label>
                             {{ form.family_records }}
-                            <div class="helper-text">List your parents, siblings, or other family members</div>
+
                             {% if form.family_records.errors %}
                             <div class="field-error">
                                 <span>⚠️</span>
@@ -1214,7 +1215,7 @@
 
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="id_passport_no" class="form-label required">Passport No.</label>
+                                <label for="id_passport_no" class="form-label">Passport No.</label>
                                 {{ form.passport_no }}
                                 {% if form.passport_no.errors %}
                                 <div class="field-error">
@@ -1225,7 +1226,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="id_passport_issue_date" class="form-label required">Date of Issue</label>
+                                <label for="id_passport_issue_date" class="form-label">Date of Issue</label>
                                 {{ form.passport_issue_date }}
                                 {% if form.passport_issue_date.errors %}
                                 <div class="field-error">
@@ -1236,7 +1237,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="id_passport_expiry_date" class="form-label required">Date of Expiry</label>
+                                <label for="id_passport_expiry_date" class="form-label">Date of Expiry</label>
                                 {{ form.passport_expiry_date }}
                                 {% if form.passport_expiry_date.errors %}
                                 <div class="field-error">
@@ -1430,11 +1431,11 @@
                 <table class="form-table">
                     <thead>
                         <tr>
-                            <th rowspan="2">Pass Level</th>
-                            <th rowspan="2">Name of School</th>
-                            <th colspan="2">Admission</th>
-                            <th colspan="2">Graduation</th>
-                            <th rowspan="2">Enrolled Years</th>
+                            <th rowspan="2" class="required">Pass Level</th>
+                            <th rowspan="2" class="required">Name of School</th>
+                            <th colspan="2" class="required">Admission</th>
+                            <th colspan="2" class="required">Graduation</th>
+                            <th rowspan="2" class="required">Enrolled Years</th>
                         </tr>
                         <tr class="subheader">
                             <th>Year</th>
@@ -1691,9 +1692,9 @@
             <div class="document-grid">
                 <div class="document-card" data-doc="passport">
                     <div class="document-icon">🛂</div>
-                    <div class="document-title form-label required">PASSPORT</div>
+                    <div class="document-title form-label">PASSPORT</div>
                     <input type="file" id="id_bio_data_file" name="bio_data_file"
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;" required>
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
                     <div class="document-requirements">
                         PDF, Word, Images<br>
                         Please Submit Color Copy
@@ -1770,7 +1771,6 @@
                 <p
                     style="color: var(--text-light); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">
                     Please ensure all information is correct. Once submitted, you cannot edit your application.
-                    Your application will be processed within 3-5 business days.
                 </p>
 
                 <div
@@ -1825,8 +1825,11 @@
 
     <!-- Footer -->
     <div style="text-align: center; margin-top: 40px; padding: 20px; color: rgba(255,255,255,0.8);">
-        <p>Need help? Contact support at <a href="mailto:support@aqua.edu"
-                style="color: white; text-decoration: underline;">support@aqua.edu</a></p>
+        <p>Need help? Contact support at
+            <a href="mailto:ssw.edu.academy@gmail.com" style="color: white; text-decoration: underline;">
+                ssw.edu.academy@gmail.com
+            </a>
+        </p>
         <p>Copyright © Aqua Group, All Rights Reserved</p>
     </div>
     </div>
@@ -2298,13 +2301,13 @@
                 });
                 document.getElementById('check_personal').checked = personalComplete;
 
-                // Check education (at least one school filled)
-                const schoolFields = ['school_primary_school', 'school_junior_h_school'];
-                let educationComplete = false;
-                schoolFields.forEach(fieldName => {
+                // Check education (Primary, Junior H., and Higher S. school filled)
+                const mandatorySchools = ['school_primary_school', 'school_junior_h_school', 'school_higher_s_school'];
+                let educationComplete = true;
+                mandatorySchools.forEach(fieldName => {
                     const field = document.querySelector(`[name="${fieldName}"]`);
-                    if (field && field.value.trim()) {
-                        educationComplete = true;
+                    if (!field || !field.value.trim()) {
+                        educationComplete = false;
                     }
                 });
                 document.getElementById('check_education').checked = educationComplete;
@@ -2404,55 +2407,6 @@
                 passportExpiry.setAttribute('min', today);
             }
 
-            // Educational History Auto-Calculation
-            const eduLevels = [
-                'primary_school',
-                'junior_h_school',
-                'higher_s_school',
-                'college_university',
-                'graduate_university',
-                'other_school'
-            ];
-
-            eduLevels.forEach(level => {
-                const adminInput = document.getElementById(`id_admission_year_${level}`);
-                const gradInput = document.getElementById(`id_graduation_year_${level}`);
-                const enrolledInput = document.getElementById(`id_enrolled_years_${level}`);
-
-                function calculateEnrolled() {
-                    const admissionYear = parseInt(adminInput.value);
-                    const graduationYear = parseInt(gradInput.value);
-                    const admissionMonth = parseInt(document.getElementById(`id_admission_month_${level}`).value) || 1;
-                    const graduationMonth = parseInt(document.getElementById(`id_graduation_month_${level}`).value) || 1;
-
-                    if (!isNaN(admissionYear) && !isNaN(graduationYear)) {
-                        const admTotalMonths = admissionYear * 12 + admissionMonth;
-                        const gradTotalMonths = graduationYear * 12 + graduationMonth;
-                        const diff = gradTotalMonths - admTotalMonths;
-
-                        if (diff >= 0) {
-                            const years = Math.floor(diff / 12);
-                            const months = diff % 12;
-                            enrolledInput.value = `${years}.${months}`;
-                            enrolledInput.setAttribute('readonly', true);
-                            enrolledInput.style.backgroundColor = '#f8f9fa';
-                        } else {
-                            enrolledInput.value = '';
-                        }
-                    }
-                }
-
-                if (adminInput && gradInput && enrolledInput) {
-                    adminInput.addEventListener('input', calculateEnrolled);
-                    gradInput.addEventListener('input', calculateEnrolled);
-
-                    const admMonthInput = document.getElementById(`id_admission_month_${level}`);
-                    const gradMonthInput = document.getElementById(`id_graduation_month_${level}`);
-
-                    if (admMonthInput) admMonthInput.addEventListener('change', calculateEnrolled);
-                    if (gradMonthInput) gradMonthInput.addEventListener('change', calculateEnrolled);
-                }
-            });
         });
     </script>
 </body>

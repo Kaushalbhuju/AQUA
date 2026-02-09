@@ -800,14 +800,12 @@
             </a>
 
             {% if student.status == 'pending' %}
-            <!-- FIXED: Added dashboard: namespace -->
-            <a href="{% url 'dashboard:approve_student' student.id %}" class="btn btn-approve"
-                onclick="return confirm('Are you sure you want to approve this student?')">
+            <!-- FIXED: Changed to use approval pages instead of direct action URLs -->
+            <a href="{% url 'dashboard:approve_student_page' student.id %}" class="btn btn-approve">
                 ✅ Approve Application
             </a>
-            <!-- FIXED: Added dashboard: namespace -->
-            <a href="{% url 'dashboard:decline_student' student.id %}" class="btn btn-decline"
-                onclick="return confirm('Are you sure you want to decline this student?')">
+            <!-- FIXED: Changed to use decline page instead of direct action URL -->
+            <a href="{% url 'dashboard:decline_student_page' student.id %}" class="btn btn-decline">
                 ❌ Decline Application
             </a>
             {% endif %}
