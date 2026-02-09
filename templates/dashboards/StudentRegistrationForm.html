@@ -1606,16 +1606,15 @@
                 </div>
             </div>
 
-            <!-- Driving License -->
             <div class="form-section" style="margin-top: 20px;">
                 <div class="section-header">
                     <div class="section-icon">🚗</div>
-                    <h3 class="section-title">Driving License</h3>
+                    <h3 class="section-title">License Details</h3>
                 </div>
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="id_driving_license" class="form-label">Driving License</label>
+                        <label for="id_driving_license" class="form-label">Type of license (1)</label>
                         {{ form.driving_license }}
                         {% if form.driving_license.errors %}
                         <div class="field-error">
@@ -1626,7 +1625,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="id_license_pass_year" class="form-label">Pass Year & Month</label>
+                        <label for="id_license_pass_year" class="form-label">Pass Year & Month (1)</label>
                         {{ form.license_pass_year }}
                         {% if form.license_pass_year.errors %}
                         <div class="field-error">
@@ -1635,14 +1634,27 @@
                         </div>
                         {% endif %}
                     </div>
+                </div>
 
+                <div class="form-grid" style="margin-top: 15px;">
                     <div class="form-group">
-                        <label for="id_license_discretion" class="form-label">License Discretion</label>
-                        {{ form.license_discretion }}
-                        {% if form.license_discretion.errors %}
+                        <label for="id_license_type_2" class="form-label">Type of license (2)</label>
+                        {{ form.license_type_2 }}
+                        {% if form.license_type_2.errors %}
                         <div class="field-error">
                             <span>⚠️</span>
-                            {{ form.license_discretion.errors.0 }}
+                            {{ form.license_type_2.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_license_pass_year_2" class="form-label">Pass Year & Month (2)</label>
+                        {{ form.license_pass_year_2 }}
+                        {% if form.license_pass_year_2.errors %}
+                        <div class="field-error">
+                            <span>⚠️</span>
+                            {{ form.license_pass_year_2.errors.0 }}
                         </div>
                         {% endif %}
                     </div>

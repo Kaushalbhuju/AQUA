@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <style>
@@ -9,7 +10,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: Arial, sans-serif;
             font-size: 11px;
@@ -18,13 +19,13 @@
             padding: 20px;
             background-color: white;
         }
-        
+
         /* Header Section */
         .header-section {
             text-align: center;
             margin-bottom: 20px;
         }
-        
+
         .academy-name {
             font-size: 18px;
             font-weight: bold;
@@ -32,13 +33,13 @@
             margin-bottom: 5px;
             letter-spacing: 0.5px;
         }
-        
+
         .address {
             font-size: 10px;
             margin-bottom: 15px;
             color: #333;
         }
-        
+
         .co-to {
             font-size: 11px;
             font-weight: bold;
@@ -46,7 +47,7 @@
             text-align: left;
             padding-left: 10px;
         }
-        
+
         .form-title {
             font-size: 14px;
             font-weight: bold;
@@ -54,7 +55,7 @@
             margin-bottom: 20px;
             text-transform: uppercase;
         }
-        
+
         /* Main table styling */
         .main-table {
             width: 100%;
@@ -62,7 +63,7 @@
             margin-bottom: 15px;
             border: 1px solid #000;
         }
-        
+
         .main-table th,
         .main-table td {
             border: 1px solid #000;
@@ -70,13 +71,13 @@
             vertical-align: top;
             font-size: 10px;
         }
-        
+
         .main-table th {
             background-color: #f0f0f0;
             font-weight: bold;
             text-align: left;
         }
-        
+
         .section-title {
             background-color: #e0e0e0 !important;
             font-weight: bold;
@@ -84,14 +85,14 @@
             font-size: 12px;
             padding: 6px;
         }
-        
+
         .sub-section-title {
             background-color: #f5f5f5;
             font-weight: bold;
             text-align: left;
             padding: 4px 8px;
         }
-        
+
         /* Photo cell styling */
         .photo-cell {
             width: 80px;
@@ -100,7 +101,7 @@
             text-align: center;
             vertical-align: middle;
         }
-        
+
         .photo-frame {
             width: 70px;
             height: 90px;
@@ -110,25 +111,25 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .student-photo {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
+
         .photo-label {
             font-size: 8px;
             margin-top: 3px;
             color: #666;
         }
-        
+
         /* Form sections */
         .form-section {
             margin-bottom: 20px;
             page-break-inside: avoid;
         }
-        
+
         .section-header {
             font-size: 13px;
             font-weight: bold;
@@ -137,7 +138,7 @@
             text-decoration: underline;
             text-transform: uppercase;
         }
-        
+
         /* Education and Experience tables */
         .data-table {
             width: 100%;
@@ -145,7 +146,7 @@
             margin-bottom: 15px;
             font-size: 10px;
         }
-        
+
         .data-table th,
         .data-table td {
             border: 1px solid #000;
@@ -153,12 +154,12 @@
             text-align: center;
             vertical-align: middle;
         }
-        
+
         .data-table th {
             background-color: #f0f0f0;
             font-weight: bold;
         }
-        
+
         /* Wide tables for education/experience */
         .wide-table {
             width: 100%;
@@ -166,19 +167,19 @@
             margin-bottom: 15px;
             font-size: 10px;
         }
-        
+
         .wide-table th,
         .wide-table td {
             border: 1px solid #000;
             padding: 4px 6px;
             text-align: center;
         }
-        
+
         .wide-table th {
             background-color: #f0f0f0;
             font-weight: bold;
         }
-        
+
         /* Agreement section */
         .agreement {
             margin: 20px 0;
@@ -188,34 +189,34 @@
             line-height: 1.4;
             text-align: justify;
         }
-        
+
         /* Needed documents section */
         .documents-section {
             margin: 20px 0;
             border: 1px solid #000;
             padding: 10px;
         }
-        
+
         .documents-title {
             font-weight: bold;
             text-align: center;
             margin-bottom: 10px;
             font-size: 12px;
         }
-        
+
         .documents-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             text-align: center;
         }
-        
+
         .document-item {
             border: 1px solid #000;
             padding: 8px 5px;
             font-size: 9px;
         }
-        
+
         /* Footer */
         .footer {
             text-align: center;
@@ -225,47 +226,49 @@
             border-top: 1px solid #ccc;
             padding-top: 10px;
         }
-        
+
         /* Field styling - FIXED FOR REPORTLAB */
         .field-value {
             min-height: 16px;
             padding: 2px 4px;
-            white-space: pre-wrap; /* Preserve formatting */
+            white-space: pre-wrap;
+            /* Preserve formatting */
         }
-        
+
         /* Special fix for calculation columns */
         .calc-field {
-            font-family: 'Courier New', monospace; /* Fixed width for numbers */
+            font-family: 'Courier New', monospace;
+            /* Fixed width for numbers */
             text-align: right;
             padding-right: 10px;
         }
-        
+
         /* Empty fields with safe defaults */
         .empty-field {
             min-height: 15px;
             border-bottom: 1px dotted #ccc;
         }
-        
+
         /* Force numeric display for years */
         .year-field {
             font-weight: bold;
             color: #000;
         }
-        
+
         /* Print styles */
         @media print {
             body {
                 padding: 10px;
                 font-size: 10px;
             }
-            
+
             .main-table,
             .data-table,
             .wide-table {
                 page-break-inside: avoid;
             }
         }
-        
+
         /* Ensure all table cells have content */
         td:empty:before {
             content: "-";
@@ -273,6 +276,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Header -->
     <div class="header-section">
@@ -295,17 +299,18 @@
             <td rowspan="4" class="photo-cell">
                 <div class="photo-frame">
                     {% if student.photo %}
-                        <img src="{{ student.photo.url }}" alt="Student Photo" class="student-photo">
+                    <img src="{{ student.photo.url }}" alt="Student Photo" class="student-photo">
                     {% else %}
-                        <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 8px;">
-                            PHOTO
-                        </div>
+                    <div
+                        style="height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 8px;">
+                        PHOTO
+                    </div>
                     {% endif %}
                 </div>
                 <div class="photo-label">3cm × 4cm</div>
             </td>
         </tr>
-        
+
         <!-- Row 2 -->
         <tr>
             <th>Full Name</th>
@@ -313,7 +318,7 @@
             <th>Date of Birth</th>
             <td class="field-value">{{ student.date_of_birth|default:"-" }}</td>
         </tr>
-        
+
         <!-- Row 3 -->
         <tr>
             <th rowspan="2">Full Address</th>
@@ -324,13 +329,13 @@
             <th>Age</th>
             <td class="field-value">{{ student.age|default:"-" }}</td>
         </tr>
-        
+
         <!-- Row 4 -->
         <tr>
             <th>Marital Status</th>
             <td class="field-value">{{ student.get_marital_status_display|default:"-" }}</td>
         </tr>
-        
+
         <!-- Row 5: Passport Information -->
         <tr>
             <th>Passport No.</th>
@@ -340,7 +345,7 @@
             <th>Date of Expired</th>
             <td colspan="2" class="field-value">{{ student.passport_expiry_date|default:"-" }}</td>
         </tr>
-        
+
         <!-- Row 6: Personal Information -->
         <tr>
             <td colspan="7" class="sub-section-title">Personal Information</td>
@@ -359,7 +364,7 @@
                 {% endif %}
             </td>
         </tr>
-        
+
         <!-- Row 7: Contact Information -->
         <tr>
             <th>Email ID</th>
@@ -367,7 +372,7 @@
             <th>Phone No.</th>
             <td colspan="2" class="field-value">{{ student.phone|default:"-" }}</td>
         </tr>
-        
+
         <!-- Row 8: Family Records -->
         <tr>
             <td colspan="7" class="sub-section-title">Family Records</td>
@@ -531,20 +536,28 @@
                     <td colspan="2" class="sub-section-title">DRIVING LICENSE</td>
                 </tr>
                 <tr>
-                    <th width="50%">Pass Year & Month</th>
-                    <td class="field-value">
-                        {% if student.driving_license %}
-                        {{ student.driving_license_year|default:"" }} {{ student.driving_license_month|default:"" }}
-                        {% else %}-{% endif %}
+                    <td width="50%">
+                        <strong>Type of license (1):</strong><br>
+                        {{ student.driving_license|default:"-" }}
+                    </td>
+                    <td>
+                        <strong>Pass Year & Month (1):</strong><br>
+                        {{ student.license_pass_year|default:"-" }}
                     </td>
                 </tr>
                 <tr>
-                    <th>Type of License</th>
-                    <td class="field-value">{{ student.license_type|default:"-" }}</td>
+                    <td width="50%">
+                        <strong>Type of license (2):</strong><br>
+                        {{ student.license_type_2|default:"-" }}
+                    </td>
+                    <td>
+                        <strong>Pass Year & Month (2):</strong><br>
+                        {{ student.license_pass_year_2|default:"-" }}
+                    </td>
                 </tr>
             </table>
         </div>
-        
+
         <!-- Additional Information -->
         <div>
             <table class="main-table" style="height: 100%;">
@@ -566,7 +579,10 @@
 
     <!-- Agreement Section -->
     <div class="agreement">
-        I hereby agree to study the Japanese language at the Aqua Education And Training Academy while strictly complying with all rules and regulations. After going to Japan, I promise to follow all Japanese rules and the immigration law. In the event that I fail to company rules and law of Japan, I'm agree to accept the all penalties in according with Japanese rules and Immigration Law.
+        I hereby agree to study the Japanese language at the Aqua Education And Training Academy while strictly
+        complying with all rules and regulations. After going to Japan, I promise to follow all Japanese rules and the
+        immigration law. In the event that I fail to company rules and law of Japan, I'm agree to accept the all
+        penalties in according with Japanese rules and Immigration Law.
     </div>
 
     <!-- Needed Documents Section -->
@@ -597,4 +613,5 @@
         Copyright © Aqua Group, All Rights Reserved
     </div>
 </body>
+
 </html>

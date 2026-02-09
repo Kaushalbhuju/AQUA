@@ -582,12 +582,20 @@
                     <div class="info-value">{{ student.age }} years</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Gender</div>
-                    <div class="info-value">{{ student.get_gender_display }}</div>
+                    <div class="info-label">Type of license (1)</div>
+                    <div class="info-value">{{ student.driving_license|default:"N/A" }}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Marital Status</div>
-                    <div class="info-value">{{ student.get_marital_status_display }}</div>
+                    <div class="info-label">Pass Year & Month (1)</div>
+                    <div class="info-value">{{ student.license_pass_year|default:"N/A" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Type of license (2)</div>
+                    <div class="info-value">{{ student.license_type_2|default:"N/A" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Pass Year & Month (2)</div>
+                    <div class="info-value">{{ student.license_pass_year_2|default:"N/A" }}</div>
                 </div>
             </div>
         </div>

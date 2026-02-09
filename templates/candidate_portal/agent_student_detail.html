@@ -1,6 +1,7 @@
 <!-- templates/candidate_portal/agent_student_detail.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,19 +13,19 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             background: #f5f7fa;
             color: #2c3e50;
             line-height: 1.6;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -32,22 +33,22 @@
             background: white;
             padding: 25px 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
             border-left: 5px solid #3498db;
         }
-        
+
         .student-info h1 {
             color: #2c3e50;
             font-size: 2.2em;
             margin-bottom: 8px;
         }
-        
+
         .student-meta {
             color: #7f8c8d;
             font-size: 1.1em;
         }
-        
+
         .status-badge {
             padding: 10px 20px;
             border-radius: 25px;
@@ -56,17 +57,28 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-approved { background: #d4edda; color: #155724; }
-        .status-declined { background: #f8d7da; color: #721c24; }
-        
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-declined {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         .actions {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
         }
-        
+
         .btn {
             padding: 12px 24px;
             border: none;
@@ -80,37 +92,48 @@
             transition: all 0.3s ease;
             font-size: 14px;
         }
-        
+
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-        
-        .btn-back { background: #95a5a6; color: white; }
-        .btn-pdf { background: #e74c3c; color: white; }
-        .btn-dashboard { background: #3498db; color: white; }
-        
+
+        .btn-back {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-pdf {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-dashboard {
+            background: #3498db;
+            color: white;
+        }
+
         .content-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 25px;
             margin-bottom: 30px;
         }
-        
+
         @media (max-width: 768px) {
             .content-grid {
                 grid-template-columns: 1fr;
             }
         }
-        
+
         .card {
             background: white;
             border-radius: 12px;
             padding: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             border-top: 4px solid #3498db;
         }
-        
+
         .card h2 {
             color: #2c3e50;
             margin-bottom: 20px;
@@ -118,18 +141,18 @@
             border-bottom: 2px solid #ecf0f1;
             font-size: 1.4em;
         }
-        
+
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
         }
-        
+
         .info-item {
             display: flex;
             flex-direction: column;
         }
-        
+
         .info-label {
             font-weight: 600;
             color: #7f8c8d;
@@ -138,21 +161,21 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .info-value {
             color: #2c3e50;
             font-weight: 500;
             font-size: 1.1em;
         }
-        
+
         .full-width {
             grid-column: 1 / -1;
         }
-        
+
         .section {
             margin-bottom: 30px;
         }
-        
+
         .section-title {
             font-size: 1.3em;
             color: #2c3e50;
@@ -160,38 +183,40 @@
             padding-bottom: 10px;
             border-bottom: 2px solid #ecf0f1;
         }
-        
-        .education-item, .work-item, .document-item {
+
+        .education-item,
+        .work-item,
+        .document-item {
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 15px;
             border-left: 4px solid #3498db;
         }
-        
+
         .item-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 10px;
         }
-        
+
         .item-title {
             font-weight: 600;
             color: #2c3e50;
             font-size: 1.1em;
         }
-        
+
         .item-meta {
             color: #7f8c8d;
             font-size: 0.9em;
         }
-        
+
         .item-details {
             color: #5a6c7d;
             line-height: 1.5;
         }
-        
+
         .no-data {
             text-align: center;
             padding: 40px;
@@ -200,7 +225,7 @@
             border-radius: 8px;
             border: 2px dashed #bdc3c7;
         }
-        
+
         .review-notes {
             background: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -208,23 +233,23 @@
             padding: 20px;
             margin-top: 20px;
         }
-        
+
         .review-label {
             font-weight: 600;
             color: #856404;
             margin-bottom: 8px;
         }
-        
+
         .review-content {
             color: #856404;
             line-height: 1.5;
         }
-        
+
         .photo-container {
             text-align: center;
             padding: 20px;
         }
-        
+
         .student-photo {
             width: 200px;
             height: 250px;
@@ -232,7 +257,7 @@
             border-radius: 8px;
             border: 3px solid #ecf0f1;
         }
-        
+
         .photo-placeholder {
             width: 200px;
             height: 250px;
@@ -247,6 +272,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Header Section -->
@@ -254,7 +280,7 @@
             <div class="student-info">
                 <h1>{{ student.full_name }}</h1>
                 <div class="student-meta">
-                    Student ID: {{ student.student_id }} • 
+                    Student ID: {{ student.student_id }} •
                     <span class="status-badge status-{{ student.status }}">
                         {{ student.status|upper }}
                     </span>
@@ -278,7 +304,7 @@
             <!-- Left Column: Personal Information -->
             <div class="card">
                 <h2>Personal Information</h2>
-                
+
                 <!-- Student Photo -->
                 <div class="photo-container">
                     {% if student.photo %}
@@ -287,7 +313,7 @@
                     <div class="photo-placeholder">📷</div>
                     {% endif %}
                 </div>
-                
+
                 <div class="info-grid">
                     <div class="info-item">
                         <span class="info-label">Full Name</span>
@@ -327,7 +353,7 @@
             <!-- Right Column: Contact & Physical Information -->
             <div class="card">
                 <h2>Contact & Physical Information</h2>
-                
+
                 <div class="info-grid">
                     <div class="info-item full-width">
                         <span class="info-label">Email</span>
@@ -421,33 +447,33 @@
         <div class="card">
             <h2>Educational History</h2>
             {% if student.education_history.all %}
-                {% for education in student.education_history.all %}
-                <div class="education-item">
-                    <div class="item-header">
-                        <div class="item-title">{{ education.pass_level }}</div>
-                        <div class="item-meta">
-                            {% if education.admission_year and education.graduation_year %}
-                            {{ education.admission_year }} - {{ education.graduation_year }}
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="item-details">
-                        <strong>School:</strong> {{ education.school_name }}<br>
-                        {% if education.admission_month and education.graduation_month %}
-                        <strong>Period:</strong> {{ education.admission_month }} {{ education.admission_year }} to 
-                        {{ education.graduation_month }} {{ education.graduation_year }}<br>
-                        {% endif %}
-                        {% if education.enrolled_years %}
-                        <strong>Duration:</strong> {{ education.enrolled_years }} years
+            {% for education in student.education_history.all %}
+            <div class="education-item">
+                <div class="item-header">
+                    <div class="item-title">{{ education.pass_level }}</div>
+                    <div class="item-meta">
+                        {% if education.admission_year and education.graduation_year %}
+                        {{ education.admission_year }} - {{ education.graduation_year }}
                         {% endif %}
                     </div>
                 </div>
-                {% endfor %}
+                <div class="item-details">
+                    <strong>School:</strong> {{ education.school_name }}<br>
+                    {% if education.admission_month and education.graduation_month %}
+                    <strong>Period:</strong> {{ education.admission_month }} {{ education.admission_year }} to
+                    {{ education.graduation_month }} {{ education.graduation_year }}<br>
+                    {% endif %}
+                    {% if education.enrolled_years %}
+                    <strong>Duration:</strong> {{ education.enrolled_years }} years
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
             {% else %}
-                <div class="no-data">
-                    <h3>No Educational History</h3>
-                    <p>No educational records found for this student.</p>
-                </div>
+            <div class="no-data">
+                <h3>No Educational History</h3>
+                <p>No educational records found for this student.</p>
+            </div>
             {% endif %}
         </div>
 
@@ -455,32 +481,32 @@
         <div class="card">
             <h2>Work Experience</h2>
             {% if student.work_experience.all %}
-                {% for work in student.work_experience.all %}
-                <div class="work-item">
-                    <div class="item-header">
-                        <div class="item-title">{{ work.work_type }}</div>
-                        <div class="item-meta">
-                            {% if work.working_years %}
-                            {{ work.working_years }} years
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="item-details">
-                        <strong>Company:</strong> {{ work.company_name }}<br>
-                        {% if work.join_date %}
-                        <strong>Join Date:</strong> {{ work.join_date }}<br>
-                        {% endif %}
-                        {% if work.resign_date %}
-                        <strong>Resign Date:</strong> {{ work.resign_date }}
+            {% for work in student.work_experience.all %}
+            <div class="work-item">
+                <div class="item-header">
+                    <div class="item-title">{{ work.work_type }}</div>
+                    <div class="item-meta">
+                        {% if work.working_years %}
+                        {{ work.working_years }} years
                         {% endif %}
                     </div>
                 </div>
-                {% endfor %}
+                <div class="item-details">
+                    <strong>Company:</strong> {{ work.company_name }}<br>
+                    {% if work.join_date %}
+                    <strong>Join Date:</strong> {{ work.join_date }}<br>
+                    {% endif %}
+                    {% if work.resign_date %}
+                    <strong>Resign Date:</strong> {{ work.resign_date }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
             {% else %}
-                <div class="no-data">
-                    <h3>No Work Experience</h3>
-                    <p>No work experience records found for this student.</p>
-                </div>
+            <div class="no-data">
+                <h3>No Work Experience</h3>
+                <p>No work experience records found for this student.</p>
+            </div>
             {% endif %}
         </div>
 
@@ -514,20 +540,26 @@
                 {% endif %}
                 {% if student.driving_license %}
                 <div class="info-item">
-                    <span class="info-label">Driving License</span>
+                    <span class="info-label">Type of license (1)</span>
                     <span class="info-value">{{ student.driving_license }}</span>
                 </div>
                 {% endif %}
                 {% if student.license_pass_year %}
                 <div class="info-item">
-                    <span class="info-label">License Pass Year</span>
+                    <span class="info-label">Pass Year & Month (1)</span>
                     <span class="info-value">{{ student.license_pass_year }}</span>
                 </div>
                 {% endif %}
-                {% if student.license_discretion %}
-                <div class="info-item full-width">
-                    <span class="info-label">License Details</span>
-                    <span class="info-value">{{ student.license_discretion }}</span>
+                {% if student.license_type_2 %}
+                <div class="info-item">
+                    <span class="info-label">Type of license (2)</span>
+                    <span class="info-value">{{ student.license_type_2 }}</span>
+                </div>
+                {% endif %}
+                {% if student.license_pass_year_2 %}
+                <div class="info-item">
+                    <span class="info-label">Pass Year & Month (2)</span>
+                    <span class="info-value">{{ student.license_pass_year_2 }}</span>
                 </div>
                 {% endif %}
                 {% if student.hobbies %}
@@ -577,10 +609,10 @@
 
     <script>
         // Add confirmation for PDF generation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const pdfButton = document.querySelector('.btn-pdf');
             if (pdfButton) {
-                pdfButton.addEventListener('click', function(e) {
+                pdfButton.addEventListener('click', function (e) {
                     if (!confirm('Generate PDF report for this student?')) {
                         e.preventDefault();
                     }
@@ -589,4 +621,5 @@
         });
     </script>
 </body>
+
 </html>

@@ -115,7 +115,8 @@ class Student(models.Model):
     organization = models.CharField(max_length=200, blank=True, null=True)
     driving_license = models.CharField(max_length=100, blank=True, null=True)
     license_pass_year = models.CharField(max_length=50, blank=True, null=True)
-    license_discretion = models.TextField(blank=True, null=True)
+    license_type_2 = models.CharField(max_length=100, blank=True, null=True)
+    license_pass_year_2 = models.CharField(max_length=50, blank=True, null=True)
     hobbies = models.TextField(blank=False, null=True)
     motivation = models.TextField(blank=False, null=True)
     

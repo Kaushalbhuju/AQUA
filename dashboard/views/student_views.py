@@ -439,13 +439,17 @@ def generate_student_pdf(request, student_id):
 
     <table style="margin-top:0;">
         <tr>
-            <td rowspan="2" width="30%" class="bg-beige center" style="font-size: 10pt;">DRIVING LICENSE</td>
-            <td width="20%" class="center lbl-sm">Pass Year & Month</td>
+            <td rowspan="3" width="30%" class="bg-beige center" style="font-size: 10pt;">DRIVING LICENSE</td>
+            <td width="30%" class="center lbl-sm">Pass Year & Month</td>
             <td class="center lbl-sm">Type of License</td>
         </tr>
         <tr style="height:25px;">
             <td class="center">{student.license_pass_year or ''}</td>
             <td class="center">{student.driving_license or ''}</td>
+        </tr>
+        <tr style="height:25px;">
+            <td class="center">{student.license_pass_year_2 or ''}</td>
+            <td class="center">{student.license_type_2 or ''}</td>
         </tr>
     </table>
 
