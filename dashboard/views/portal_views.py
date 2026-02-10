@@ -143,3 +143,14 @@ def portal_registration_success(request):
     }
     
     return render(request, 'candidate_portal/registration_success.html', context)
+
+def portal_logout(request):
+    """Logout candidate from portal and return to promo code entry"""
+    # Clear portal-related session data
+    portal_keys = ['portal_agent_id', 'portal_agent_code', 'portal_agent_name']
+    for key in portal_keys:
+        if key in request.session:
+            del request.session[key]
+            
+    messages.info(request, 'You have been logged out from the portal.')
+    return redirect('dashboard:portal_student_registration')

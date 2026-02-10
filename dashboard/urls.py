@@ -13,7 +13,7 @@ from .views.student_views import (
     approve_student_page, decline_student_page, biodata, approval_success
 )
 from .views.portal_views import (
-    PortalStudentRegistrationView, portal_registration_success
+    PortalStudentRegistrationView, portal_registration_success, portal_logout
 )
 from .views.ssw_views import ( months_2026 )
 
@@ -75,6 +75,7 @@ urlpatterns = [
     # Student Registration Portal Routes
     path('portal/register/', PortalStudentRegistrationView.as_view(), name='portal_student_registration'),
     path('portal/success/', portal_registration_success, name='portal_registration_success'),
+    path('portal/logout/', portal_logout, name='portal_logout'),
 
 
     # SSW specific views
