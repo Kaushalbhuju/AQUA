@@ -106,19 +106,12 @@ def recruitment_client_dashboard(request):
 @login_required
 def move_to_next_stage(request, student_id, next_stage):
     """Move student to next stage in pipeline"""
-    print(f"🚀 DEBUG: move_to_next_stage VIEW CALLED!")
-    print(f"📝 Request method: {request.method}")
-    print(f"👤 User: {request.user}")
-    print(f"🎯 Student ID: {student_id}")
-    print(f"🎯 Next stage received: {next_stage}")
     
     try:
         student = get_object_or_404(Student, id=student_id)
     except Student.DoesNotExist:
         messages.error(request, f'❌ Student with ID {student_id} not found')
         return redirect('/dashboard/recruitment_client/?tab=candidate-info')
-    
-    print(f"📊 Current student: {student.full_name}, current stage: {student.stage}")
     
     # Define the pipeline sequence
     pipeline_sequence = [
@@ -142,18 +135,13 @@ def move_to_next_stage(request, student_id, next_stage):
         'completed': 'completed'
     }
     
-    # Normalize the next_stage parameter
     if next_stage in stage_mapping:
         normalized_next_stage = stage_mapping[next_stage]
     else:
         normalized_next_stage = next_stage.replace('-', '_')
     
-    print(f"🔄 Normalized next stage: {normalized_next_stage}")
-    
-    # Validate stages
     if student.stage not in pipeline_sequence:
         # Auto-fix invalid current stage
-        print(f"⚠️  Auto-fixing invalid current stage: {student.stage} -> candidate_info")
         student.stage = 'candidate_info'
         student.save()
         messages.warning(request, f'⚠️  Fixed invalid stage for {student.full_name}')
@@ -167,26 +155,18 @@ def move_to_next_stage(request, student_id, next_stage):
         current_index = pipeline_sequence.index(student.stage)
         next_index = pipeline_sequence.index(normalized_next_stage)
         
-        print(f"📈 Current stage index: {current_index}, Next stage index: {next_index}")
-        
-        # Check if moving to next stage is valid
         if next_index > current_index:
             old_stage = student.stage
             student.stage = normalized_next_stage
             student.save()
             
-            print(f"✅ SUCCESS: Moved {student.full_name} from {old_stage} to {normalized_next_stage}")
             messages.success(request, f'✅ Successfully moved {student.full_name} to {normalized_next_stage.replace("_", " ").title()}')
         elif next_index == current_index:
             messages.warning(request, f'ℹ️  {student.full_name} is already in {normalized_next_stage.replace("_", " ").title()} stage')
         else:
-            print(f"❌ INVALID: Cannot move from {student.stage} to {normalized_next_stage}")
             messages.error(request, f'❌ Cannot move backwards from {student.stage.replace("_", " ").title()} to {normalized_next_stage.replace("_", " ").title()}')
             
     except Exception as e:
-        print(f"❌ UNEXPECTED ERROR: {e}")
-        import traceback
-        traceback.print_exc()
         messages.error(request, f'❌ Unexpected error: {str(e)}')
     
     # Redirect back to the dashboard

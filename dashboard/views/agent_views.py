@@ -74,12 +74,6 @@ def agent_student_registration(request):
             if form.is_valid():
                 try:
                     student = form.save()
-                    
-                    # Handle TB status from radio buttons
-                    tb_status = request.POST.get('tb_status')
-                    if tb_status:
-                        student.tb_status = tb_status
-                        student.save()
 
                     messages.success(request, f'Student {student.full_name} registered successfully with ID: {student.student_id}!')
                     return redirect('dashboard:agent_dashboard')

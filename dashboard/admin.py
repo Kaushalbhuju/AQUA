@@ -140,7 +140,8 @@ class StudentAdmin(admin.ModelAdmin):
             'fields': (
                 'certificate_pass_year', 'certificate_name', 
                 'language_join_year', 'organization',
-                'driving_license', 'license_pass_year', 'license_discretion',
+                'driving_license', 'license_pass_year',
+                'license_type_2', 'license_pass_year_2',
                 'hobbies', 'motivation'
             ),
             'classes': ('collapse',)
