@@ -293,8 +293,6 @@ class StudentForm(forms.ModelForm):
         # Link with agent
         if self.agent:
             student.agent = self.agent
-            # Generate student ID
-            student.student_id = self.fields['student_id_preview'].initial
         
         # Save TB status from form field
         tb_status = self.cleaned_data.get('tb_status')

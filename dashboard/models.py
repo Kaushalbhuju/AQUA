@@ -142,10 +142,25 @@ class Student(models.Model):
         return f"{self.student_id} - {self.full_name}"
     
     def generate_student_id(self):
-        """Generate student ID based on agent code"""
+        """Generate student ID based on agent code and highest existing numeric suffix"""
         if self.agent:
-            student_count = Student.objects.filter(agent=self.agent).count() + 1
-            return f"{self.agent.agent_code}-{student_count:04d}"
+            # Get all students for this agent
+            agent_students = Student.objects.filter(agent=self.agent)
+            
+            # Find the maximum numeric suffix from existing student IDs
+            max_num = 0
+            for s in agent_students:
+                if s.student_id and '-' in s.student_id:
+                    try:
+                        num_part = s.student_id.split('-')[-1]
+                        num = int(num_part)
+                        if num > max_num:
+                            max_num = num
+                    except (ValueError, IndexError):
+                        continue
+            
+            next_num = max_num + 1
+            return f"{self.agent.agent_code}-{next_num:04d}"
         return None
     
     def save(self, *args, **kwargs):
