@@ -195,7 +195,7 @@ def _generate_student_pdf_internal(request, student_id):
         )
 
         # Photo Processing
-        photo_html = '<div style="margin-top:50px; color:#999; font-size:9pt;">PHOTO</div>'
+        photo_html = '<div class="photo-box-inner"><div class="photo-box-content">PHOTO</div></div>'
         if student.photo:
             try:
                 photo_path = student.photo.path
@@ -204,7 +204,7 @@ def _generate_student_pdf_internal(request, student_id):
                         photo_data = base64.b64encode(f.read()).decode()
                     ext = os.path.splitext(photo_path)[1].lower()
                     mime_type = 'image/jpeg' if ext in ['.jpg', '.jpeg'] else 'image/png'
-                    photo_html = f'<img src="data:{mime_type};base64,{photo_data}" style="width:100%; height:100%; object-fit:cover;">'
+                    photo_html = f'<div class="photo-box-inner"><img src="data:{mime_type};base64,{photo_data}"></div>'
             except Exception: pass
 
         # Prepare Loops for Tables
@@ -260,7 +260,10 @@ def _generate_student_pdf_internal(request, student_id):
         .bold {{ font-weight: bold; }}
         .lbl-sm {{ font-size: 7pt; }}
         
-        .photo-box {{ width: 110px; height: 135px; text-align: center; padding: 0; vertical-align: middle; background: #fff; }}
+        .photo-box {{ width: 95px; height: 120px; text-align: center; padding: 1px; vertical-align: middle; background: #fff; border: 1px solid #000; box-sizing: border-box; }}
+        .photo-box-inner {{ width: 100%; height: 100%; background: #fff; border: 1px solid #000; box-sizing: border-box; overflow: hidden; }}
+        .photo-box-content {{ width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #fff; color: #999; font-size: 9pt; }}
+        .photo-box img {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
         .section-title {{ font-size: 10pt; padding: 3px; border: 1px solid #000; border-bottom: none; }}
         
         .vertical-text {{ 
@@ -321,16 +324,16 @@ def _generate_student_pdf_internal(request, student_id):
             <td class="center">{dob}</td>
         </tr>
         <tr>
-            <td rowspan="2" width="5%" class="center" style="padding:0;">
-                <div style="font-size: 7.5pt; font-weight: bold;">Full<br>Address</div>
+            <td rowspan="2" class="center" style="padding:0; font-size: 7.5pt; font-weight: bold;">
+                Full<br>Address
             </td>
-            <td class="lbl-sm" style="height:28px;">Permanent: {student.permanent_address or ''}</td>
-            <td colspan="2" class="center">Age</td>
+            <td colspan="2" class="lbl-sm" style="height:26px;">Permanent: {student.permanent_address or ''}</td>
+            <td class="center" style="font-size: 7.5pt;">Age</td>
             <td colspan="2" class="center">{student.age or ''}</td>
         </tr>
         <tr>
-            <td class="lbl-sm" style="height:28px;">Present: {student.present_address or ''}</td>
-            <td colspan="2" class="center">Marital Status</td>
+            <td colspan="2" class="lbl-sm" style="height:26px;">Present: {student.present_address or ''}</td>
+            <td class="center" style="font-size: 7.5pt;">Marital Status</td>
             <td colspan="2" class="center">{student.get_marital_status_display() if student.marital_status else ''}</td>
         </tr>
     </table>
@@ -338,11 +341,11 @@ def _generate_student_pdf_internal(request, student_id):
     <table>
         <tr>
             <td width="15%" class="center" style="font-size: 7.5pt;">Passport No.</td>
-            <td width="25%" style="font-size: 7.5pt;">{student.passport_no or ''}</td>
-            <td width="15%" class="center" style="font-size: 7.5pt;">Date of Issue</td>
-            <td width="15%" style="font-size: 7.5pt;">{student.passport_issue_date or ''}</td>
-            <td width="15%" class="center" style="font-size: 7.5pt;">Date of Expired</td>
-            <td class="center" style="font-size: 7.5pt;">{student.passport_expiry_date or ''}</td>
+            <td width="30%" style="font-size: 7.5pt;">{student.passport_no or ''}</td>
+            <td width="12%" class="center" style="font-size: 7.5pt;">Date of Issue</td>
+            <td width="16%" style="font-size: 7.5pt;">{student.passport_issue_date or ''}</td>
+            <td width="14%" class="center" style="font-size: 7.5pt;">Date of Expired</td>
+            <td width="13%" class="center" style="font-size: 7.5pt;">{student.passport_expiry_date or ''}</td>
         </tr>
     </table>
 
@@ -415,21 +418,21 @@ def _generate_student_pdf_internal(request, student_id):
 
     <table>
         <tr>
-            <td class="bg-beige" width="50%" style="font-size: 7.5pt;">LANGUAGE AND SKILLS PASSED CERTIFICATE</td>
-            <td class="bg-beige" style="font-size: 7.5pt;">LANGUAGE & SKILLS TRAINING STATUS</td>
+            <td class="bg-beige" width="50%" style="font-size: 7.5pt; text-align: center;">LANGUAGE AND SKILLS PASSED CERTIFICATE</td>
+            <td class="bg-beige" style="font-size: 7.5pt; text-align: center;">LANGUAGE & SKILLS TRAINING STATUS</td>
         </tr>
         <tr>
             <td style="padding:0;">
                 <table style="border:none;">
-                    <tr class="center lbl-sm" style="height:16px;">
-                        <td width="30%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Pass Year & Month</td>
+                    <tr class="center" style="height:18px;">
+                        <td width="25%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Pass Year & Month</td>
                         <td style="border:none; border-bottom: 1px solid #000; font-size: 6.5pt;">Name of Pass Exam</td>
                     </tr>
-                    <tr style="height:22px;" class="center">
+                    <tr style="height:24px;" class="center">
                         <td style="border:none; border-right: 1px solid #000; font-size: 7.5pt;">{student.certificate_pass_year or ''}</td>
                         <td style="border:none; font-size: 7.5pt;">{student.certificate_name or ''}</td>
                     </tr>
-                    <tr style="height:22px;" class="center">
+                    <tr style="height:24px;" class="center">
                         <td style="border:none; border-right: 1px solid #000; border-top: 1px solid #000; font-size: 7.5pt;"></td>
                         <td style="border:none; border-top: 1px solid #000; font-size: 7.5pt;"></td>
                     </tr>
@@ -437,15 +440,15 @@ def _generate_student_pdf_internal(request, student_id):
             </td>
             <td style="padding:0;">
                 <table style="border:none;">
-                    <tr class="center lbl-sm" style="height:16px;">
+                    <tr class="center" style="height:18px;">
                         <td width="30%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Join Year and Month</td>
                         <td style="border:none; border-bottom: 1px solid #000; font-size: 6.5pt;">Organization</td>
                     </tr>
-                    <tr style="height:22px;" class="center">
+                    <tr style="height:24px;" class="center">
                         <td style="border:none; border-right: 1px solid #000; font-size: 7.5pt;">{student.language_join_year or ''}</td>
                         <td style="border:none; font-size: 7.5pt;">{student.organization or ''}</td>
                     </tr>
-                    <tr style="height:22px;" class="center">
+                    <tr style="height:24px;" class="center">
                         <td style="border:none; border-right: 1px solid #000; border-top: 1px solid #000; font-size: 7.5pt;"></td>
                         <td style="border:none; border-top: 1px solid #000; font-size: 7.5pt;"></td>
                     </tr>
@@ -456,15 +459,15 @@ def _generate_student_pdf_internal(request, student_id):
 
     <table style="margin-top:0;">
         <tr>
-            <td rowspan="3" width="30%" class="bg-beige center" style="font-size: 9pt;">DRIVING LICENSE</td>
-            <td width="30%" class="center lbl-sm" style="font-size: 7pt;">Pass Year & Month</td>
-            <td class="center lbl-sm" style="font-size: 7pt;">Type of License</td>
+            <td rowspan="3" width="25%" class="bg-beige center" style="font-size: 9pt;">DRIVING LICENSE</td>
+            <td width="37.5%" class="center" style="font-size: 6.5pt;">Pass Year & Month</td>
+            <td width="37.5%" class="center" style="font-size: 6.5pt;">Type of License</td>
         </tr>
-        <tr style="height:22px;">
+        <tr style="height:24px;">
             <td class="center" style="font-size: 7.5pt;">{student.license_pass_year or ''}</td>
             <td class="center" style="font-size: 7.5pt;">{student.driving_license or ''}</td>
         </tr>
-        <tr style="height:22px;">
+        <tr style="height:24px;">
             <td class="center" style="font-size: 7.5pt;">{student.license_pass_year_2 or ''}</td>
             <td class="center" style="font-size: 7.5pt;">{student.license_type_2 or ''}</td>
         </tr>
