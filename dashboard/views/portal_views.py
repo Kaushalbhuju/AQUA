@@ -20,7 +20,8 @@ class PortalStudentRegistrationView(View):
                 'form': form,
                 'agent': agent,
                 'remaining_slots': agent.max_candidates - agent.current_candidate_count,
-                'page_title': f'Student Registration - {agent.agent_code}'
+                'page_title': f'Student Registration - {agent.agent_code}',
+                'is_portal_registration': True
             })
         else:
             # Show agent login form for candidates
@@ -68,7 +69,8 @@ class PortalStudentRegistrationView(View):
                     'form': form,
                     'agent': agent,
                     'remaining_slots': agent.max_candidates - agent.current_candidate_count,
-                    'page_title': f'Student Registration - {agent.agent_code}'
+                    'page_title': f'Student Registration - {agent.agent_code}',
+                    'is_portal_registration': True
                 })
                 
             except Agent.DoesNotExist:
@@ -101,6 +103,10 @@ class PortalStudentRegistrationView(View):
                     f'Registration completed successfully! Student ID: <strong>{student.student_id}</strong>'
                 )
                 
+                # Store student ID in session for PDF generation
+                request.session['portal_last_student_id'] = student.id
+                request.session.modified = True
+                
                 # Keep session for potential next registration
                 return redirect('dashboard:portal_registration_success')
                 
@@ -113,7 +119,8 @@ class PortalStudentRegistrationView(View):
             'form': form,
             'agent': agent,
             'remaining_slots': agent.max_candidates - agent.current_candidate_count,
-            'page_title': f'Student Registration - {agent.agent_code}'
+            'page_title': f'Student Registration - {agent.agent_code}',
+            'is_portal_registration': True
         })
     
     def _get_agent_from_session(self, request):
@@ -129,6 +136,7 @@ class PortalStudentRegistrationView(View):
 def portal_registration_success(request):
     """Registration success page"""
     agent = None
+    student = None
     try:
         agent_id = request.session.get('portal_agent_id')
         if agent_id:
@@ -136,8 +144,17 @@ def portal_registration_success(request):
     except Agent.DoesNotExist:
         pass
     
+    # Get the last registered student for PDF generation
+    try:
+        student_id = request.session.get('portal_last_student_id')
+        if student_id:
+            student = Student.objects.get(id=student_id)
+    except Student.DoesNotExist:
+        pass
+    
     context = {
         'agent': agent,
+        'student': student,
         'remaining_slots': agent.max_candidates - agent.current_candidate_count if agent else 0,
         'page_title': 'Registration Successful'
     }

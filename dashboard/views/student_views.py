@@ -169,6 +169,23 @@ from django.conf import settings
 
 @login_required
 def generate_student_pdf(request, student_id):
+    """Generate PDF for student - accessible by logged-in users"""
+    return _generate_student_pdf_internal(request, student_id)
+
+def generate_student_pdf_portal(request, student_id):
+    """Generate PDF for student - accessible by portal users via session"""
+    # Check if user is coming from portal (has portal_agent_id in session)
+    portal_agent_id = request.session.get('portal_agent_id')
+    if not portal_agent_id:
+        # If not portal user, redirect to login
+        from django.contrib.auth.decorators import login_required
+        return login_required(lambda r, sid: _generate_student_pdf_internal(r, sid))(request, student_id)
+    
+    # Portal user is valid, allow PDF generation
+    return _generate_student_pdf_internal(request, student_id)
+
+def _generate_student_pdf_internal(request, student_id):
+    """Internal function to generate PDF"""
     try:
         student = get_object_or_404(
             Student.objects.select_related('agent').prefetch_related(
@@ -197,14 +214,14 @@ def generate_student_pdf(request, student_id):
         for i in range(7):
             e = edu_list[i] if i < len(edu_list) else None
             education_rows += f"""
-            <tr style="height:22px;">
-                <td style="padding-left:10px;">{e.pass_level if e else edu_defaults[i]}</td>
-                <td>{e.school_name if e else ''}</td>
-                <td class="center">{e.admission_year if e else ''}</td>
-                <td class="center">{e.admission_month if e else ''}</td>
-                <td class="center">{e.graduation_year if e else ''}</td>
-                <td class="center">{e.graduation_month if e else ''}</td>
-                <td class="center" style="position:relative;">{e.enrolled_years if e and e.enrolled_years else ''} <span style="position:absolute; right:5px;">Years</span></td>
+            <tr style="height:20px;">
+                <td style="padding-left:8px; font-size: 7.5pt;">{e.pass_level if e else edu_defaults[i]}</td>
+                <td style="font-size: 7.5pt;">{e.school_name if e else ''}</td>
+                <td class="center" style="font-size: 7.5pt;">{e.admission_year if e else ''}</td>
+                <td class="center" style="font-size: 7.5pt;">{e.admission_month if e else ''}</td>
+                <td class="center" style="font-size: 7.5pt;">{e.graduation_year if e else ''}</td>
+                <td class="center" style="font-size: 7.5pt;">{e.graduation_month if e else ''}</td>
+                <td class="center" style="position:relative; font-size: 7.5pt;">{e.enrolled_years if e and e.enrolled_years else ''} <span style="position:absolute; right:3px; font-size: 6.5pt;">Years</span></td>
             </tr>"""
 
         work_list = list(student.work_experience.all())[:3]
@@ -212,11 +229,11 @@ def generate_student_pdf(request, student_id):
         for i in range(3):
             w = work_list[i] if i < len(work_list) else None
             work_rows += f"""
-            <tr style="height:24px;">
-                <td style="padding-left:10px;">{w.work_type if w else ''}</td>
-                <td>{w.company_name if w else ''}</td>
-                <td class="center">{w.join_date if w else ''} ~ {w.resign_date if w else ''}</td>
-                <td class="center" style="position:relative;">{w.working_years if w and w.working_years else ''} <span style="position:absolute; right:5px;">Years</span></td>
+            <tr style="height:22px;">
+                <td style="padding-left:8px; font-size: 7.5pt;">{w.work_type if w else ''}</td>
+                <td style="font-size: 7.5pt;">{w.company_name if w else ''}</td>
+                <td class="center" style="font-size: 7.5pt;">{w.join_date if w else ''} ~ {w.resign_date if w else ''}</td>
+                <td class="center" style="position:relative; font-size: 7.5pt;">{w.working_years if w and w.working_years else ''} <span style="position:absolute; right:3px; font-size: 6.5pt;">Years</span></td>
             </tr>"""
 
         # Context Data
@@ -228,12 +245,12 @@ def generate_student_pdf(request, student_id):
 <html>
 <head>
     <style>
-        @page {{ size: A4; margin: 0.3cm; }}
-        body {{ font-family: 'Helvetica', 'Arial', sans-serif; font-size: 8.5pt; line-height: 1.1; color: #000; margin: 0; padding: 0; }}
-        .header {{ text-align: center; margin-bottom: 5px; }}
-        .header h1 {{ font-size: 16pt; margin: 0; font-weight: bold; letter-spacing: 1px; }}
-        .header p {{ font-size: 10pt; margin: 2px 0; font-weight: bold; }}
-        .cc-to {{ text-align: left; font-size: 6pt; font-weight: bold; margin: 5px 0 2px 10px; }}
+        @page {{ size: A4; margin: 0.25cm; }}
+        body {{ font-family: 'Helvetica', 'Arial', sans-serif; font-size: 8pt; line-height: 1.1; color: #000; margin: 0; padding: 0; }}
+        .header {{ text-align: center; margin-bottom: 4px; }}
+        .header h1 {{ font-size: 15pt; margin: 0; font-weight: bold; letter-spacing: 1px; }}
+        .header p {{ font-size: 9.5pt; margin: 2px 0; font-weight: bold; }}
+        .cc-to {{ text-align: left; font-size: 6pt; font-weight: bold; margin: 4px 0 2px 10px; }}
         
         table {{ width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: -1px; }}
         td, th {{ border: 1px solid #000; padding: 3px 5px; vertical-align: middle; overflow: hidden; }}
@@ -241,21 +258,21 @@ def generate_student_pdf(request, student_id):
         .bg-beige {{ background-color: #C7BFA3; font-weight: bold; text-align: center; }}
         .center {{ text-align: center; }}
         .bold {{ font-weight: bold; }}
-        .lbl-sm {{ font-size: 7.5pt; }}
+        .lbl-sm {{ font-size: 7pt; }}
         
-        .photo-box {{ width: 120px; height: 145px; text-align: center; padding: 0; vertical-align: middle; background: #fff; }}
-        .section-title {{ font-size: 11pt; padding: 4px; border: 1px solid #000; border-bottom: none; }}
+        .photo-box {{ width: 110px; height: 135px; text-align: center; padding: 0; vertical-align: middle; background: #fff; }}
+        .section-title {{ font-size: 10pt; padding: 3px; border: 1px solid #000; border-bottom: none; }}
         
         .vertical-text {{ 
             writing-mode: vertical-rl; 
             transform: rotate(180deg); 
             text-align: center; 
-            font-size: 8pt; 
+            font-size: 7.5pt; 
             font-weight: bold;
         }}
         
         .sign-box {{ 
-            width: 160px; 
+            width: 150px; 
             float: right; 
             border: 1px solid #000; 
             border-collapse: collapse;
@@ -263,15 +280,15 @@ def generate_student_pdf(request, student_id):
         }}
         .sign-box td {{ 
             border: 1px solid #000; 
-            padding: 5px; 
+            padding: 4px; 
             vertical-align: middle;
         }}
         .sign-box .label {{ 
             background-color: #C7BFA3; 
             font-weight: bold; 
-            font-size: 9pt; 
+            font-size: 8.5pt; 
             text-align: center; 
-            width: 45px; 
+            width: 42px; 
         }}
         
         .clearfix::after {{ content: ""; clear: both; display: table; }}
@@ -299,20 +316,20 @@ def generate_student_pdf(request, student_id):
         </tr>
         <tr>
             <td class="center">Full Name</td>
-            <td colspan="3" style="font-size: 11pt; font-weight: bold;">{student.full_name or ''}</td>
+            <td colspan="3" style="font-size: 10.5pt; font-weight: bold;">{student.full_name or ''}</td>
             <td class="center">Date of Birth</td>
             <td class="center">{dob}</td>
         </tr>
         <tr>
             <td rowspan="2" width="5%" class="center" style="padding:0;">
-                <div style="font-size: 8pt; font-weight: bold;">Full<br>Address</div>
+                <div style="font-size: 7.5pt; font-weight: bold;">Full<br>Address</div>
             </td>
-            <td class="lbl-sm" style="height:30px;">Permanent: {student.permanent_address or ''}</td>
+            <td class="lbl-sm" style="height:28px;">Permanent: {student.permanent_address or ''}</td>
             <td colspan="2" class="center">Age</td>
             <td colspan="2" class="center">{student.age or ''}</td>
         </tr>
         <tr>
-            <td class="lbl-sm" style="height:30px;">Present: {student.present_address or ''}</td>
+            <td class="lbl-sm" style="height:28px;">Present: {student.present_address or ''}</td>
             <td colspan="2" class="center">Marital Status</td>
             <td colspan="2" class="center">{student.get_marital_status_display() if student.marital_status else ''}</td>
         </tr>
@@ -320,117 +337,117 @@ def generate_student_pdf(request, student_id):
 
     <table>
         <tr>
-            <td width="15%" class="center">Passport No.</td>
-            <td width="25%">{student.passport_no or ''}</td>
-            <td width="15%" class="center">Date of Issue</td>
-            <td width="15%">{student.passport_issue_date or ''}</td>
-            <td width="15%" class="center">Date of Expired</td>
-            <td class="center">{student.passport_expiry_date or ''}</td>
+            <td width="15%" class="center" style="font-size: 7.5pt;">Passport No.</td>
+            <td width="25%" style="font-size: 7.5pt;">{student.passport_no or ''}</td>
+            <td width="15%" class="center" style="font-size: 7.5pt;">Date of Issue</td>
+            <td width="15%" style="font-size: 7.5pt;">{student.passport_issue_date or ''}</td>
+            <td width="15%" class="center" style="font-size: 7.5pt;">Date of Expired</td>
+            <td class="center" style="font-size: 7.5pt;">{student.passport_expiry_date or ''}</td>
         </tr>
     </table>
 
     <table>
-        <tr class="center lbl-sm" style="height:18px;">
-            <td rowspan="3" width="15%">Personal Information</td>
-            <td width="10%">Height</td>
-            <td width="10%">Weight</td>
-            <td colspan="2" width="20%">Eye Lense</td>
-            <td width="10%">Blood Group</td>
-            <td width="10%">Past Visa Apply Record</td>
-            <td>Visa Apply if Yes (Apply No. & Result)</td>
+        <tr class="center lbl-sm" style="height:16px;">
+            <td rowspan="3" width="15%" style="font-size: 7pt;">Personal Information</td>
+            <td width="10%" style="font-size: 7pt;">Height</td>
+            <td width="10%" style="font-size: 7pt;">Weight</td>
+            <td colspan="2" width="20%" style="font-size: 7pt;">Eye Lense</td>
+            <td width="10%" style="font-size: 7pt;">Blood Group</td>
+            <td width="10%" style="font-size: 7pt;">Past Visa Apply Record</td>
+            <td style="font-size: 7pt;">Visa Apply if Yes (Apply No. & Result)</td>
         </tr>
-        <tr class="center lbl-sm" style="height:15px;">
-            <td rowspan="2">{student.height or ''}</td>
-            <td rowspan="2">{student.weight or ''}</td>
-            <td width="10%">Right</td><td width="10%">Left</td>
-            <td rowspan="2">{student.blood_group or ''}</td>
-            <td rowspan="2">{student.get_visa_apply_record_display() if student.visa_apply_record else ''}</td>
-            <td rowspan="2">{student.visa_details or ''}</td>
+        <tr class="center lbl-sm" style="height:14px;">
+            <td rowspan="2" style="font-size: 7.5pt;">{student.height or ''}</td>
+            <td rowspan="2" style="font-size: 7.5pt;">{student.weight or ''}</td>
+            <td width="10%" style="font-size: 7pt;">Right</td><td width="10%" style="font-size: 7pt;">Left</td>
+            <td rowspan="2" style="font-size: 7.5pt;">{student.blood_group or ''}</td>
+            <td rowspan="2" style="font-size: 7.5pt;">{student.get_visa_apply_record_display() if student.visa_apply_record else ''}</td>
+            <td rowspan="2" style="font-size: 7.5pt;">{student.visa_details or ''}</td>
         </tr>
         <tr class="center">
-            <td>{student.eye_lens_right or ''}</td><td>{student.eye_lens_left or ''}</td>
+            <td style="font-size: 7.5pt;">{student.eye_lens_right or ''}</td><td style="font-size: 7.5pt;">{student.eye_lens_left or ''}</td>
         </tr>
     </table>
 
     <table>
         <tr>
-            <td width="15%" class="center">Email ID</td>
-            <td width="50%">{student.email or ''}</td>
-            <td width="15%" class="center">Phone No.</td>
-            <td>{student.phone or ''}</td>
+            <td width="15%" class="center" style="font-size: 7.5pt;">Email ID</td>
+            <td width="50%" style="font-size: 7.5pt;">{student.email or ''}</td>
+            <td width="15%" class="center" style="font-size: 7.5pt;">Phone No.</td>
+            <td style="font-size: 7.5pt;">{student.phone or ''}</td>
         </tr>
         <tr>
-            <td class="center">Family Records</td>
-            <td colspan="3" style="height:25px;">{student.family_records or ''}</td>
+            <td class="center" style="font-size: 7.5pt;">Family Records</td>
+            <td colspan="3" style="height:22px; font-size: 7.5pt;">{student.family_records or ''}</td>
         </tr>
         <tr>
-            <td class="center">Spouse Name</td>
-            <td>{student.spouse_name or ''}</td>
-            <td class="center">Contact No.</td>
-            <td>{student.spouse_contact or ''}</td>
+            <td class="center" style="font-size: 7.5pt;">Spouse Name</td>
+            <td style="font-size: 7.5pt;">{student.spouse_name or ''}</td>
+            <td class="center" style="font-size: 7.5pt;">Contact No.</td>
+            <td style="font-size: 7.5pt;">{student.spouse_contact or ''}</td>
         </tr>
     </table>
 
-    <div class="bg-beige section-title" style="border-bottom: 1px solid #000; margin-top: 0;">EDUCATIONAL HISTORY</div>
+    <div class="bg-beige section-title" style="border-bottom: 1px solid #000; margin-top: 0; font-size: 9pt;">EDUCATIONAL HISTORY</div>
     <table>
-        <tr class="center" style="font-size: 8pt; height: 25px;">
-            <th width="22%" rowspan="2">Pass Level</th>
-            <th width="33%" rowspan="2">Name of School</th>
-            <th colspan="4" width="30%">Admission & Graduation</th>
-            <th width="15%" rowspan="2">Enrolled Years</th>
+        <tr class="center" style="font-size: 7.5pt; height: 22px;">
+            <th width="22%" rowspan="2" style="font-size: 7.5pt;">Pass Level</th>
+            <th width="33%" rowspan="2" style="font-size: 7.5pt;">Name of School</th>
+            <th colspan="4" width="30%" style="font-size: 7.5pt;">Admission & Graduation</th>
+            <th width="15%" rowspan="2" style="font-size: 7.5pt;">Enrolled Years</th>
         </tr>
-        <tr class="center" style="font-size: 7pt; height: 15px;">
-            <td>Year</td><td>Month</td><td>Year</td><td>Month</td>
+        <tr class="center" style="font-size: 7pt; height: 14px;">
+            <td style="font-size: 7pt;">Year</td><td style="font-size: 7pt;">Month</td><td style="font-size: 7pt;">Year</td><td style="font-size: 7pt;">Month</td>
         </tr>
         {education_rows}
     </table>
 
-    <div class="bg-beige section-title" style="border-bottom: 1px solid #000; margin-top: 0;">WORKING EXPERIENCE</div>
+    <div class="bg-beige section-title" style="border-bottom: 1px solid #000; margin-top: 0; font-size: 9pt;">WORKING EXPERIENCE</div>
     <table>
-        <tr class="center" style="font-size: 8pt; height: 25px;">
-            <th width="22%">Type of Work</th>
-            <th width="38%">Name of Working Company</th>
-            <th width="25%">Date of Join & Resign</th>
-            <th width="15%">Working Years</th>
+        <tr class="center" style="font-size: 7.5pt; height: 22px;">
+            <th width="22%" style="font-size: 7.5pt;">Type of Work</th>
+            <th width="38%" style="font-size: 7.5pt;">Name of Working Company</th>
+            <th width="25%" style="font-size: 7.5pt;">Date of Join & Resign</th>
+            <th width="15%" style="font-size: 7.5pt;">Working Years</th>
         </tr>
         {work_rows}
     </table>
 
     <table>
         <tr>
-            <td class="bg-beige" width="50%">LANGUAGE AND SKILLS PASSED CERTIFICATE</td>
-            <td class="bg-beige">LANGUAGE & SKILLS TRAINING STATUS</td>
+            <td class="bg-beige" width="50%" style="font-size: 7.5pt;">LANGUAGE AND SKILLS PASSED CERTIFICATE</td>
+            <td class="bg-beige" style="font-size: 7.5pt;">LANGUAGE & SKILLS TRAINING STATUS</td>
         </tr>
         <tr>
             <td style="padding:0;">
                 <table style="border:none;">
-                    <tr class="center lbl-sm" style="height:18px;">
-                        <td width="30%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000;">Pass Year & Month</td>
-                        <td style="border:none; border-bottom: 1px solid #000;">Name of Pass Exam</td>
+                    <tr class="center lbl-sm" style="height:16px;">
+                        <td width="30%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Pass Year & Month</td>
+                        <td style="border:none; border-bottom: 1px solid #000; font-size: 6.5pt;">Name of Pass Exam</td>
                     </tr>
-                    <tr style="height:25px;" class="center">
-                        <td style="border:none; border-right: 1px solid #000;">{student.certificate_pass_year or ''}</td>
-                        <td style="border:none;">{student.certificate_name or ''}</td>
+                    <tr style="height:22px;" class="center">
+                        <td style="border:none; border-right: 1px solid #000; font-size: 7.5pt;">{student.certificate_pass_year or ''}</td>
+                        <td style="border:none; font-size: 7.5pt;">{student.certificate_name or ''}</td>
                     </tr>
-                    <tr style="height:25px;" class="center">
-                        <td style="border:none; border-right: 1px solid #000; border-top: 1px solid #000;"></td>
-                        <td style="border:none; border-top: 1px solid #000;"></td>
+                    <tr style="height:22px;" class="center">
+                        <td style="border:none; border-right: 1px solid #000; border-top: 1px solid #000; font-size: 7.5pt;"></td>
+                        <td style="border:none; border-top: 1px solid #000; font-size: 7.5pt;"></td>
                     </tr>
                 </table>
             </td>
             <td style="padding:0;">
                 <table style="border:none;">
-                    <tr class="center lbl-sm" style="height:18px;">
-                        <td width="30%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000;">Join Year and Month</td>
-                        <td style="border:none; border-bottom: 1px solid #000;">Organization</td>
+                    <tr class="center lbl-sm" style="height:16px;">
+                        <td width="30%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Join Year and Month</td>
+                        <td style="border:none; border-bottom: 1px solid #000; font-size: 6.5pt;">Organization</td>
                     </tr>
-                    <tr style="height:25px;" class="center">
-                        <td style="border:none; border-right: 1px solid #000;">{student.language_join_year or ''}</td>
-                        <td style="border:none;">{student.organization or ''}</td>
+                    <tr style="height:22px;" class="center">
+                        <td style="border:none; border-right: 1px solid #000; font-size: 7.5pt;">{student.language_join_year or ''}</td>
+                        <td style="border:none; font-size: 7.5pt;">{student.organization or ''}</td>
                     </tr>
-                    <tr style="height:25px;" class="center">
-                        <td style="border:none; border-right: 1px solid #000; border-top: 1px solid #000;"></td>
-                        <td style="border:none; border-top: 1px solid #000;"></td>
+                    <tr style="height:22px;" class="center">
+                        <td style="border:none; border-right: 1px solid #000; border-top: 1px solid #000; font-size: 7.5pt;"></td>
+                        <td style="border:none; border-top: 1px solid #000; font-size: 7.5pt;"></td>
                     </tr>
                 </table>
             </td>
@@ -439,39 +456,39 @@ def generate_student_pdf(request, student_id):
 
     <table style="margin-top:0;">
         <tr>
-            <td rowspan="3" width="30%" class="bg-beige center" style="font-size: 10pt;">DRIVING LICENSE</td>
-            <td width="30%" class="center lbl-sm">Pass Year & Month</td>
-            <td class="center lbl-sm">Type of License</td>
+            <td rowspan="3" width="30%" class="bg-beige center" style="font-size: 9pt;">DRIVING LICENSE</td>
+            <td width="30%" class="center lbl-sm" style="font-size: 7pt;">Pass Year & Month</td>
+            <td class="center lbl-sm" style="font-size: 7pt;">Type of License</td>
         </tr>
-        <tr style="height:25px;">
-            <td class="center">{student.license_pass_year or ''}</td>
-            <td class="center">{student.driving_license or ''}</td>
+        <tr style="height:22px;">
+            <td class="center" style="font-size: 7.5pt;">{student.license_pass_year or ''}</td>
+            <td class="center" style="font-size: 7.5pt;">{student.driving_license or ''}</td>
         </tr>
-        <tr style="height:25px;">
-            <td class="center">{student.license_pass_year_2 or ''}</td>
-            <td class="center">{student.license_type_2 or ''}</td>
+        <tr style="height:22px;">
+            <td class="center" style="font-size: 7.5pt;">{student.license_pass_year_2 or ''}</td>
+            <td class="center" style="font-size: 7.5pt;">{student.license_type_2 or ''}</td>
         </tr>
     </table>
 
     <table>
-        <tr style="height: 20px;">
-            <td width="50%"><b>Hobbies, Special skills, etc.</b></td>
-            <td><b>Motivation, Self-promotion</b></td>
+        <tr style="height: 18px;">
+            <td width="50%" style="font-size: 7.5pt;"><b>Hobbies, Special skills, etc.</b></td>
+            <td style="font-size: 7.5pt;"><b>Motivation, Self-promotion</b></td>
         </tr>
-        <tr style="height: 70px; vertical-align: top;">
-            <td>{student.hobbies or ''}</td>
-            <td>{student.motivation or ''}</td>
+        <tr style="height: 60px; vertical-align: top;">
+            <td style="font-size: 7.5pt;">{student.hobbies or ''}</td>
+            <td style="font-size: 7.5pt;">{student.motivation or ''}</td>
         </tr>
     </table>
 
-    <div class="clearfix" style="margin-top: 10px;">
-        <div style="width: 70%; float: left; font-size: 7.5pt; text-align: justify; line-height: 1.2;">
+    <div class="clearfix" style="margin-top: 8px;">
+        <div style="width: 70%; float: left; font-size: 7pt; text-align: justify; line-height: 1.15;">
             I hereby agree to study the Japanese language at the Aqua Education And Training Academy while strictly complying with all rules and regulations. After going to Japan, I promise to follow all Japanese rules and the immigration law. In the event that I fail to comply with company rules and law of Japan, I'm agree to accept all penalties in accordance with Japanese rules and Immigration Law.
         </div>
         <div style="width: 28%; float: right;">
-            <div style="font-size: 8pt; margin-bottom: 5px; text-align: right; padding-right: 20px;">Date : ________________</div>
+            <div style="font-size: 7.5pt; margin-bottom: 4px; text-align: right; padding-right: 18px;">Date : ________________</div>
             <table class="sign-box">
-                <tr style="height: 35px;">
+                <tr style="height: 32px;">
                     <td class="label">SIGN</td>
                     <td></td>
                 </tr>

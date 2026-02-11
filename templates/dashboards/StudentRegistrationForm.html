@@ -222,6 +222,40 @@
             margin-bottom: 25px;
         }
 
+        /* Passport field sizing - make all passport fields same width */
+        .passport-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .passport-grid .form-group input[type="text"] {
+            width: 100%;
+            min-width: 320px;
+            padding: 12px 15px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .passport-grid .form-group input[type="date"] {
+            width: 100%;
+            min-width: 320px;
+            padding: 12px 15px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 1100px) {
+            .passport-grid {
+                grid-template-columns: 1fr;
+            }
+            .passport-grid .form-group input[type="text"],
+            .passport-grid .form-group input[type="date"] {
+                min-width: 100%;
+            }
+        }
+
         .form-row {
             display: flex;
             flex-wrap: wrap;
@@ -961,7 +995,7 @@
         <div class="progress-indicator">
             <div class="progress-step active" data-step="1">
                 <div class="step-circle">1</div>
-                <div class="step-label">Partner & Personal</div>
+                <div class="step-label">{% if not is_portal_registration and user.is_authenticated and user.role == "manager" or user.role == "staff" or user.role == "operation_head" %}Partner &amp; {% endif %}Personal</div>
             </div>
             <div class="progress-step" data-step="2">
                 <div class="step-circle">2</div>
@@ -1008,7 +1042,7 @@
 
             <!-- Step 1: Agent & Personal Information -->
             <div class="form-step active" id="step-1">
-                <!-- Agent Information -->
+                {% if not is_portal_registration and user.is_authenticated and user.role == "manager" or user.role == "staff" or user.role == "operation_head" %}
                 <div class="form-section">
                     <div class="section-header">
                         <div class="section-icon">👤</div>
@@ -1040,6 +1074,9 @@
                         </div>
                     </div>
                 </div>
+                {% else %}
+                {{ form.agent_code.as_hidden }}
+                {% endif %}
 
                 <!-- Personal Information -->
                 <div class="form-section">
@@ -1213,7 +1250,7 @@
                             </div>
                         </div>
 
-                        <div class="form-grid">
+                        <div class="passport-grid">
                             <div class="form-group">
                                 <label for="id_passport_no" class="form-label">Passport No.</label>
                                 {{ form.passport_no }}

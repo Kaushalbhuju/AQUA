@@ -35,15 +35,21 @@
         .success-icon {
             font-size: 72px;
             color: #28a745;
+            margin-bottom: 20px;
             animation: bounceIn 0.8s ease;
         }
 
         h2 {
             font-weight: 700;
+            color: #004E89;
+        }
+
+        .lead {
+            color: #555;
         }
 
         .btn-lg {
-            min-width: 220px;
+            min-width: 200px;
         }
 
         @keyframes fadeInUp {
@@ -51,7 +57,6 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -63,16 +68,13 @@
                 transform: scale(0.3);
                 opacity: 0;
             }
-
             50% {
                 transform: scale(1.05);
                 opacity: 1;
             }
-
             70% {
                 transform: scale(0.95);
             }
-
             100% {
                 transform: scale(1);
             }
@@ -83,35 +85,34 @@
 <body>
     <div class="success-container">
         <div class="success-card">
-            <div class="mb-4">
-                <span class="success-icon" role="img" aria-label="Success">✅</span>
-            </div>
-
-            <h2 class="text-success mb-3">Registration Successful</h2>
-
-            <p class="lead mb-4">The student registration has been completed successfully.</p>
+            <div class="success-icon">✅</div>
+            <h2 class="mb-3">Registration Successful</h2>
+            <p class="lead mb-4">
+                We are pleased to inform you that your registration has been successfully completed.
+            </p>
 
             {% if agent %}
             <div class="alert alert-info text-start">
-                <h5 class="fw-bold">Partner Information</h5>
-                <p class="mb-1"><strong>Partner:</strong> {{ agent.name }} ({{ agent.agent_code }})</p>
-                <p class="mb-0"><strong>Remaining Slots:</strong> {{ remaining_slots }}</p>
+                {% comment %} <h6 class="fw-bold mb-2">Next Steps</h6> {% endcomment %}
+                <p class="mb-0">
+                    Kindly confirm the contents of the received email and submit the attached document after it has been duly signed. Thank you.
+                </p>
             </div>
             {% endif %}
 
             <div class="mt-4 d-flex flex-wrap justify-content-center gap-3">
-                <a href="{% url 'dashboard:portal_student_registration' %}" class="btn btn-primary btn-lg shadow-sm">
-                    Register Another Candidate
+                {% if student %}
+                <a href="{% url 'dashboard:generate_student_pdf_portal' student.id %}" target="_blank" class="btn btn-danger btn-lg">
+                    📄 Download PDF
                 </a>
+                {% endif %}
                 <a href="{% url 'dashboard:portal_logout' %}" class="btn btn-outline-secondary btn-lg">
                     Logout
                 </a>
             </div>
 
             <div class="mt-4">
-                <small class="text-muted">
-                    You may register multiple candidates using the same partner credentials.
-                </small>
+               
             </div>
         </div>
     </div>
