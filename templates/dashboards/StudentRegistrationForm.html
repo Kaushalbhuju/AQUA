@@ -250,6 +250,7 @@
             .passport-grid {
                 grid-template-columns: 1fr;
             }
+
             .passport-grid .form-group input[type="text"],
             .passport-grid .form-group input[type="date"] {
                 min-width: 100%;
@@ -995,7 +996,7 @@
         <div class="progress-indicator">
             <div class="progress-step active" data-step="1">
                 <div class="step-circle">1</div>
-                <div class="step-label">{% if not is_portal_registration and user.is_authenticated and user.role == "manager" or user.role == "staff" or user.role == "operation_head" %}Partner &amp; {% endif %}Personal</div>
+                <div class="step-label">{% if not is_portal_registration %}{% if user.is_authenticated %}{% if user.role == "manager" or user.role == "staff" or user.role == "operation_head" %}Partner &amp; {% endif %}{% endif %}{% endif %}Personal</div>
             </div>
             <div class="progress-step" data-step="2">
                 <div class="step-circle">2</div>
@@ -1042,43 +1043,52 @@
 
             <!-- Step 1: Agent & Personal Information -->
             <div class="form-step active" id="step-1">
-                {% if not is_portal_registration and user.is_authenticated and user.role == "manager" or user.role == "staff" or user.role == "operation_head" %}
-                <div class="form-section">
-                    <div class="section-header">
-                        <div class="section-icon">👤</div>
-                        <div>
-                            <h3 class="section-title">Partner Information</h3>
-                            <p class="section-subtitle">Your Partner details will be automatically filled</p>
-                        </div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="id_agent_code" class="form-label required">Partner's Code</label>
-                            {{ form.agent_code }}
-                            <div class="helper-text info">This code is automatically filled from your Partner account
+                {% if not is_portal_registration %}
+                {% if user.is_authenticated %}
+                    {% if user.role == "manager" or user.role == "staff" or user.role == "operation_head" %}
+                        <!-- Partner Information (Only for partners) -->
+                        <div class="form-section">
+                            <div class="section-header">
+                                <div class="section-icon">👤</div>
+                                <div>
+                                    <h3 class="section-title">Partner Information</h3>
+                                    <p class="section-subtitle">Your Partner details will be automatically filled</p>
+                                </div>
                             </div>
-                            {% if form.agent_code.errors %}
-                            <div class="field-error">
-                                <span>⚠️</span>
-                                {{ form.agent_code.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Student ID</label>
-                            <input type="text" class="form-control readonly" value="Auto-generated after submission"
-                                readonly>
-                            <div class="helper-text">This ID will be automatically assigned after submission</div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="id_agent_code" class="form-label required">Partner's Code</label>
+                                    {{ form.agent_code }}
+                                    <div class="helper-text info">This code is automatically filled from your Partner account
+                                    </div>
+                                    {% if form.agent_code.errors %}
+                                    <div class="field-error">
+                                        <span>⚠️</span>
+                                        {{ form.agent_code.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Student ID</label>
+                                    <input type="text" class="form-control readonly" value="Auto-generated after submission"
+                                        readonly>
+                                    <div class="helper-text">This ID will be automatically assigned after submission</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    {% else %}
+                        {{ form.agent_code.as_hidden }}
+                    {% endif %}
                 {% else %}
-                {{ form.agent_code.as_hidden }}
+                    {{ form.agent_code.as_hidden }}
                 {% endif %}
+            {% else %}
+                {{ form.agent_code.as_hidden }}
+            {% endif %}
 
-                <!-- Personal Information -->
+            <!-- Personal Information -->
                 <div class="form-section">
                     <div class="section-header">
                         <div class="section-icon">📝</div>
@@ -2001,6 +2011,23 @@
                         }
                     }
 
+                    // Add Age Validation for DOB field
+                    let errorMsgOverride = null;
+                    if (field.id === 'id_date_of_birth' && val) {
+                        const dob = new Date(val);
+                        const today = new Date();
+                        let age = today.getFullYear() - dob.getFullYear();
+                        const monthDiff = today.getMonth() - dob.getMonth();
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                            age--;
+                        }
+                        if (age < 18) {
+                            fieldValid = false;
+                            // Custom error message for age
+                            errorMsgOverride = "You must be at least 18 years old.";
+                        }
+                    }
+
                     if (!fieldValid) {
                         field.classList.add('error');
                         isValid = false;
@@ -2012,9 +2039,9 @@
                             field.parentElement.appendChild(errorDiv);
                         }
 
-                        const errorMsg = (field.hasAttribute('pattern') && val)
+                        const errorMsg = errorMsgOverride || ((field.hasAttribute('pattern') && val)
                             ? field.getAttribute('title') || 'Invalid format'
-                            : 'This field is required';
+                            : 'This field is required');
 
                         errorDiv.innerHTML = `<span>⚠️</span> ${errorMsg}`;
                     } else {
@@ -2405,15 +2432,8 @@
             // Age/DOB Validation
             const dobInput = document.getElementById('id_date_of_birth');
             if (dobInput) {
-                // Set max date to 18 years ago from today
-                const today = new Date();
-                const year = today.getFullYear() - 18;
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                dobInput.setAttribute('max', `${year}-${month}-${day}`);
-
                 dobInput.addEventListener('change', function () {
-                    // Prevent premature validation on iOS or empty values
+                    // Update age display only
                     if (!this.value) {
                         const ageInput = document.getElementById('id_age');
                         if (ageInput) ageInput.value = '';
@@ -2432,12 +2452,6 @@
 
                     const ageInput = document.getElementById('id_age');
                     if (ageInput) ageInput.value = age;
-
-                    if (age < 18) {
-                        alert("You must be at least 18 years old.");
-                        this.value = '';
-                        if (ageInput) ageInput.value = '';
-                    }
                 });
             }
 
