@@ -9,7 +9,9 @@ from .views.other_views import home_view, dashboard_view, profile_view, settings
 from .views.student_views import (
     registration_success, student_registration, student_list, student_detail,
     student_application_detail, update_student_status,
-    generate_student_pdf, generate_student_pdf_portal, approve_student, decline_student,
+    generate_student_pdf, generate_student_pdf_portal, generate_admission_fee_pdf, 
+    generate_admission_fee_pdf_portal, approve_student, decline_student,
+
     approve_student_page, decline_student_page, biodata, approval_success
 )
 from .views.portal_views import (
@@ -53,6 +55,8 @@ urlpatterns = [
 
     # PDF generation
     path('student/<int:student_id>/pdf/', generate_student_pdf, name='generate_student_pdf'),
+    path('student/<int:student_id>/admission-fee-pdf/', generate_admission_fee_pdf, name='generate_admission_fee_pdf'),
+
 
     # Approve / decline student
     path('student/<int:student_id>/approve/', approve_student, name='approve_student'),
@@ -77,6 +81,8 @@ urlpatterns = [
     path('portal/success/', portal_registration_success, name='portal_registration_success'),
     path('portal/logout/', portal_logout, name='portal_logout'),
     path('portal/student/<int:student_id>/pdf/', generate_student_pdf_portal, name='generate_student_pdf_portal'),
+    path('portal/student/<int:student_id>/admission-fee-pdf/', generate_admission_fee_pdf_portal, name='generate_admission_fee_pdf_portal'),
+
 
 
     # SSW specific views

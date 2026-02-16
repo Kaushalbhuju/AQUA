@@ -526,9 +526,9 @@
                 <a href="{% url 'staff_list' %}" class="btn btn-custom btn-back">
                     <i class="fas fa-arrow-left"></i> Back to List
                 </a>
-                <button onclick="window.print()" class="btn btn-custom btn-print">
+                <a href="{% url 'staff_print_pdf' staff.pk %}" target="_blank" class="btn btn-custom btn-print">
                     <i class="fas fa-print"></i> Print
-                </button>
+                </a>
                 <a href="{% url 'staff_update' staff.pk %}" class="btn btn-custom btn-edit-detail">
                     <i class="fas fa-edit"></i> Edit
                 </a>

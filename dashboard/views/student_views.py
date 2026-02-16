@@ -214,7 +214,7 @@ def _generate_student_pdf_internal(request, student_id):
         for i in range(7):
             e = edu_list[i] if i < len(edu_list) else None
             education_rows += f"""
-            <tr style="height:20px;">
+            <tr style="height:28px;">
                 <td style="padding-left:8px; font-size: 7.5pt;">{e.pass_level if e else edu_defaults[i]}</td>
                 <td style="font-size: 7.5pt;">{e.school_name if e else ''}</td>
                 <td class="center" style="font-size: 7.5pt;">{e.admission_year if e else ''}</td>
@@ -245,9 +245,9 @@ def _generate_student_pdf_internal(request, student_id):
 <html>
 <head>
     <style>
-        @page {{ size: A4; margin: 0.25cm; }}
+        @page {{ size: A4; margin: 0.5cm 1.25cm; }}
         body {{ font-family: 'Helvetica', 'Arial', sans-serif; font-size: 8pt; line-height: 1.1; color: #000; margin: 0; padding: 0; }}
-        .header {{ text-align: center; margin-bottom: 4px; }}
+        .header {{ text-align: center; margin-bottom: 4px; background-color: #E8E8E8; padding: 8px 0; }}
         .header h1 {{ font-size: 15pt; margin: 0; font-weight: bold; letter-spacing: 1px; }}
         .header p {{ font-size: 9.5pt; margin: 2px 0; font-weight: bold; }}
         .cc-to {{ text-align: left; font-size: 6pt; font-weight: bold; margin: 4px 0 2px 10px; }}
@@ -260,7 +260,7 @@ def _generate_student_pdf_internal(request, student_id):
         .bold {{ font-weight: bold; }}
         .lbl-sm {{ font-size: 7pt; }}
         
-        .photo-box {{ width: 95px; height: 120px; text-align: center; padding: 1px; vertical-align: middle; background: #fff; border: 1px solid #000; box-sizing: border-box; }}
+        .photo-box {{ width: 85px; height: 110px; text-align: center; padding: 1px; vertical-align: middle; background: #fff; border: 1px solid #000; box-sizing: border-box; }}
         .photo-box-inner {{ width: 100%; height: 100%; background: #fff; border: 1px solid #000; box-sizing: border-box; overflow: hidden; }}
         .photo-box-content {{ width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #fff; color: #999; font-size: 9pt; }}
         .photo-box img {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
@@ -327,14 +327,16 @@ def _generate_student_pdf_internal(request, student_id):
             <td rowspan="2" class="center" style="padding:0; font-size: 7.5pt; font-weight: bold;">
                 Full<br>Address
             </td>
-            <td colspan="2" class="lbl-sm" style="height:26px;">Permanent: {student.permanent_address or ''}</td>
+            <td width="8%" class="center" style="font-size: 7pt;">Permanent</td>
+            <td colspan="2" class="lbl-sm" style="height:26px;">{student.permanent_address or ''}</td>
             <td class="center" style="font-size: 7.5pt;">Age</td>
-            <td colspan="2" class="center">{student.age or ''}</td>
+            <td class="center">{student.age or ''}</td>
         </tr>
         <tr>
-            <td colspan="2" class="lbl-sm" style="height:26px;">Present: {student.present_address or ''}</td>
+            <td class="center" style="font-size: 7pt;">Present</td>
+            <td colspan="2" class="lbl-sm" style="height:26px;">{student.present_address or ''}</td>
             <td class="center" style="font-size: 7.5pt;">Marital Status</td>
-            <td colspan="2" class="center">{student.get_marital_status_display() if student.marital_status else ''}</td>
+            <td class="center">{student.get_marital_status_display() if student.marital_status else ''}</td>
         </tr>
     </table>
 
@@ -394,10 +396,10 @@ def _generate_student_pdf_internal(request, student_id):
     <div class="bg-beige section-title" style="border-bottom: 1px solid #000; margin-top: 0; font-size: 9pt;">EDUCATIONAL HISTORY</div>
     <table>
         <tr class="center" style="font-size: 7.5pt; height: 22px;">
-            <th width="22%" rowspan="2" style="font-size: 7.5pt;">Pass Level</th>
-            <th width="33%" rowspan="2" style="font-size: 7.5pt;">Name of School</th>
-            <th colspan="4" width="30%" style="font-size: 7.5pt;">Admission & Graduation</th>
-            <th width="15%" rowspan="2" style="font-size: 7.5pt;">Enrolled Years</th>
+            <th width="18%" rowspan="2" style="font-size: 7.5pt;">Pass Level</th>
+            <th width="40%" rowspan="2" style="font-size: 7.5pt;">Name of School</th>
+            <th colspan="4" width="28%" style="font-size: 7.5pt;">Admission & Graduation</th>
+            <th width="14%" rowspan="2" style="font-size: 7.5pt;">Enrolled Years</th>
         </tr>
         <tr class="center" style="font-size: 7pt; height: 14px;">
             <td style="font-size: 7pt;">Year</td><td style="font-size: 7pt;">Month</td><td style="font-size: 7pt;">Year</td><td style="font-size: 7pt;">Month</td>
@@ -408,10 +410,10 @@ def _generate_student_pdf_internal(request, student_id):
     <div class="bg-beige section-title" style="border-bottom: 1px solid #000; margin-top: 0; font-size: 9pt;">WORKING EXPERIENCE</div>
     <table>
         <tr class="center" style="font-size: 7.5pt; height: 22px;">
-            <th width="22%" style="font-size: 7.5pt;">Type of Work</th>
-            <th width="38%" style="font-size: 7.5pt;">Name of Working Company</th>
-            <th width="25%" style="font-size: 7.5pt;">Date of Join & Resign</th>
-            <th width="15%" style="font-size: 7.5pt;">Working Years</th>
+            <th width="18%" style="font-size: 7.5pt;">Type of Work</th>
+            <th width="45%" style="font-size: 7.5pt;">Name of Working Company</th>
+            <th width="23%" style="font-size: 7.5pt;">Date of Join & Resign</th>
+            <th width="14%" style="font-size: 7.5pt;">Working Years</th>
         </tr>
         {work_rows}
     </table>
@@ -425,7 +427,7 @@ def _generate_student_pdf_internal(request, student_id):
             <td style="padding:0;">
                 <table style="border:none;">
                     <tr class="center" style="height:18px;">
-                        <td width="25%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Pass Year & Month</td>
+                        <td width="20%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Pass Year & Month</td>
                         <td style="border:none; border-bottom: 1px solid #000; font-size: 6.5pt;">Name of Pass Exam</td>
                     </tr>
                     <tr style="height:24px;" class="center">
@@ -441,7 +443,7 @@ def _generate_student_pdf_internal(request, student_id):
             <td style="padding:0;">
                 <table style="border:none;">
                     <tr class="center" style="height:18px;">
-                        <td width="30%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Join Year and Month</td>
+                        <td width="22%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Join Year and Month</td>
                         <td style="border:none; border-bottom: 1px solid #000; font-size: 6.5pt;">Organization</td>
                     </tr>
                     <tr style="height:24px;" class="center">
@@ -509,6 +511,61 @@ def _generate_student_pdf_internal(request, student_id):
 
     except Exception as e:
         return HttpResponse(f"Error: {str(e)}", status=500)
+
+@login_required
+def generate_admission_fee_pdf(request, student_id):
+    """Generate Admission Fee Invoice PDF - accessible by logged-in users"""
+    return _generate_admission_fee_pdf_internal(request, student_id)
+
+def generate_admission_fee_pdf_portal(request, student_id):
+    """Generate Admission Fee Invoice PDF - accessible by portal users via session"""
+    portal_agent_id = request.session.get('portal_agent_id')
+    if not portal_agent_id:
+        from django.contrib.auth.decorators import login_required
+        return login_required(lambda r, sid: _generate_admission_fee_pdf_internal(r, sid))(request, student_id)
+    
+    return _generate_admission_fee_pdf_internal(request, student_id)
+
+def _generate_admission_fee_pdf_internal(request, student_id):
+    """Internal function to generate Admission Fee Invoice PDF"""
+    try:
+        student = get_object_or_404(Student, id=student_id)
+        
+        # Logo Processing
+        logo_base64 = ""
+        logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'logo.png')
+        if os.path.exists(logo_path):
+            try:
+                with open(logo_path, "rb") as f:
+                    logo_base64 = base64.b64encode(f.read()).decode()
+            except Exception: pass
+
+        # Background Image Processing
+        bg_base64 = ""
+        bg_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'admission_fee_invoice_bg.jpg')
+        if os.path.exists(bg_path):
+            try:
+                with open(bg_path, "rb") as f:
+                    bg_base64 = base64.b64encode(f.read()).decode()
+            except Exception: pass
+
+        context = {
+            'student': student,
+            'current_date': student.created_at if student.created_at else timezone.now(),
+            'logo_base64': logo_base64,
+            'bg_base64': bg_base64,
+        }
+        
+        html_string = render_to_string('dashboards/admission_fee_invoice_pdf.html', context)
+        pdf = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
+        
+        response = HttpResponse(pdf, content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="Admission_Fee_Invoice_{student.student_id}.pdf"'
+        return response
+
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
+
 
 @login_required
 def approve_student_page(request, student_id):

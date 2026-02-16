@@ -250,6 +250,416 @@ def staff_delete(request, pk):
 
 
 #New
+def generate_staff_registration_pdf(request, pk):
+    """Generate Staff Registration PDF matching the exact form layout from the image - fits on single A4 page."""
+    staff = get_object_or_404(StaffRegistration, pk=pk)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="staff_registration_{staff.staff_id}.pdf"'
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        leftMargin=0.35 * inch, rightMargin=0.35 * inch,
+        topMargin=0.25 * inch, bottomMargin=0.2 * inch,
+    )
+    elements = []
+    W = 7.4 * inch  # total usable width
+
+    BLACK = colors.black
+    LIGHT_BG = colors.HexColor('#FDE8D0')  # peach header background
+    GREY_BG = colors.HexColor('#f8f9fa')
+    LN = 0.5  # thinner line for compact layout
+
+    # Compact paragraph helper - smaller leading for tight fit
+    def _p(text, size=7, bold=False, align=TA_LEFT):
+        font = 'Helvetica-Bold' if bold else 'Helvetica'
+        return Paragraph(
+            str(text) if text else '',
+            ParagraphStyle('c', fontName=font, fontSize=size, leading=size + 2, alignment=align),
+        )
+
+    def _val(v, fallback=''):
+        return str(v) if v else fallback
+
+    # Compact grid helper with minimal padding
+    PAD = 2
+    def _grid(t, col_widths, extra_style=None):
+        ts = [
+            ('GRID', (0, 0), (-1, -1), LN, BLACK),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), PAD),
+            ('RIGHTPADDING', (0, 0), (-1, -1), PAD),
+            ('TOPPADDING', (0, 0), (-1, -1), PAD),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
+        ]
+        if extra_style:
+            ts.extend(extra_style)
+        tbl = Table(t, colWidths=col_widths, hAlign='LEFT')
+        tbl.setStyle(TableStyle(ts))
+        return tbl
+
+    # ── HEADER ──
+    header_data = [[_p('STAFF MANAGEMENT', 14, True, TA_CENTER)]]
+    header = Table(header_data, colWidths=[W])
+    header.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+    ]))
+    elements.append(header)
+
+    sub_header_data = [[_p('STAFF REGISTRATION', 9, True, TA_CENTER)]]
+    sub_header = Table(sub_header_data, colWidths=[W])
+    sub_header.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_BG),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+    ]))
+    elements.append(sub_header)
+    elements.append(Spacer(1, 3))
+
+    # ── PHOTO ──
+    photo_content = _p('CANDIDATE\nPHOTO', 7, True, TA_CENTER)
+    if staff.candidate_photo:
+        try:
+            photo_content = Image(staff.candidate_photo.path, width=0.9 * inch, height=1.1 * inch)
+        except Exception:
+            pass
+
+    # ── ROW 1: Staff ID, Gender, Photo + Full Name, Marital Status ──
+    gender_display = staff.get_gender_display() if staff.gender else ''
+    row1 = [
+        [_p('STAFF ID', 7, True), _p(_val(staff.staff_id), 7), _p('Gender', 7, True), _p(gender_display, 7), photo_content],
+        [_p('Full Name', 7, True), _p(_val(staff.full_name), 7), _p('Marital Status', 7, True), _p(_val(staff.marital_status), 7), ''],
+    ]
+    c1 = [0.7 * inch, 2.5 * inch, 0.9 * inch, 1.5 * inch, 1.8 * inch]
+    top_tbl = Table(row1, colWidths=c1)
+    top_tbl.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), LN, BLACK),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
+        ('RIGHTPADDING', (0, 0), (-1, -1), PAD),
+        ('TOPPADDING', (0, 0), (-1, -1), PAD),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
+        ('BACKGROUND', (0, 0), (0, -1), GREY_BG),
+        ('BACKGROUND', (2, 0), (2, -1), GREY_BG),
+        ('SPAN', (4, 0), (4, 1)),
+        ('ALIGN', (4, 0), (4, 1), 'CENTER'),
+        ('VALIGN', (4, 0), (4, 1), 'MIDDLE'),
+    ]))
+    elements.append(top_tbl)
+
+    # ── Address rows ──
+    addr_data = [
+        [_p('Address', 7, True), _p('Permanent', 6, True), _p(_val(staff.permanent_address), 7)],
+        ['', _p('Present', 6, True), _p(_val(staff.present_address), 7)],
+    ]
+    addr_c = [0.7 * inch, 0.7 * inch, 6.0 * inch]
+    addr_tbl = Table(addr_data, colWidths=addr_c)
+    addr_tbl.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), LN, BLACK),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
+        ('TOPPADDING', (0, 0), (-1, -1), PAD),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
+        ('BACKGROUND', (0, 0), (0, -1), GREY_BG),
+        ('BACKGROUND', (1, 0), (1, -1), GREY_BG),
+        ('SPAN', (0, 0), (0, 1)),
+    ]))
+    elements.append(addr_tbl)
+
+    # ── ID / Passport ──
+    id_data = [[
+        _p('ID / Passport No.', 7, True),
+        _p(_val(staff.id_passport_no), 7),
+        _p('Date of Issue', 7, True),
+        _p(str(staff.date_of_issue) if staff.date_of_issue else '', 7),
+        _p('Issue From', 7, True),
+        _p(_val(staff.issue_from), 7),
+    ]]
+    id_c = [1.0 * inch, 1.7 * inch, 0.8 * inch, 1.0 * inch, 0.8 * inch, 2.1 * inch]
+    elements.append(_grid(id_data, id_c, [
+        ('BACKGROUND', (0, 0), (0, 0), GREY_BG),
+        ('BACKGROUND', (2, 0), (2, 0), GREY_BG),
+        ('BACKGROUND', (4, 0), (4, 0), GREY_BG),
+    ]))
+
+    # ── Personal Information ──
+    dob = str(staff.date_of_birth) if staff.date_of_birth else ''
+    pi_data = [
+        [_p('Personal\nInformation', 7, True), _p('Date of Birth', 6, True), '', _p('Eye Lense', 6, True), '', _p('Blood Group', 6, True), _p('Phone No.', 6, True), _p('Email ID', 6, True)],
+        ['', _p(dob, 7), _p('Height', 6, True), _p(f'R: {_val(staff.eye_lense_right)}', 6), _p(f'L: {_val(staff.eye_lense_left)}', 6), _p(_val(staff.blood_group), 7), _p(_val(staff.phone_no), 7), _p(_val(staff.email_id), 6)],
+    ]
+    pi_c = [0.9 * inch, 1.0 * inch, 0.6 * inch, 0.9 * inch, 0.6 * inch, 0.8 * inch, 1.1 * inch, 2.1 * inch]
+    pi_tbl = Table(pi_data, colWidths=pi_c)
+    pi_tbl.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), LN, BLACK),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
+        ('TOPPADDING', (0, 0), (-1, -1), PAD),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
+        ('BACKGROUND', (0, 0), (0, -1), GREY_BG),
+        ('BACKGROUND', (2, 0), (2, 0), GREY_BG),
+        ('BACKGROUND', (3, 0), (4, 0), GREY_BG),
+        ('BACKGROUND', (5, 0), (5, 0), GREY_BG),
+        ('BACKGROUND', (6, 0), (6, 0), GREY_BG),
+        ('BACKGROUND', (7, 0), (7, 0), GREY_BG),
+        ('SPAN', (0, 0), (0, 1)),
+        ('SPAN', (1, 0), (1, 0)),
+        ('SPAN', (3, 0), (4, 0)),
+    ]))
+    elements.append(pi_tbl)
+
+    # ── Family Records ──
+    fr_data = [[
+        _p('Family Records', 7, True),
+        _p(_val(staff.spouse_name), 7),
+        _p('CONTACT NO', 7, True), _p(_val(staff.contact_no), 7),
+    ]]
+    fr_sub = [[
+        _p('Spouse Name', 7, True), '', '', '',
+    ]]
+    # Combine as two rows
+    fr_all = [
+        [_p('Family Records', 7, True), '', '', _p('CONTACT NO', 7, True)],
+        [_p('Spouse Name', 7, True), _p(_val(staff.spouse_name), 7), '', _p(_val(staff.contact_no), 7)],
+    ]
+    fr_c = [0.9 * inch, 3.3 * inch, 0.8 * inch, 2.4 * inch]
+    # Simpler: single row matching image
+    fr_all = [[
+        _p('Family Records', 7, True), '', _p('CONTACT NO', 7, True), '',
+    ], [
+        _p('Spouse Name', 7, True), _p(_val(staff.spouse_name), 7), '', _p(_val(staff.contact_no), 7),
+    ]]
+    fr_c = [1.0 * inch, 3.2 * inch, 1.0 * inch, 2.2 * inch]
+    fr_tbl = Table(fr_all, colWidths=fr_c)
+    fr_tbl.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), LN, BLACK),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
+        ('TOPPADDING', (0, 0), (-1, -1), PAD),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
+        ('BACKGROUND', (0, 0), (0, -1), GREY_BG),
+        ('BACKGROUND', (2, 0), (2, 0), GREY_BG),
+        ('SPAN', (0, 0), (1, 0)),  # "Family Records" spans first row
+        ('SPAN', (2, 0), (3, 0)),  # "CONTACT NO" label spans
+    ]))
+    elements.append(fr_tbl)
+    elements.append(Spacer(1, 4))
+
+    # ── EDUCATIONAL HISTORY ──
+    elements.append(_grid(
+        [[_p('EDUCATIONAL HISTORY', 8, True, TA_CENTER)]],
+        [W], [('BACKGROUND', (0, 0), (-1, -1), GREY_BG)]
+    ))
+
+    edu_top = [
+        _p('Pass Level', 6, True), _p('Name of School', 6, True),
+        _p('Admission & Graduation', 6, True, TA_CENTER), '', '', '',
+        _p('Enrolled\nYears', 6, True, TA_CENTER),
+    ]
+    edu_sub = [
+        '', '',
+        _p('Year', 6, True, TA_CENTER), _p('Month', 6, True, TA_CENTER),
+        _p('Year', 6, True, TA_CENTER), _p('Month', 6, True, TA_CENTER),
+        '',
+    ]
+    edu_c = [1.05 * inch, 2.05 * inch, 0.65 * inch, 0.65 * inch, 0.65 * inch, 0.65 * inch, 1.0 * inch]
+    edu_all = [edu_top, edu_sub]
+
+    edu_levels = ['Primary School', 'Junior H. School', 'Higher S. School',
+                  'College / University', 'Graduate University', 'Graduate University', 'Other School']
+    edu_map = {}
+    for edu in staff.education_history.all():
+        edu_map[edu.pass_level] = edu
+
+    level_keys = ['Primary', 'Junior', 'Higher', 'College', 'Graduate', 'PostGraduate', 'Other']
+    for i, key in enumerate(level_keys):
+        edu_obj = edu_map.get(key)
+        if edu_obj:
+            edu_all.append([
+                _p(edu_levels[i], 6), _p(_val(edu_obj.name_of_school), 6),
+                _p(_val(edu_obj.admission_year), 6, align=TA_CENTER),
+                _p(_val(edu_obj.admission_month), 6, align=TA_CENTER),
+                _p(_val(edu_obj.graduation_year), 6, align=TA_CENTER),
+                _p(_val(edu_obj.graduation_month), 6, align=TA_CENTER),
+                _p(f'{_val(edu_obj.enrolled_years)} Yrs' if edu_obj.enrolled_years else 'Years', 6, align=TA_CENTER),
+            ])
+        else:
+            edu_all.append([
+                _p(edu_levels[i], 6), '', '', '', '', '',
+                _p('Years', 6, align=TA_CENTER),
+            ])
+
+    edu_tbl = Table(edu_all, colWidths=edu_c)
+    edu_tbl.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), LN, BLACK),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
+        ('TOPPADDING', (0, 0), (-1, -1), 1),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+        ('BACKGROUND', (0, 0), (-1, 1), GREY_BG),
+        ('SPAN', (2, 0), (5, 0)),
+        ('SPAN', (6, 0), (6, 1)),
+        ('SPAN', (0, 0), (0, 1)),
+        ('SPAN', (1, 0), (1, 1)),
+        ('ALIGN', (2, 0), (-1, -1), 'CENTER'),
+    ]))
+    elements.append(edu_tbl)
+    elements.append(Spacer(1, 4))
+
+    # ── WORKING EXPERIENCE ──
+    elements.append(_grid(
+        [[_p('WORKING EXPERIENCE', 8, True, TA_CENTER)]],
+        [W], [('BACKGROUND', (0, 0), (-1, -1), GREY_BG)]
+    ))
+
+    work_top = [
+        _p('Type of Work', 6, True), _p('Name of Working Company', 6, True),
+        _p('Date of Join & Resign', 6, True, TA_CENTER), '', '', '',
+        _p('Working\nYears', 6, True, TA_CENTER),
+    ]
+    work_sub = ['', '', _p('Year', 6, True, TA_CENTER), _p('Month', 6, True, TA_CENTER),
+                _p('Year', 6, True, TA_CENTER), _p('Month', 6, True, TA_CENTER), '']
+    work_c = edu_c  # same widths
+    work_all = [work_top, work_sub]
+
+    work_qs = list(staff.work_experience.all())
+    for _ in range(max(3 - len(work_qs), 0)):
+        work_qs.append(None)
+    for w in work_qs:
+        if w:
+            work_all.append([
+                _p(_val(w.type_of_work), 6), _p(_val(w.name_of_company), 6),
+                _p(_val(w.join_year), 6, align=TA_CENTER), _p(_val(w.join_month), 6, align=TA_CENTER),
+                _p(_val(w.resign_year), 6, align=TA_CENTER), _p(_val(w.resign_month), 6, align=TA_CENTER),
+                _p(f'{_val(w.working_years)} Yrs' if w.working_years else 'Years', 6, align=TA_CENTER),
+            ])
+        else:
+            work_all.append(['', '', '', '', '', '', _p('Years', 6, align=TA_CENTER)])
+
+    work_tbl = Table(work_all, colWidths=work_c)
+    work_tbl.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), LN, BLACK),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
+        ('TOPPADDING', (0, 0), (-1, -1), 1),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+        ('BACKGROUND', (0, 0), (-1, 1), GREY_BG),
+        ('SPAN', (2, 0), (5, 0)),
+        ('SPAN', (6, 0), (6, 1)),
+        ('SPAN', (0, 0), (0, 1)),
+        ('SPAN', (1, 0), (1, 1)),
+        ('ALIGN', (2, 0), (-1, -1), 'CENTER'),
+    ]))
+    elements.append(work_tbl)
+    elements.append(Spacer(1, 4))
+
+    # ── CERTIFICATE OF SKILLS + SKILLS TRAINING STATUS (side by side) ──
+    cert_train_header = [[
+        _p('CERTIFICATE OF SKILLS', 8, True, TA_CENTER),
+        _p('SKILLS TRAINING STATUS', 8, True, TA_CENTER),
+    ]]
+    ct_header = Table(cert_train_header, colWidths=[W / 2, W / 2])
+    ct_header.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), LN, BLACK),
+        ('BACKGROUND', (0, 0), (-1, -1), GREY_BG),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+    ]))
+    elements.append(ct_header)
+
+    cert_qs = list(staff.certificates.all())
+    train_qs = list(staff.training_status.all())
+    max_rows = max(len(cert_qs), len(train_qs), 3)
+    for _ in range(max_rows - len(cert_qs)):
+        cert_qs.append(None)
+    for _ in range(max_rows - len(train_qs)):
+        train_qs.append(None)
+
+    ct_c = [0.85 * inch, 1.65 * inch, 0.85 * inch, 1.65 * inch, 0.85 * inch, 1.55 * inch]
+    ct_header_row = [
+        _p('Pass Year\n& Month', 5, True, TA_CENTER), _p('Name of Certificate', 6, True, TA_CENTER),
+        _p('Join Year\nand Month', 5, True, TA_CENTER), '',
+        _p('Organization', 6, True, TA_CENTER), '',
+    ]
+    ct_all = [ct_header_row]
+
+    for i in range(max_rows):
+        c = cert_qs[i]
+        t = train_qs[i]
+        ct_all.append([
+            _p(f'{_val(c.pass_year)}/{_val(c.pass_month)}' if c and (c.pass_year or c.pass_month) else '', 6, align=TA_CENTER) if c else '',
+            _p(_val(c.name_of_certificate) if c else '', 6),
+            _p(f'{_val(t.join_year)}/{_val(t.join_month)}' if t and (t.join_year or t.join_month) else '', 6, align=TA_CENTER) if t else '',
+            _p(_val(t.name_of_training) if t else '', 6),
+            _p(f'{_val(t.pass_year)}/{_val(t.pass_month)}' if t and (t.pass_year or t.pass_month) else '', 6, align=TA_CENTER) if t else '',
+            _p(_val(t.organization) if t else '', 6),
+        ])
+
+    ct_tbl = Table(ct_all, colWidths=ct_c)
+    ct_tbl.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), LN, BLACK),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
+        ('TOPPADDING', (0, 0), (-1, -1), 1),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+        ('BACKGROUND', (0, 0), (-1, 0), GREY_BG),
+    ]))
+    elements.append(ct_tbl)
+    elements.append(Spacer(1, 4))
+
+    # ── DRIVING LICENSE ──
+    license = None
+    try:
+        license = staff.driving_license
+    except DrivingLicense.DoesNotExist:
+        pass
+
+    dl_data = [[
+        _p('DRIVING LICENSE', 7, True),
+        _p('Pass Year & Month', 6, True),
+        _p(f'{_val(license.pass_year)} / {_val(license.pass_month)}' if license else '', 7),
+        _p('Discretion of License', 6, True),
+        _p(_val(license.discretion_of_license) if license else '', 7),
+    ]]
+    dl_c = [1.1 * inch, 1.1 * inch, 0.9 * inch, 1.2 * inch, 3.1 * inch]
+    elements.append(_grid(dl_data, dl_c, [
+        ('BACKGROUND', (0, 0), (0, 0), GREY_BG),
+        ('BACKGROUND', (1, 0), (1, 0), GREY_BG),
+        ('BACKGROUND', (3, 0), (3, 0), GREY_BG),
+    ]))
+    elements.append(Spacer(1, 4))
+
+    # ── HOBBIES + MOTIVATION ──
+    hm_data = [
+        [_p('Hobbies, Special skills, etc.', 7, True), _p('Motivation, Self-promotion', 7, True)],
+        [_p(_val(staff.hobbies), 6), _p(_val(staff.motivation), 6)],
+    ]
+    hm_c = [W / 2, W / 2]
+    hm_tbl = Table(hm_data, colWidths=hm_c, rowHeights=[None, 0.7 * inch])
+    hm_tbl.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), LN, BLACK),
+        ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+        ('VALIGN', (0, 1), (-1, 1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
+        ('TOPPADDING', (0, 0), (-1, -1), PAD),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
+        ('BACKGROUND', (0, 0), (-1, 0), GREY_BG),
+    ]))
+    elements.append(hm_tbl)
+
+    # Build
+    doc.build(elements)
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+    return response
+
+
 def generate_staff_bio_pdf(request, pk):
     """Generate Staff Bio Data PDF"""
     staff = get_object_or_404(StaffRegistration, pk=pk)
