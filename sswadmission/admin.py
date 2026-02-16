@@ -58,7 +58,6 @@ class FeeInstallmentInline(admin.TabularInline):
     status_display.short_description = 'Status'
 
 # Student Admin
-@admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     list_display = ['student_id', 'full_name', 'course', 'status_display', 'fee_display', 'payment_status', 'created_at']
     list_filter = ['status', 'course', 'registration_date', 'gender']
@@ -137,7 +136,6 @@ class StudentAdmin(admin.ModelAdmin):
     fee_paid_percentage_display.short_description = 'Payment Progress'
 
 # Fee Payment Admin
-@admin.register(FeePayment)
 class FeePaymentAdmin(admin.ModelAdmin):
     list_display = ['payment_id', 'student_link', 'amount_display', 'payment_method_display', 
                    'status_display', 'payment_date', 'verified_info']
@@ -197,7 +195,6 @@ class FeePaymentAdmin(admin.ModelAdmin):
     verified_info.short_description = 'Verified'
 
 # Fee Installment Admin
-@admin.register(FeeInstallment)
 class FeeInstallmentAdmin(admin.ModelAdmin):
     list_display = ['student_link', 'installment_number', 'amount_display', 'due_date', 
                    'status_display', 'paid_date', 'is_overdue_display']

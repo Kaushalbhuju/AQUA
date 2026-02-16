@@ -33,8 +33,8 @@ except ImportError:
     appointment_available = False
 
 try:
-    from sswadmission.admin import SSWAdmissionAdmin
-    from sswadmission.models import SSWAdmission
+    from sswadmission.admin import StudentAdmin as SSWStudentAdmin, FeePaymentAdmin, FeeInstallmentAdmin
+    from sswadmission.models import Student as SSWStudent, FeePayment, FeeInstallment
     sswadmission_available = True
 except ImportError:
     sswadmission_available = False
@@ -166,7 +166,15 @@ if appointment_available:
 
 if sswadmission_available:
     try:
-        custom_admin_site.register(SSWAdmission, SSWAdmissionAdmin)
+        custom_admin_site.register(SSWStudent, SSWStudentAdmin)
+    except admin.sites.AlreadyRegistered:
+        pass
+    try:
+        custom_admin_site.register(FeePayment, FeePaymentAdmin)
+    except admin.sites.AlreadyRegistered:
+        pass
+    try:
+        custom_admin_site.register(FeeInstallment, FeeInstallmentAdmin)
     except admin.sites.AlreadyRegistered:
         pass
 
