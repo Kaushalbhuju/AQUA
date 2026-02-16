@@ -2051,26 +2051,6 @@
                 return isValid;
             }
 
-            // Age calculation
-            const dobField = document.querySelector('[name="date_of_birth"]');
-            const ageField = document.querySelector('[name="age"]');
-
-            if (dobField && ageField) {
-                dobField.addEventListener('change', function () {
-                    if (this.value) {
-                        const dob = new Date(this.value);
-                        const today = new Date();
-                        let age = today.getFullYear() - dob.getFullYear();
-                        const monthDiff = today.getMonth() - dob.getMonth();
-
-                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-                            age--;
-                        }
-
-                        ageField.value = age;
-                    }
-                });
-            }
 
             // Photo upload with drag & drop
             const photoUploadArea = document.getElementById('photoUploadArea');
@@ -2433,10 +2413,22 @@
                 dobInput.setAttribute('max', `${year}-${month}-${day}`);
 
                 dobInput.addEventListener('change', function () {
+                    // Prevent premature validation on iOS or empty values
+                    if (!this.value) {
+                        const ageInput = document.getElementById('id_age');
+                        if (ageInput) ageInput.value = '';
+                        return;
+                    }
+
                     const dob = new Date(this.value);
-                    const ageDiffMs = Date.now() - dob.getTime();
-                    const ageDate = new Date(ageDiffMs);
-                    const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+                    if (isNaN(dob.getTime())) return;
+
+                    const today = new Date();
+                    let age = today.getFullYear() - dob.getFullYear();
+                    const m = today.getMonth() - dob.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                        age--;
+                    }
 
                     const ageInput = document.getElementById('id_age');
                     if (ageInput) ageInput.value = age;
