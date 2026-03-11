@@ -22,9 +22,10 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from io import BytesIO
 from datetime import datetime
+
 
 def staff_registration_create(request):
     if request.method == 'POST':
@@ -251,7 +252,7 @@ def staff_delete(request, pk):
 
 #New
 def generate_staff_registration_pdf(request, pk):
-    """Generate Staff Registration PDF matching the exact form layout from the image - fits on single A4 page."""
+    """Generate Staff Registration PDF matching the exact form layout - fits on single A4 page."""
     staff = get_object_or_404(StaffRegistration, pk=pk)
 
     response = HttpResponse(content_type='application/pdf')
@@ -261,608 +262,430 @@ def generate_staff_registration_pdf(request, pk):
     doc = SimpleDocTemplate(
         buffer, pagesize=A4,
         leftMargin=0.35 * inch, rightMargin=0.35 * inch,
-        topMargin=0.25 * inch, bottomMargin=0.2 * inch,
+        topMargin=0.3 * inch, bottomMargin=0.3 * inch,
     )
     elements = []
-    W = 7.4 * inch  # total usable width
+    W = 7.77 * inch  # usable width on A4 with 0.35" margins each side
 
     BLACK = colors.black
-    LIGHT_BG = colors.HexColor('#FDE8D0')  # peach header background
-    GREY_BG = colors.HexColor('#f8f9fa')
-    LN = 0.5  # thinner line for compact layout
+    PEACH = colors.HexColor('#F5C9A0')
+    GREY  = colors.HexColor('#E8E8E8')
+    WHITE = colors.white
+    LN    = 0.5
+    PAD   = 2
 
-    # Compact paragraph helper - smaller leading for tight fit
-    def _p(text, size=7, bold=False, align=TA_LEFT):
+    def p(text, size=7, bold=False, align=TA_LEFT):
         font = 'Helvetica-Bold' if bold else 'Helvetica'
         return Paragraph(
             str(text) if text else '',
-            ParagraphStyle('c', fontName=font, fontSize=size, leading=size + 2, alignment=align),
+            ParagraphStyle('s', fontName=font, fontSize=size, leading=size + 2,
+                           alignment=align, spaceAfter=0, spaceBefore=0),
         )
 
     def _val(v, fallback=''):
-        return str(v) if v else fallback
+        return str(v) if v and str(v).strip() else fallback
 
-    # Compact grid helper with minimal padding
-    PAD = 2
-    def _grid(t, col_widths, extra_style=None):
-        ts = [
-            ('GRID', (0, 0), (-1, -1), LN, BLACK),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('LEFTPADDING', (0, 0), (-1, -1), PAD),
-            ('RIGHTPADDING', (0, 0), (-1, -1), PAD),
-            ('TOPPADDING', (0, 0), (-1, -1), PAD),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
-        ]
-        if extra_style:
-            ts.extend(extra_style)
-        tbl = Table(t, colWidths=col_widths, hAlign='LEFT')
-        tbl.setStyle(TableStyle(ts))
-        return tbl
+    BASE_STYLE = [
+        ('GRID',         (0, 0), (-1, -1), LN,  BLACK),
+        ('VALIGN',       (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING',  (0, 0), (-1, -1), PAD),
+        ('RIGHTPADDING', (0, 0), (-1, -1), PAD),
+        ('TOPPADDING',   (0, 0), (-1, -1), PAD),
+        ('BOTTOMPADDING',(0, 0), (-1, -1), PAD),
+    ]
 
-    # ── HEADER ──
-    header_data = [[_p('STAFF MANAGEMENT', 14, True, TA_CENTER)]]
-    header = Table(header_data, colWidths=[W])
-    header.setStyle(TableStyle([
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
+    # ── TITLE ──────────────────────────────────────────────────────────────────
+    title_tbl = Table([[p('STAFF MANAGEMENT', 14, True, TA_CENTER)]], colWidths=[W])
+    title_tbl.setStyle(TableStyle([
+        ('ALIGN',         (0, 0), (-1, -1), 'CENTER'),
+        ('TOPPADDING',    (0, 0), (-1, -1), 4),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('LEFTPADDING',   (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING',  (0, 0), (-1, -1), 0),
+        ('LINEBELOW',     (0, 0), (-1, -1), 0, WHITE),
     ]))
-    elements.append(header)
+    elements.append(title_tbl)
 
-    sub_header_data = [[_p('STAFF REGISTRATION', 9, True, TA_CENTER)]]
-    sub_header = Table(sub_header_data, colWidths=[W])
-    sub_header.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_BG),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('TOPPADDING', (0, 0), (-1, -1), 3),
+    sub_tbl = Table([[p('STAFF REGISTRATION', 9, True, TA_CENTER)]], colWidths=[W])
+    sub_tbl.setStyle(TableStyle([
+        ('BACKGROUND',    (0, 0), (-1, -1), PEACH),
+        ('ALIGN',         (0, 0), (-1, -1), 'CENTER'),
+        ('TOPPADDING',    (0, 0), (-1, -1), 3),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
     ]))
-    elements.append(sub_header)
-    elements.append(Spacer(1, 3))
+    elements.append(sub_tbl)
+    elements.append(Spacer(1, 2))
 
-    # ── PHOTO ──
-    photo_content = _p('CANDIDATE\nPHOTO', 7, True, TA_CENTER)
+    # ── MAIN INFO (STAFF ID / FULL NAME / ADDRESS / PHOTO) ────────────────────
+    main_c = [
+        W * 0.085,   # col0: STAFF ID / Full Name / Address label
+        W * 0.070,   # col1: Permanent / Present sub-label
+        W * 0.290,   # col2: main value
+        W * 0.105,   # col3: Gender / Marital Status label
+        W * 0.310,   # col4: Gender / Marital Status value combined with empty space
+        W * 0.140,   # col5: CANDIDATE PHOTO
+    ]
+
+    photo_cell = p('CANDIDATE\nPHOTO', 7, True, TA_CENTER)
     if staff.candidate_photo:
         try:
-            photo_content = Image(staff.candidate_photo.path, width=0.9 * inch, height=1.1 * inch)
+            photo_cell = Image(staff.candidate_photo.path, width=0.95 * inch, height=1.05 * inch)
         except Exception:
             pass
 
-    # ── ROW 1: Staff ID, Gender, Photo + Full Name, Marital Status ──
-    gender_display = staff.get_gender_display() if staff.gender else ''
-    row1 = [
-        [_p('STAFF ID', 7, True), _p(_val(staff.staff_id), 7), _p('Gender', 7, True), _p(gender_display, 7), photo_content],
-        [_p('Full Name', 7, True), _p(_val(staff.full_name), 7), _p('Marital Status', 7, True), _p(_val(staff.marital_status), 7), ''],
-    ]
-    c1 = [0.7 * inch, 2.5 * inch, 0.9 * inch, 1.5 * inch, 1.8 * inch]
-    top_tbl = Table(row1, colWidths=c1)
-    top_tbl.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), LN, BLACK),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
-        ('RIGHTPADDING', (0, 0), (-1, -1), PAD),
-        ('TOPPADDING', (0, 0), (-1, -1), PAD),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
-        ('BACKGROUND', (0, 0), (0, -1), GREY_BG),
-        ('BACKGROUND', (2, 0), (2, -1), GREY_BG),
-        ('SPAN', (4, 0), (4, 1)),
-        ('ALIGN', (4, 0), (4, 1), 'CENTER'),
-        ('VALIGN', (4, 0), (4, 1), 'MIDDLE'),
-    ]))
-    elements.append(top_tbl)
+    gender_display   = staff.get_gender_display() if staff.gender else ''
+    marital_display  = _val(staff.marital_status)
 
-    # ── Address rows ──
-    addr_data = [
-        [_p('Address', 7, True), _p('Permanent', 6, True), _p(_val(staff.permanent_address), 7)],
-        ['', _p('Present', 6, True), _p(_val(staff.present_address), 7)],
+    main_data = [
+        [p('STAFF ID',  7, True), '', p(_val(staff.staff_id), 7),
+         p('Gender', 7, True), p(gender_display, 7), photo_cell],
+        [p('Full Name', 7, True), '', p(_val(staff.full_name), 7),
+         p('Marital Status', 7, True), p(marital_display, 7), ''],
+        [p('Address', 7, True), p('Permanent', 6, True), p(_val(staff.permanent_address), 7),
+         '', '', ''],
+        ['', p('Present', 6, True), p(_val(staff.present_address), 7), '', '', ''],
     ]
-    addr_c = [0.7 * inch, 0.7 * inch, 6.0 * inch]
-    addr_tbl = Table(addr_data, colWidths=addr_c)
-    addr_tbl.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), LN, BLACK),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
-        ('TOPPADDING', (0, 0), (-1, -1), PAD),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
-        ('BACKGROUND', (0, 0), (0, -1), GREY_BG),
-        ('BACKGROUND', (1, 0), (1, -1), GREY_BG),
-        ('SPAN', (0, 0), (0, 1)),
-    ]))
-    elements.append(addr_tbl)
 
-    # ── ID / Passport ──
+    main_tbl = Table(main_data, colWidths=main_c, rowHeights=[0.28 * inch] * 4)
+    main_tbl.setStyle(TableStyle(BASE_STYLE + [
+        ('SPAN', (0, 0), (1, 0)),        # STAFF ID spans cols 0-1
+        ('SPAN', (0, 1), (1, 1)),        # Full Name spans cols 0-1
+        ('SPAN', (5, 0), (5, 3)),        # Photo spans all 4 rows
+        ('SPAN', (0, 2), (0, 3)),        # Address label spans rows 2-3
+        ('SPAN', (2, 2), (4, 2)),        # Permanent address value spans cols 2-4
+        ('SPAN', (2, 3), (4, 3)),        # Present address value spans cols 2-4
+        ('BACKGROUND', (0, 0), (1, 0), GREY),
+        ('BACKGROUND', (3, 0), (3, 0), GREY),
+        ('BACKGROUND', (0, 1), (1, 1), GREY),
+        ('BACKGROUND', (3, 1), (3, 1), GREY),
+        ('BACKGROUND', (0, 2), (1, 3), GREY),
+        ('ALIGN',  (5, 0), (5, 3), 'CENTER'),
+        ('VALIGN', (5, 0), (5, 3), 'MIDDLE'),
+    ]))
+    elements.append(main_tbl)
+
+    # ── ID / PASSPORT ─────────────────────────────────────────────────────────
+    id_c = [W*0.115, W*0.225, W*0.095, W*0.175, W*0.095, W*0.295]
     id_data = [[
-        _p('ID / Passport No.', 7, True),
-        _p(_val(staff.id_passport_no), 7),
-        _p('Date of Issue', 7, True),
-        _p(str(staff.date_of_issue) if staff.date_of_issue else '', 7),
-        _p('Issue From', 7, True),
-        _p(_val(staff.issue_from), 7),
+        p('Passport No', 7, True),
+        p(_val(staff.id_passport_no), 7),
+        p('Date of Issue', 7, True),
+        p(str(staff.date_of_issue) if staff.date_of_issue else '', 7),
+        p('Issue From', 7, True),
+        p(_val(staff.issue_from), 7),
     ]]
-    id_c = [1.0 * inch, 1.7 * inch, 0.8 * inch, 1.0 * inch, 0.8 * inch, 2.1 * inch]
-    elements.append(_grid(id_data, id_c, [
-        ('BACKGROUND', (0, 0), (0, 0), GREY_BG),
-        ('BACKGROUND', (2, 0), (2, 0), GREY_BG),
-        ('BACKGROUND', (4, 0), (4, 0), GREY_BG),
+    id_tbl = Table(id_data, colWidths=id_c, rowHeights=[0.28 * inch])
+    id_tbl.setStyle(TableStyle(BASE_STYLE + [
+        ('BACKGROUND', (0, 0), (0, 0), GREY),
+        ('BACKGROUND', (2, 0), (2, 0), GREY),
+        ('BACKGROUND', (4, 0), (4, 0), GREY),
     ]))
+    elements.append(id_tbl)
 
-    # ── Personal Information ──
-    dob = str(staff.date_of_birth) if staff.date_of_birth else ''
+    # ── PERSONAL INFORMATION ──────────────────────────────────────────────────
+    dob = staff.date_of_birth.strftime('%d-%m-%Y') if staff.date_of_birth else ''
+    pi_c = [W*0.115, W*0.155, W*0.065, W*0.095, W*0.095, W*0.165, W*0.165, W*0.145]
     pi_data = [
-        [_p('Personal\nInformation', 7, True), _p('Date of Birth', 6, True), '', _p('Eye Lense', 6, True), '', _p('Blood Group', 6, True), _p('Phone No.', 6, True), _p('Email ID', 6, True)],
-        ['', _p(dob, 7), _p('Height', 6, True), _p(f'R: {_val(staff.eye_lense_right)}', 6), _p(f'L: {_val(staff.eye_lense_left)}', 6), _p(_val(staff.blood_group), 7), _p(_val(staff.phone_no), 7), _p(_val(staff.email_id), 6)],
+        # Header row
+        [p('Personal Information', 7, True),
+         p('Date of Birth',  7, True, TA_CENTER),
+         p('Eye Lense',      7, True, TA_CENTER), '',
+         p('Blood Group',    7, True, TA_CENTER),
+         p('Phone No.',      7, True, TA_CENTER), '',
+         p('Email ID',       7, True, TA_CENTER)],
+        # Value row (Right / Left eye sub-labels + data)
+        ['',
+         p(dob, 7, align=TA_CENTER),
+         p('Right', 6, True, TA_CENTER),
+         p('Left',  6, True, TA_CENTER),
+         p(_val(staff.blood_group), 7, align=TA_CENTER),
+         p(_val(staff.phone_no),    7, align=TA_CENTER), '',
+         p(_val(staff.email_id),    7, align=TA_CENTER)],
+        # Eye-lens value row
+        ['', '',
+         p(_val(staff.eye_lense_right), 7, align=TA_CENTER),
+         p(_val(staff.eye_lense_left),  7, align=TA_CENTER),
+         '', '', '', ''],
     ]
-    pi_c = [0.9 * inch, 1.0 * inch, 0.6 * inch, 0.9 * inch, 0.6 * inch, 0.8 * inch, 1.1 * inch, 2.1 * inch]
-    pi_tbl = Table(pi_data, colWidths=pi_c)
-    pi_tbl.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), LN, BLACK),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
-        ('TOPPADDING', (0, 0), (-1, -1), PAD),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
-        ('BACKGROUND', (0, 0), (0, -1), GREY_BG),
-        ('BACKGROUND', (2, 0), (2, 0), GREY_BG),
-        ('BACKGROUND', (3, 0), (4, 0), GREY_BG),
-        ('BACKGROUND', (5, 0), (5, 0), GREY_BG),
-        ('BACKGROUND', (6, 0), (6, 0), GREY_BG),
-        ('BACKGROUND', (7, 0), (7, 0), GREY_BG),
-        ('SPAN', (0, 0), (0, 1)),
-        ('SPAN', (1, 0), (1, 0)),
-        ('SPAN', (3, 0), (4, 0)),
+    pi_tbl = Table(pi_data, colWidths=pi_c, rowHeights=[0.22 * inch] * 3)
+    pi_tbl.setStyle(TableStyle(BASE_STYLE + [
+        ('SPAN', (0, 0), (0, 2)),   # Personal Information label spans 3 rows
+        ('SPAN', (1, 0), (1, 0)),   # DOB header
+        ('SPAN', (1, 1), (1, 2)),   # DOB value spans rows 1-2
+        ('SPAN', (2, 0), (3, 0)),   # Eye Lense header spans 2 cols
+        ('SPAN', (4, 0), (4, 0)),   # Blood Group header
+        ('SPAN', (4, 1), (4, 2)),   # Blood Group value spans rows 1-2
+        ('SPAN', (5, 0), (6, 0)),   # Phone No header spans 2 cols
+        ('SPAN', (5, 1), (6, 2)),   # Phone value spans 2 cols x 2 rows
+        ('SPAN', (7, 0), (7, 0)),   # Email header
+        ('SPAN', (7, 1), (7, 2)),   # Email value spans rows 1-2
+        ('BACKGROUND', (0, 0), (0, 2), GREY),
+        ('BACKGROUND', (1, 0), (1, 0), GREY),
+        ('BACKGROUND', (2, 0), (3, 0), GREY),
+        ('BACKGROUND', (4, 0), (4, 0), GREY),
+        ('BACKGROUND', (5, 0), (6, 0), GREY),
+        ('BACKGROUND', (7, 0), (7, 0), GREY),
+        ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
     ]))
     elements.append(pi_tbl)
 
-    # ── Family Records ──
-    fr_data = [[
-        _p('Family Records', 7, True),
-        _p(_val(staff.spouse_name), 7),
-        _p('CONTACT NO', 7, True), _p(_val(staff.contact_no), 7),
-    ]]
-    fr_sub = [[
-        _p('Spouse Name', 7, True), '', '', '',
-    ]]
-    # Combine as two rows
-    fr_all = [
-        [_p('Family Records', 7, True), '', '', _p('CONTACT NO', 7, True)],
-        [_p('Spouse Name', 7, True), _p(_val(staff.spouse_name), 7), '', _p(_val(staff.contact_no), 7)],
+    # ── FAMILY RECORDS ────────────────────────────────────────────────────────
+    fam_c = [W*0.115, W*0.490, W*0.115, W*0.280]
+    fam_data = [
+        [p('Family Records', 7, True), p('', 7),
+         p('CONTACT NO', 7, True, TA_CENTER), p(_val(staff.contact_no), 7)],
+        [p('Spouse Name',   7, True), p(_val(staff.spouse_name), 7), '', ''],
     ]
-    fr_c = [0.9 * inch, 3.3 * inch, 0.8 * inch, 2.4 * inch]
-    # Simpler: single row matching image
-    fr_all = [[
-        _p('Family Records', 7, True), '', _p('CONTACT NO', 7, True), '',
-    ], [
-        _p('Spouse Name', 7, True), _p(_val(staff.spouse_name), 7), '', _p(_val(staff.contact_no), 7),
-    ]]
-    fr_c = [1.0 * inch, 3.2 * inch, 1.0 * inch, 2.2 * inch]
-    fr_tbl = Table(fr_all, colWidths=fr_c)
-    fr_tbl.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), LN, BLACK),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
-        ('TOPPADDING', (0, 0), (-1, -1), PAD),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
-        ('BACKGROUND', (0, 0), (0, -1), GREY_BG),
-        ('BACKGROUND', (2, 0), (2, 0), GREY_BG),
-        ('SPAN', (0, 0), (1, 0)),  # "Family Records" spans first row
-        ('SPAN', (2, 0), (3, 0)),  # "CONTACT NO" label spans
+    fam_tbl = Table(fam_data, colWidths=fam_c, rowHeights=[0.25 * inch, 0.25 * inch])
+    fam_tbl.setStyle(TableStyle(BASE_STYLE + [
+        ('SPAN', (3, 0), (3, 1)),   # CONTACT NO value spans 2 rows
+        ('SPAN', (1, 1), (2, 1)),   # Spouse Name value spans 2 cols
+        ('BACKGROUND', (0, 0), (0, 0), GREY),
+        ('BACKGROUND', (2, 0), (2, 0), GREY),
+        ('BACKGROUND', (0, 1), (0, 1), GREY),
     ]))
-    elements.append(fr_tbl)
-    elements.append(Spacer(1, 4))
+    elements.append(fam_tbl)
+    elements.append(Spacer(1, 3))
 
-    # ── EDUCATIONAL HISTORY ──
-    elements.append(_grid(
-        [[_p('EDUCATIONAL HISTORY', 8, True, TA_CENTER)]],
-        [W], [('BACKGROUND', (0, 0), (-1, -1), GREY_BG)]
-    ))
+    # ── BANK INFORMATION ──────────────────────────────────────────────────────
+    bank_hdr = Table([[p('BANK INFORMATION', 9, True, TA_CENTER)]], colWidths=[W])
+    bank_hdr.setStyle(TableStyle([
+        ('GRID',         (0, 0), (-1, -1), LN, BLACK),
+        ('TOPPADDING',   (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING',(0, 0), (-1, -1), 3),
+        ('LEFTPADDING',  (0, 0), (-1, -1), PAD),
+        ('RIGHTPADDING', (0, 0), (-1, -1), PAD),
+    ]))
+    elements.append(bank_hdr)
 
-    edu_top = [
-        _p('Pass Level', 6, True), _p('Name of School', 6, True),
-        _p('Admission & Graduation', 6, True, TA_CENTER), '', '', '',
-        _p('Enrolled\nYears', 6, True, TA_CENTER),
+    bank_c = [W*0.145, W*0.355, W*0.145, W*0.355]
+    bank_info = staff.bank_info.first()
+    
+    bank_data = [
+        [p('Bank Name', 7, True), p(_val(bank_info.bank_name) if bank_info else '', 7),
+         p('Branch Name', 7, True), p(_val(bank_info.branch_name) if bank_info else '', 7)],
+        [p('Account No.', 7, True), p(_val(bank_info.account_no) if bank_info else '', 7),
+         p('Account Holder', 7, True), p(_val(bank_info.account_holder_name) if bank_info else '', 7)]
     ]
-    edu_sub = [
-        '', '',
-        _p('Year', 6, True, TA_CENTER), _p('Month', 6, True, TA_CENTER),
-        _p('Year', 6, True, TA_CENTER), _p('Month', 6, True, TA_CENTER),
-        '',
+    
+    bank_tbl = Table(bank_data, colWidths=bank_c, rowHeights=[0.25 * inch, 0.25 * inch])
+    bank_tbl.setStyle(TableStyle(BASE_STYLE + [
+        ('BACKGROUND', (0, 0), (0, 1), GREY),
+        ('BACKGROUND', (2, 0), (2, 1), GREY),
+    ]))
+    elements.append(bank_tbl)
+    elements.append(Spacer(1, 3))
+
+    # ── EDUCATIONAL HISTORY ───────────────────────────────────────────────────
+    edu_hdr = Table([[p('EDUCATIONAL HISTORY', 9, True, TA_CENTER)]], colWidths=[W])
+    edu_hdr.setStyle(TableStyle([
+        ('GRID',         (0, 0), (-1, -1), LN, BLACK),
+        ('TOPPADDING',   (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING',(0, 0), (-1, -1), 3),
+        ('LEFTPADDING',  (0, 0), (-1, -1), PAD),
+        ('RIGHTPADDING', (0, 0), (-1, -1), PAD),
+    ]))
+    elements.append(edu_hdr)
+
+    edu_c = [W*0.135, W*0.355, W*0.075, W*0.075, W*0.075, W*0.075, W*0.095, W*0.115]
+    edu_levels_display = [
+        'Primary School', 'Junior H. School', 'Higher S. School',
+        'College / University', 'Graduate University', 'Graduate University', 'Other School',
     ]
-    edu_c = [1.05 * inch, 2.05 * inch, 0.65 * inch, 0.65 * inch, 0.65 * inch, 0.65 * inch, 1.0 * inch]
-    edu_all = [edu_top, edu_sub]
+    edu_level_keys = ['Primary', 'Junior', 'Higher', 'College', 'Graduate', 'PostGraduate', 'Other']
+    edu_map = {e.pass_level: e for e in staff.education_history.all()}
 
-    edu_levels = ['Primary School', 'Junior H. School', 'Higher S. School',
-                  'College / University', 'Graduate University', 'Graduate University', 'Other School']
-    edu_map = {}
-    for edu in staff.education_history.all():
-        edu_map[edu.pass_level] = edu
+    edu_data = [
+        [p('Pass Level', 7, True, TA_CENTER),
+         p('Name of School', 7, True, TA_CENTER),
+         p('Admission & Graduation', 7, True, TA_CENTER), '', '', '',
+         p('Enrolled Years', 7, True, TA_CENTER), ''],
+        ['', '',
+         p('Year', 7, True, TA_CENTER), p('Month', 7, True, TA_CENTER),
+         p('Year', 7, True, TA_CENTER), p('Month', 7, True, TA_CENTER),
+         '', ''],
+    ]
+    for label, key in zip(edu_levels_display, edu_level_keys):
+        e = edu_map.get(key)
+        edu_data.append([
+            p(label, 7),
+            p(_val(e.name_of_school) if e else '', 7),
+            p(_val(e.admission_year)  if e else '', 7, align=TA_CENTER),
+            p(_val(e.admission_month) if e else '', 7, align=TA_CENTER),
+            p(_val(e.graduation_year) if e else '', 7, align=TA_CENTER),
+            p(_val(e.graduation_month)if e else '', 7, align=TA_CENTER),
+            p(_val(e.enrolled_years)  if e else '', 7, align=TA_CENTER),
+            p('Years', 7, align=TA_RIGHT),
+        ])
 
-    level_keys = ['Primary', 'Junior', 'Higher', 'College', 'Graduate', 'PostGraduate', 'Other']
-    for i, key in enumerate(level_keys):
-        edu_obj = edu_map.get(key)
-        if edu_obj:
-            edu_all.append([
-                _p(edu_levels[i], 6), _p(_val(edu_obj.name_of_school), 6),
-                _p(_val(edu_obj.admission_year), 6, align=TA_CENTER),
-                _p(_val(edu_obj.admission_month), 6, align=TA_CENTER),
-                _p(_val(edu_obj.graduation_year), 6, align=TA_CENTER),
-                _p(_val(edu_obj.graduation_month), 6, align=TA_CENTER),
-                _p(f'{_val(edu_obj.enrolled_years)} Yrs' if edu_obj.enrolled_years else 'Years', 6, align=TA_CENTER),
-            ])
-        else:
-            edu_all.append([
-                _p(edu_levels[i], 6), '', '', '', '', '',
-                _p('Years', 6, align=TA_CENTER),
-            ])
-
-    edu_tbl = Table(edu_all, colWidths=edu_c)
-    edu_tbl.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), LN, BLACK),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
-        ('TOPPADDING', (0, 0), (-1, -1), 1),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
-        ('BACKGROUND', (0, 0), (-1, 1), GREY_BG),
-        ('SPAN', (2, 0), (5, 0)),
-        ('SPAN', (6, 0), (6, 1)),
+    edu_tbl = Table(edu_data, colWidths=edu_c, rowHeights=[0.22 * inch] * len(edu_data))
+    edu_tbl.setStyle(TableStyle(BASE_STYLE + [
         ('SPAN', (0, 0), (0, 1)),
         ('SPAN', (1, 0), (1, 1)),
+        ('SPAN', (2, 0), (5, 0)),   # Admission & Graduation header
+        ('SPAN', (6, 0), (7, 0)),   # Enrolled Years header
+        ('SPAN', (6, 1), (7, 1)),
+        ('BACKGROUND', (0, 0), (-1, 1), GREY),
         ('ALIGN', (2, 0), (-1, -1), 'CENTER'),
     ]))
     elements.append(edu_tbl)
-    elements.append(Spacer(1, 4))
+    elements.append(Spacer(1, 3))
 
-    # ── WORKING EXPERIENCE ──
-    elements.append(_grid(
-        [[_p('WORKING EXPERIENCE', 8, True, TA_CENTER)]],
-        [W], [('BACKGROUND', (0, 0), (-1, -1), GREY_BG)]
-    ))
+    # ── WORKING EXPERIENCE ────────────────────────────────────────────────────
+    work_hdr = Table([[p('WORKING EXPERIENCE', 9, True, TA_CENTER)]], colWidths=[W])
+    work_hdr.setStyle(TableStyle([
+        ('GRID',         (0, 0), (-1, -1), LN, BLACK),
+        ('TOPPADDING',   (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING',(0, 0), (-1, -1), 3),
+        ('LEFTPADDING',  (0, 0), (-1, -1), PAD),
+        ('RIGHTPADDING', (0, 0), (-1, -1), PAD),
+    ]))
+    elements.append(work_hdr)
 
-    work_top = [
-        _p('Type of Work', 6, True), _p('Name of Working Company', 6, True),
-        _p('Date of Join & Resign', 6, True, TA_CENTER), '', '', '',
-        _p('Working\nYears', 6, True, TA_CENTER),
-    ]
-    work_sub = ['', '', _p('Year', 6, True, TA_CENTER), _p('Month', 6, True, TA_CENTER),
-                _p('Year', 6, True, TA_CENTER), _p('Month', 6, True, TA_CENTER), '']
-    work_c = edu_c  # same widths
-    work_all = [work_top, work_sub]
-
+    work_c = [W*0.135, W*0.355, W*0.075, W*0.075, W*0.075, W*0.075, W*0.095, W*0.115]
     work_qs = list(staff.work_experience.all())
-    for _ in range(max(3 - len(work_qs), 0)):
+    while len(work_qs) < 3:
         work_qs.append(None)
-    for w in work_qs:
-        if w:
-            work_all.append([
-                _p(_val(w.type_of_work), 6), _p(_val(w.name_of_company), 6),
-                _p(_val(w.join_year), 6, align=TA_CENTER), _p(_val(w.join_month), 6, align=TA_CENTER),
-                _p(_val(w.resign_year), 6, align=TA_CENTER), _p(_val(w.resign_month), 6, align=TA_CENTER),
-                _p(f'{_val(w.working_years)} Yrs' if w.working_years else 'Years', 6, align=TA_CENTER),
-            ])
-        else:
-            work_all.append(['', '', '', '', '', '', _p('Years', 6, align=TA_CENTER)])
 
-    work_tbl = Table(work_all, colWidths=work_c)
-    work_tbl.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), LN, BLACK),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
-        ('TOPPADDING', (0, 0), (-1, -1), 1),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
-        ('BACKGROUND', (0, 0), (-1, 1), GREY_BG),
-        ('SPAN', (2, 0), (5, 0)),
-        ('SPAN', (6, 0), (6, 1)),
+    work_data = [
+        [p('Type of Work',           7, True, TA_CENTER),
+         p('Name of Working Company',7, True, TA_CENTER),
+         p('Date of Join & Resign',  7, True, TA_CENTER), '', '', '',
+         p('Working Years',          7, True, TA_CENTER), ''],
+        ['', '',
+         p('Years', 7, True, TA_CENTER), p('Months', 7, True, TA_CENTER),
+         p('Years', 7, True, TA_CENTER), p('Months', 7, True, TA_CENTER),
+         '', ''],
+    ]
+    for w in work_qs[:3]:
+        work_data.append([
+            p(_val(w.type_of_work)    if w else '', 7, align=TA_CENTER),
+            p(_val(w.name_of_company) if w else '', 7),
+            p(_val(w.join_year)       if w else '', 7, align=TA_CENTER),
+            p(_val(w.join_month)      if w else '', 7, align=TA_CENTER),
+            p(_val(w.resign_year)     if w else '', 7, align=TA_CENTER),
+            p(_val(w.resign_month)    if w else '', 7, align=TA_CENTER),
+            p(_val(w.working_years)   if w else '', 7, align=TA_CENTER),
+            p('Years', 7, align=TA_RIGHT),
+        ])
+
+    work_tbl = Table(work_data, colWidths=work_c, rowHeights=[0.22 * inch] * len(work_data))
+    work_tbl.setStyle(TableStyle(BASE_STYLE + [
         ('SPAN', (0, 0), (0, 1)),
         ('SPAN', (1, 0), (1, 1)),
+        ('SPAN', (2, 0), (5, 0)),
+        ('SPAN', (6, 0), (7, 0)),
+        ('SPAN', (6, 1), (7, 1)),
+        ('BACKGROUND', (0, 0), (-1, 1), GREY),
         ('ALIGN', (2, 0), (-1, -1), 'CENTER'),
     ]))
     elements.append(work_tbl)
-    elements.append(Spacer(1, 4))
+    elements.append(Spacer(1, 3))
 
-    # ── CERTIFICATE OF SKILLS + SKILLS TRAINING STATUS (side by side) ──
-    cert_train_header = [[
-        _p('CERTIFICATE OF SKILLS', 8, True, TA_CENTER),
-        _p('SKILLS TRAINING STATUS', 8, True, TA_CENTER),
-    ]]
-    ct_header = Table(cert_train_header, colWidths=[W / 2, W / 2])
-    ct_header.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), LN, BLACK),
-        ('BACKGROUND', (0, 0), (-1, -1), GREY_BG),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 2),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
-    ]))
-    elements.append(ct_header)
-
-    cert_qs = list(staff.certificates.all())
+    # ── CERTIFICATE OF SKILLS + SKILLS TRAINING STATUS ───────────────────────
+    half = W / 2
+    cert_qs  = list(staff.certificates.all())
     train_qs = list(staff.training_status.all())
     max_rows = max(len(cert_qs), len(train_qs), 3)
-    for _ in range(max_rows - len(cert_qs)):
-        cert_qs.append(None)
-    for _ in range(max_rows - len(train_qs)):
-        train_qs.append(None)
 
-    ct_c = [0.85 * inch, 1.65 * inch, 0.85 * inch, 1.65 * inch, 0.85 * inch, 1.55 * inch]
-    ct_header_row = [
-        _p('Pass Year\n& Month', 5, True, TA_CENTER), _p('Name of Certificate', 6, True, TA_CENTER),
-        _p('Join Year\nand Month', 5, True, TA_CENTER), '',
-        _p('Organization', 6, True, TA_CENTER), '',
+    cert_c_inner  = [half * 0.28, half * 0.72]
+    train_c_inner = [half * 0.35, half * 0.65]
+
+    cert_data = [
+        [p('CERTIFICATE OF SKILLS',  8, True, TA_CENTER), ''],
+        [p('Pass Year & Month',       7, True, TA_CENTER),
+         p('Name of Certificate',     7, True, TA_CENTER)],
     ]
-    ct_all = [ct_header_row]
-
+    train_data = [
+        [p('SKILLS TRAINING STATUS', 8, True, TA_CENTER), ''],
+        [p('Join Year and Month',     7, True, TA_CENTER),
+         p('Organization',            7, True, TA_CENTER)],
+    ]
     for i in range(max_rows):
-        c = cert_qs[i]
-        t = train_qs[i]
-        ct_all.append([
-            _p(f'{_val(c.pass_year)}/{_val(c.pass_month)}' if c and (c.pass_year or c.pass_month) else '', 6, align=TA_CENTER) if c else '',
-            _p(_val(c.name_of_certificate) if c else '', 6),
-            _p(f'{_val(t.join_year)}/{_val(t.join_month)}' if t and (t.join_year or t.join_month) else '', 6, align=TA_CENTER) if t else '',
-            _p(_val(t.name_of_training) if t else '', 6),
-            _p(f'{_val(t.pass_year)}/{_val(t.pass_month)}' if t and (t.pass_year or t.pass_month) else '', 6, align=TA_CENTER) if t else '',
-            _p(_val(t.organization) if t else '', 6),
+        c = cert_qs[i]  if i < len(cert_qs)  else None
+        t = train_qs[i] if i < len(train_qs) else None
+        cert_data.append([
+            p(f'{_val(c.pass_year)}/{_val(c.pass_month)}' if c else '', 7, align=TA_CENTER),
+            p(_val(c.name_of_certificate) if c else '', 7),
+        ])
+        train_data.append([
+            p(f'{_val(t.join_year)}/{_val(t.join_month)}' if t else '', 7, align=TA_CENTER),
+            p(_val(t.organization) if t else '', 7),
         ])
 
-    ct_tbl = Table(ct_all, colWidths=ct_c)
-    ct_tbl.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), LN, BLACK),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
-        ('TOPPADDING', (0, 0), (-1, -1), 1),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
-        ('BACKGROUND', (0, 0), (-1, 0), GREY_BG),
+    cert_tbl = Table(cert_data, colWidths=cert_c_inner,
+                     rowHeights=[0.22 * inch] * len(cert_data))
+    cert_tbl.setStyle(TableStyle(BASE_STYLE + [
+        ('SPAN', (0, 0), (1, 0)),
+        ('BACKGROUND', (0, 0), (-1, 1), GREY),
     ]))
-    elements.append(ct_tbl)
-    elements.append(Spacer(1, 4))
 
-    # ── DRIVING LICENSE ──
+    train_tbl = Table(train_data, colWidths=train_c_inner,
+                      rowHeights=[0.22 * inch] * len(train_data))
+    train_tbl.setStyle(TableStyle(BASE_STYLE + [
+        ('SPAN', (0, 0), (1, 0)),
+        ('BACKGROUND', (0, 0), (-1, 1), GREY),
+    ]))
+
+    skills_row = Table([[cert_tbl, train_tbl]], colWidths=[half, half])
+    skills_row.setStyle(TableStyle([
+        ('LEFTPADDING',  (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING',   (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING',(0, 0), (-1, -1), 0),
+        ('VALIGN',       (0, 0), (-1, -1), 'TOP'),
+    ]))
+    elements.append(skills_row)
+    elements.append(Spacer(1, 3))
+
+    # ── DRIVING LICENSE ───────────────────────────────────────────────────────
     license = None
     try:
         license = staff.driving_license
-    except DrivingLicense.DoesNotExist:
+    except Exception:
         pass
 
-    dl_data = [[
-        _p('DRIVING LICENSE', 7, True),
-        _p('Pass Year & Month', 6, True),
-        _p(f'{_val(license.pass_year)} / {_val(license.pass_month)}' if license else '', 7),
-        _p('Discretion of License', 6, True),
-        _p(_val(license.discretion_of_license) if license else '', 7),
-    ]]
-    dl_c = [1.1 * inch, 1.1 * inch, 0.9 * inch, 1.2 * inch, 3.1 * inch]
-    elements.append(_grid(dl_data, dl_c, [
-        ('BACKGROUND', (0, 0), (0, 0), GREY_BG),
-        ('BACKGROUND', (1, 0), (1, 0), GREY_BG),
-        ('BACKGROUND', (3, 0), (3, 0), GREY_BG),
-    ]))
-    elements.append(Spacer(1, 4))
-
-    # ── HOBBIES + MOTIVATION ──
-    hm_data = [
-        [_p('Hobbies, Special skills, etc.', 7, True), _p('Motivation, Self-promotion', 7, True)],
-        [_p(_val(staff.hobbies), 6), _p(_val(staff.motivation), 6)],
+    dl_c = [W*0.18, W*0.22, W*0.60]
+    dl_data = [
+        [p('DRIVING LICENSE', 8, True, TA_CENTER),
+         p('Pass Year & Month', 7, True, TA_CENTER),
+         p('Discretion of License', 7, True, TA_CENTER)],
+        ['',
+         p(f'{_val(license.pass_year)}/{_val(license.pass_month)}' if license else '', 7, align=TA_CENTER),
+         p(_val(license.discretion_of_license) if license else '', 7)],
     ]
+    dl_tbl = Table(dl_data, colWidths=dl_c, rowHeights=[0.25 * inch, 0.25 * inch])
+    dl_tbl.setStyle(TableStyle(BASE_STYLE + [
+        ('SPAN', (0, 0), (0, 1)),   # Driving License label spans 2 rows
+        ('BACKGROUND', (0, 0), (0, 1), GREY),
+        ('BACKGROUND', (1, 0), (1, 0), GREY),
+        ('BACKGROUND', (2, 0), (2, 0), GREY),
+        ('ALIGN', (0, 0), (0, 1), 'CENTER'),
+    ]))
+    elements.append(dl_tbl)
+    elements.append(Spacer(1, 3))
+
+    # ── HOBBIES & MOTIVATION ──────────────────────────────────────────────────
     hm_c = [W / 2, W / 2]
-    hm_tbl = Table(hm_data, colWidths=hm_c, rowHeights=[None, 0.7 * inch])
-    hm_tbl.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), LN, BLACK),
-        ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
-        ('VALIGN', (0, 1), (-1, 1), 'TOP'),
-        ('LEFTPADDING', (0, 0), (-1, -1), PAD),
-        ('TOPPADDING', (0, 0), (-1, -1), PAD),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), PAD),
-        ('BACKGROUND', (0, 0), (-1, 0), GREY_BG),
+    hm_data = [
+        [p('Hobbies, Special skills, etc.', 8, True),
+         p('Motivation, Self-promotion',    8, True)],
+        [p(_val(staff.hobbies),    7),
+         p(_val(staff.motivation), 7)],
+    ]
+    hm_tbl = Table(hm_data, colWidths=hm_c, rowHeights=[0.25 * inch, 0.65 * inch])
+    hm_tbl.setStyle(TableStyle(BASE_STYLE + [
+        ('VALIGN',     (0, 0), (-1, -1), 'TOP'),
+        ('BACKGROUND', (0, 0), (-1,  0), GREY),
     ]))
     elements.append(hm_tbl)
 
-    # Build
+    # ── BUILD ─────────────────────────────────────────────────────────────────
     doc.build(elements)
     pdf = buffer.getvalue()
     buffer.close()
     response.write(pdf)
     return response
-
-
-def generate_staff_bio_pdf(request, pk):
-    """Generate Staff Bio Data PDF"""
-    staff = get_object_or_404(StaffRegistration, pk=pk)
-    
-    # Create the HttpResponse object with PDF headers
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="staff_bio_{staff.staff_id}.pdf"'
-    
-    # Create the PDF object
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
-    elements = []
-    
-    # Styles
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=24,
-        textColor=colors.HexColor('#ff9966'),
-        spaceAfter=30,
-        alignment=TA_CENTER,
-        fontName='Helvetica-Bold'
-    )
-    
-    heading_style = ParagraphStyle(
-        'CustomHeading',
-        parent=styles['Heading2'],
-        fontSize=14,
-        textColor=colors.HexColor('#667eea'),
-        spaceAfter=12,
-        spaceBefore=12,
-        fontName='Helvetica-Bold'
-    )
-    
-    # Title
-    elements.append(Paragraph("STAFF BIO DATA", title_style))
-    elements.append(Spacer(1, 0.2*inch))
-    
-    # Staff Photo (if exists)
-    if staff.candidate_photo:
-        try:
-            img = Image(staff.candidate_photo.path, width=2*inch, height=2.5*inch)
-            elements.append(img)
-            elements.append(Spacer(1, 0.2*inch))
-        except:
-            pass
-    
-    # Basic Information
-    elements.append(Paragraph("BASIC INFORMATION", heading_style))
-    basic_data = [
-        ['Staff ID:', staff.staff_id, 'Gender:', staff.get_gender_display()],
-        ['Full Name:', staff.full_name, 'Marital Status:', staff.marital_status],
-        ['Phone No:', staff.phone_no, 'Email:', staff.email_id],
-        ['Date of Birth:', str(staff.date_of_birth) if staff.date_of_birth else 'N/A', 'Blood Group:', staff.blood_group or 'N/A'],
-    ]
-    
-    basic_table = Table(basic_data, colWidths=[1.5*inch, 2*inch, 1.5*inch, 2*inch])
-    basic_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f8f9fa')),
-        ('BACKGROUND', (2, 0), (2, -1), colors.HexColor('#f8f9fa')),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 10),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-    ]))
-    elements.append(basic_table)
-    elements.append(Spacer(1, 0.3*inch))
-    
-    # Address Information
-    elements.append(Paragraph("ADDRESS INFORMATION", heading_style))
-    address_data = [
-        ['Permanent Address:', staff.permanent_address],
-        ['Present Address:', staff.present_address],
-    ]
-    address_table = Table(address_data, colWidths=[2*inch, 5*inch])
-    address_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f8f9fa')),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 10),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-    ]))
-    elements.append(address_table)
-    elements.append(Spacer(1, 0.3*inch))
-
-   
-    
-    # Educational History
-    if staff.education_history.exists():
-        elements.append(Paragraph("EDUCATIONAL HISTORY", heading_style))
-        edu_data = [['Level', 'School/University', 'Admission', 'Graduation', 'Years']]
-        for edu in staff.education_history.all():
-            edu_data.append([
-                edu.get_pass_level_display(),
-                edu.name_of_school,
-                f"{edu.admission_month}/{edu.admission_year}",
-                f"{edu.graduation_month}/{edu.graduation_year}",
-                str(edu.enrolled_years) if edu.enrolled_years else 'N/A'
-            ])
-        
-        edu_table = Table(edu_data, colWidths=[1.3*inch, 2.5*inch, 1*inch, 1*inch, 0.8*inch])
-        edu_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667eea')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 11),
-            ('FONTSIZE', (0, 1), (-1, -1), 9),
-            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
-        ]))
-        elements.append(edu_table)
-        elements.append(Spacer(1, 0.3*inch))
-    
-
-    
-    # Working Experience
-    if staff.work_experience.exists():
-        elements.append(Paragraph("WORKING EXPERIENCE", heading_style))
-        work_data = [['Type of Work', 'Company', 'Join Date', 'Resign Date', 'Years']]
-        for work in staff.work_experience.all():
-            work_data.append([
-                work.type_of_work,
-                work.name_of_company,
-                f"{work.join_month}/{work.join_year}",
-                f"{work.resign_month}/{work.resign_year}",
-                str(work.working_years) if work.working_years else 'N/A'
-            ])
-        
-        work_table = Table(work_data, colWidths=[1.5*inch, 2*inch, 1*inch, 1*inch, 0.8*inch])
-        work_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667eea')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 11),
-            ('FONTSIZE', (0, 1), (-1, -1), 9),
-            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
-        ]))
-        elements.append(work_table)
-    # Bank Information
-    if staff.bank_info.exists():
-        elements.append(Paragraph("BANK INFORMATION", heading_style))
-
-    bank_data = [['Bank Name', 'Branch', 'Account No', 'Account Holder']]
-
-    for bank in staff.bank_info.all():
-        bank_data.append([
-            bank.bank_name,
-            bank.branch_name,
-            bank.account_no,
-            bank.account_holder_name
-        ])
-
-    bank_table = Table(bank_data, colWidths=[1.8*inch, 1.8*inch, 1.5*inch, 2*inch])
-    bank_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667eea')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 11),
-        ('FONTSIZE', (0, 1), (-1, -1), 9),
-        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8f9fa')]),
-    ]))
-
-    elements.append(bank_table)
-    elements.append(Spacer(1, 0.3*inch))
-    
-    # Footer
-    elements.append(Spacer(1, 0.5*inch))
-    footer_style = ParagraphStyle('Footer', parent=styles['Normal'], fontSize=8, textColor=colors.grey, alignment=TA_CENTER)
-    elements.append(Paragraph(f"Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", footer_style))
-    elements.append(Paragraph("Copyright © Aqua Group, All Rights Reserved", footer_style))
-    
-    # Build PDF
-    doc.build(elements)
-    
-    # Get the value of the BytesIO buffer and write it to the response
-    pdf = buffer.getvalue()
-    buffer.close()
-    response.write(pdf)
-    
-    return response
-
-
 def generate_staff_id_card_pdf(request, pk):
     """Generate Staff ID Card PDF"""
     staff = get_object_or_404(StaffRegistration, pk=pk)
