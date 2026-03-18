@@ -158,7 +158,6 @@ def student_application_detail(request, student_id):
     })
 
 
-
 import os
 import base64
 from django.http import HttpResponse
@@ -174,18 +173,13 @@ def generate_student_pdf(request, student_id):
 
 def generate_student_pdf_portal(request, student_id):
     """Generate PDF for student - accessible by portal users via session"""
-    # Check if user is coming from portal (has portal_agent_id in session)
     portal_agent_id = request.session.get('portal_agent_id')
     if not portal_agent_id:
-        # If not portal user, redirect to login
-        from django.contrib.auth.decorators import login_required
         return login_required(lambda r, sid: _generate_student_pdf_internal(r, sid))(request, student_id)
-    
-    # Portal user is valid, allow PDF generation
     return _generate_student_pdf_internal(request, student_id)
 
 def _generate_student_pdf_internal(request, student_id):
-    """Internal function to generate PDF"""
+    """Internal function to generate PDF - Replica of AQUA EDUCATION admission form"""
     try:
         student = get_object_or_404(
             Student.objects.select_related('agent').prefetch_related(
@@ -194,8 +188,8 @@ def _generate_student_pdf_internal(request, student_id):
             id=student_id
         )
 
-        # Photo Processing
-        photo_html = '<div class="photo-box-inner"><div class="photo-box-content">PHOTO</div></div>'
+        # ── Photo ──────────────────────────────────────────────────────────
+        photo_html = '<div class="photo-placeholder">PHOTO</div>'
         if student.photo:
             try:
                 photo_path = student.photo.path
@@ -204,302 +198,532 @@ def _generate_student_pdf_internal(request, student_id):
                         photo_data = base64.b64encode(f.read()).decode()
                     ext = os.path.splitext(photo_path)[1].lower()
                     mime_type = 'image/jpeg' if ext in ['.jpg', '.jpeg'] else 'image/png'
-                    photo_html = f'<div class="photo-box-inner"><img src="data:{mime_type};base64,{photo_data}"></div>'
-            except Exception: pass
+                    photo_html = f'<img src="data:{mime_type};base64,{photo_data}" style="width:100%;height:100%;object-fit:cover;display:block;">'
+            except Exception:
+                pass
 
-        # Prepare Loops for Tables
-        edu_defaults = ["Primary School", "Junior H. School", "Higher S. School", "College / University", "Graduate University", "Graduate University", "Other School"]
+        # ── Date helpers ───────────────────────────────────────────────────
+        def fmt_date(d):
+            return d.strftime('%Y-%m-%d') if d else ''
+
+        dob             = fmt_date(student.date_of_birth)
+        passport_issue  = fmt_date(student.passport_issue_date)
+        passport_expiry = fmt_date(student.passport_expiry_date)
+
+        # ── Education rows (7 rows) ────────────────────────────────────────
+        edu_defaults = [
+            "Primary School", "Junior H. School", "Higher S. School",
+            "College / University", "Graduate University", "Graduate University", "Other School"
+        ]
         edu_list = list(student.education_history.all())
         education_rows = ""
         for i in range(7):
             e = edu_list[i] if i < len(edu_list) else None
             education_rows += f"""
-            <tr style="height:28px;">
-                <td style="padding-left:8px; font-size: 7.5pt;">{e.pass_level if e else edu_defaults[i]}</td>
-                <td style="font-size: 7.5pt;">{e.school_name if e else ''}</td>
-                <td class="center" style="font-size: 7.5pt;">{e.admission_year if e else ''}</td>
-                <td class="center" style="font-size: 7.5pt;">{e.admission_month if e else ''}</td>
-                <td class="center" style="font-size: 7.5pt;">{e.graduation_year if e else ''}</td>
-                <td class="center" style="font-size: 7.5pt;">{e.graduation_month if e else ''}</td>
-                <td class="center" style="position:relative; font-size: 7.5pt;">{e.enrolled_years if e and e.enrolled_years else ''} <span style="position:absolute; right:3px; font-size: 6.5pt;">Years</span></td>
+            <tr style="height:21px;">
+                <td class="td-left" style="font-size:7.5pt;">{e.pass_level if e else edu_defaults[i]}</td>
+                <td style="font-size:7.5pt;">{e.school_name if e else ''}</td>
+                <td class="center" style="font-size:7.5pt;">{e.admission_year if e else ''}</td>
+                <td class="center" style="font-size:7.5pt;">{e.admission_month if e else ''}</td>
+                <td class="center" style="font-size:7.5pt;">{e.graduation_year if e else ''}</td>
+                <td class="center" style="font-size:7.5pt;">{e.graduation_month if e else ''}</td>
+                <td class="center" style="font-size:7.5pt; position:relative;">{e.enrolled_years if e and e.enrolled_years else ''}<span class="years-label">Years</span></td>
             </tr>"""
 
+        # ── Work rows (3 rows) ────────────────────────────────────────────
         work_list = list(student.work_experience.all())[:3]
         work_rows = ""
         for i in range(3):
             w = work_list[i] if i < len(work_list) else None
+            join_resign = f"{w.join_date or ''} ~ {w.resign_date or ''}" if w else ""
             work_rows += f"""
             <tr style="height:22px;">
-                <td style="padding-left:8px; font-size: 7.5pt;">{w.work_type if w else ''}</td>
-                <td style="font-size: 7.5pt;">{w.company_name if w else ''}</td>
-                <td class="center" style="font-size: 7.5pt;">{w.join_date if w else ''} ~ {w.resign_date if w else ''}</td>
-                <td class="center" style="position:relative; font-size: 7.5pt;">{w.working_years if w and w.working_years else ''} <span style="position:absolute; right:3px; font-size: 6.5pt;">Years</span></td>
+                <td class="td-left" style="font-size:7.5pt;">{w.work_type if w else ''}</td>
+                <td style="font-size:7.5pt;">{w.company_name if w else ''}</td>
+                <td class="center" style="font-size:7.5pt;">{join_resign}</td>
+                <td class="center" style="font-size:7.5pt; position:relative;">{w.working_years if w and w.working_years else ''}<span class="years-label">Years</span></td>
             </tr>"""
 
-        # Context Data
         a_code = student.agent.agent_code if student.agent else ""
-        dob = student.date_of_birth.strftime('%Y-%m-%d') if student.date_of_birth else ''
-        
-        html_content = f"""
-<!DOCTYPE html>
+
+        html_content = f"""<!DOCTYPE html>
 <html>
 <head>
-    <style>
-        @page {{ size: A4; margin: 0.5cm 1.25cm; }}
-        body {{ font-family: 'Helvetica', 'Arial', sans-serif; font-size: 8pt; line-height: 1.1; color: #000; margin: 0; padding: 0; }}
-        .header {{ text-align: center; margin-bottom: 4px; background-color: #E8E8E8; padding: 8px 0; }}
-        .header h1 {{ font-size: 15pt; margin: 0; font-weight: bold; letter-spacing: 1px; }}
-        .header p {{ font-size: 9.5pt; margin: 2px 0; font-weight: bold; }}
-        .cc-to {{ text-align: left; font-size: 6pt; font-weight: bold; margin: 4px 0 2px 10px; }}
-        
-        table {{ width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: -1px; }}
-        td, th {{ border: 1px solid #000; padding: 3px 5px; vertical-align: middle; overflow: hidden; }}
-        
-        .bg-beige {{ background-color: #C7BFA3; font-weight: bold; text-align: center; }}
-        .center {{ text-align: center; }}
-        .bold {{ font-weight: bold; }}
-        .lbl-sm {{ font-size: 7pt; }}
-        
-        .photo-box {{ width: 85px; height: 110px; text-align: center; padding: 1px; vertical-align: middle; background: #fff; border: 1px solid #000; box-sizing: border-box; }}
-        .photo-box-inner {{ width: 100%; height: 100%; background: #fff; border: 1px solid #000; box-sizing: border-box; overflow: hidden; }}
-        .photo-box-content {{ width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #fff; color: #999; font-size: 9pt; }}
-        .photo-box img {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
-        .section-title {{ font-size: 10pt; padding: 3px; border: 1px solid #000; border-bottom: none; }}
-        
-        .vertical-text {{ 
-            writing-mode: vertical-rl; 
-            transform: rotate(180deg); 
-            text-align: center; 
-            font-size: 7.5pt; 
-            font-weight: bold;
-        }}
-        
-        .sign-box {{ 
-            width: 150px; 
-            float: right; 
-            border: 1px solid #000; 
-            border-collapse: collapse;
-            margin-right: 10px;
-        }}
-        .sign-box td {{ 
-            border: 1px solid #000; 
-            padding: 4px; 
-            vertical-align: middle;
-        }}
-        .sign-box .label {{ 
-            background-color: #C7BFA3; 
-            font-weight: bold; 
-            font-size: 8.5pt; 
-            text-align: center; 
-            width: 42px; 
-        }}
-        
-        .clearfix::after {{ content: ""; clear: both; display: table; }}
-    </style>
+<meta charset="UTF-8">
+<style>
+    @page {{
+        size: A4;
+        margin: 0.45cm 1.0cm 0.5cm 1.0cm;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 8pt;
+        color: #000;
+        margin: 0;
+        padding: 0;
+        line-height: 1.2;
+    }}
+
+    /* ── HEADER ── */
+    .header {{
+        background-color: #E8E8E8;
+        text-align: center;
+        padding: 6px 0 5px;
+        margin-bottom: 3px;
+    }}
+    .header h1 {{
+        font-size: 14.5pt;
+        font-weight: bold;
+        margin: 0;
+        letter-spacing: 0.5px;
+    }}
+    .header p {{
+        font-size: 9pt;
+        font-weight: bold;
+        margin: 1px 0 0;
+    }}
+    .cc-line {{
+        font-size: 6pt;
+        font-weight: bold;
+        margin: 2px 0 1px 2px;
+        line-height: 1.3;
+    }}
+
+    /* ── SECTION TITLE BAR ── */
+    .section-bar {{
+        background-color: #C7BFA3;
+        font-weight: bold;
+        font-size: 9pt;
+        text-align: center;
+        border: 1px solid #000;
+        padding: 3px 4px;
+        border-bottom: none;
+    }}
+    .section-bar-standalone {{
+        background-color: #C7BFA3;
+        font-weight: bold;
+        font-size: 9pt;
+        text-align: center;
+        border: 1px solid #000;
+        padding: 3px 4px;
+        margin-top: 3px;
+    }}
+
+    /* ── TABLES ── */
+    table {{
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        border-spacing: 0;
+    }}
+    td, th {{
+        border: 1px solid #000;
+        padding: 2px 4px;
+        vertical-align: middle;
+        overflow: hidden;
+    }}
+    #admission-top td {{
+        padding: 0;
+    }}
+    #admission-top td.photo-cell {{
+        padding: 1.5mm;
+    }}
+    .row-h {{
+        height: 11.25mm;
+        overflow: hidden;
+        padding: 2px 4px;
+        display: flex;
+        align-items: center;
+    }}
+    .center {{ text-align: center; justify-content: center; }}
+    .td-left {{ padding-left: 6px; }}
+    .bg-tan {{ background-color: #C7BFA3; font-weight: bold; text-align: center; }}
+    .years-label {{
+        position: absolute;
+        right: 3px;
+        bottom: 2px;
+        font-size: 6pt;
+    }}
+
+    /* ── PHOTO BOX ── */
+    .photo-cell {{
+        width: 35mm;
+        min-width: 35mm;
+        max-width: 35mm;
+        height: 45mm;
+        border: 1px solid #000;
+        vertical-align: middle;
+        padding: 1.5mm;
+        margin: 0;
+    }}
+    .photo-inner {{
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        display: block;
+        background: #fff;
+    }}
+    .photo-inner img {{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }}
+    .photo-placeholder {{
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #c0392b;
+        font-size: 9pt;
+        font-weight: bold;
+    }}
+
+    /* ── SIGN BOX ── */
+    .sign-section {{
+        overflow: hidden;
+        margin-top: 6px;
+    }}
+    .declaration-text {{
+        float: left;
+        width: 68%;
+        font-size: 6.8pt;
+        text-align: justify;
+        line-height: 1.25;
+        padding-right: 6px;
+    }}
+    .sign-right {{
+        float: right;
+        width: 30%;
+        text-align: right;
+    }}
+    .date-line {{
+        font-size: 7pt;
+        margin-bottom: 3px;
+        padding-right: 10px;
+    }}
+    .sign-table {{
+        width: 145px;
+        float: right;
+        border-collapse: collapse;
+        border: 1px solid #000;
+    }}
+    .sign-table td {{
+        border: 1px solid #000;
+        padding: 3px 5px;
+        vertical-align: middle;
+    }}
+    .sign-label {{
+        background-color: #C7BFA3;
+        font-weight: bold;
+        font-size: 9pt;
+        text-align: center;
+        width: 40px;
+    }}
+    .sign-space {{
+        height: 30px;
+    }}
+    .clearfix::after {{ content: ""; clear: both; display: table; }}
+</style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>AQUA EDUCATION AND TRAINING ACADEMY</h1>
-        <p>Lazimpat-02, Kathmandu, Nepal</p>
-    </div>
-    <div class="cc-to">CC TO: <br> ZENSHO HOLDINGS / SUKIYA JAPAN / AEON GROUP / TOKYU GROUP / TOKYUSYUKAI JAPAN</div>
+<!-- HEADER -->
+<div class="header">
+    <h1>AQUA EDUCATION AND TRAINING ACADEMY</h1>
+    <p>Lazimpat-02, Kathmandu, Nepal</p>
+</div>
+<div class="cc-line">CC TO:<br>ZENSHO HOLDINGS / SUKIYA JAPAN / AEON GROUP / TOKYU GROUP / TOKYUSYUKAI JAPAN</div>
 
-    <div class="section-title bg-beige">ADMISSION FORM FOR SSW AND WORKING</div>
+<!-- TITLE BAR -->
+<div class="section-bar">ADMISSION FORM FOR SSW AND WORKING</div>
 
-    <table>
-        <tr>
-            <td width="15%" class="center">Student ID NO</td>
-            <td width="25%">{student.student_id or ''}</td>
-            <td width="10%" class="center">A-CODE</td>
-            <td width="15%">{a_code}</td>
-            <td width="10%" class="center">Gender</td>
-            <td width="10%">{student.get_gender_display() if student.gender else ''}</td>
-            <td rowspan="4" class="photo-box">{photo_html}</td>
-        </tr>
-        <tr>
-            <td class="center">Full Name</td>
-            <td colspan="3" style="font-size: 10.5pt; font-weight: bold;">{student.full_name or ''}</td>
-            <td class="center">Date of Birth</td>
-            <td class="center">{dob}</td>
-        </tr>
-        <tr>
-            <td rowspan="2" class="center" style="padding:0; font-size: 7.5pt; font-weight: bold;">
-                Full<br>Address
-            </td>
-            <td width="8%" class="center" style="font-size: 7pt;">Permanent</td>
-            <td colspan="2" class="lbl-sm" style="height:26px;">{student.permanent_address or ''}</td>
-            <td class="center" style="font-size: 7.5pt;">Age</td>
-            <td class="center">{student.age or ''}</td>
-        </tr>
-        <tr>
-            <td class="center" style="font-size: 7pt;">Present</td>
-            <td colspan="2" class="lbl-sm" style="height:26px;">{student.present_address or ''}</td>
-            <td class="center" style="font-size: 7.5pt;">Marital Status</td>
-            <td class="center">{student.get_marital_status_display() if student.marital_status else ''}</td>
-        </tr>
-    </table>
+<!-- ROWS 1-4: ID / Full Name / Address / Photo -->
+<!-- Photo uses rowspan=4 so it spans all 4 rows cleanly,                 -->
+<!-- preventing it from stretching each individual row.                   -->
+<table id="admission-top">
+    <colgroup>
+        <col style="width:13%">
+        <col style="width:22%">
+        <col style="width:9%">
+        <col style="width:15%">
+        <col style="width:9%">
+        <col style="width:14%">
+        <col style="width:18%">
+    </colgroup>
+    <tr>
+        <td><div class="row-h center" style="font-size:7.5pt;">Student ID NO</div></td>
+        <td><div class="row-h" style="font-size:8.5pt;">{student.student_id or ''}</div></td>
+        <td><div class="row-h center" style="font-size:7.5pt;">A-CODE</div></td>
+        <td><div class="row-h" style="font-size:8pt;">{a_code}</div></td>
+        <td><div class="row-h center" style="font-size:7.5pt;">Gender</div></td>
+        <td><div class="row-h" style="font-size:8pt;">{student.get_gender_display() if student.gender else ''}</div></td>
+        <td rowspan="4" class="photo-cell">
+            <div class="photo-inner">{photo_html}</div>
+        </td>
+    </tr>
+    <tr>
+        <td><div class="row-h center" style="font-size:7.5pt;">Full Name</div></td>
+        <td colspan="3"><div class="row-h" style="font-size:10pt; font-weight:bold;">{student.full_name or ''}</div></td>
+        <td><div class="row-h center" style="font-size:7.5pt;">Date of Birth</div></td>
+        <td><div class="row-h center" style="font-size:8pt;">{dob}</div></td>
+    </tr>
+    <tr>
+        <td rowspan="2"><div class="row-h center" style="font-size:7.5pt; font-weight:bold; height:22.5mm;">Full<br>Address</div></td>
+        <td><div class="row-h center" style="font-size:6.8pt;">Permanent</div></td>
+        <td colspan="2"><div class="row-h" style="font-size:7.5pt;">{student.permanent_address or ''}</div></td>
+        <td><div class="row-h center" style="font-size:7.5pt;">Age</div></td>
+        <td><div class="row-h center" style="font-size:8pt;">{student.age or ''}</div></td>
+    </tr>
+    <tr>
+        <td><div class="row-h center" style="font-size:6.8pt;">Present</div></td>
+        <td colspan="2"><div class="row-h" style="font-size:7.5pt;">{student.present_address or ''}</div></td>
+        <td><div class="row-h center" style="font-size:7.5pt;">Marital Status</div></td>
+        <td><div class="row-h center" style="font-size:8pt;">{student.get_marital_status_display() if student.marital_status else ''}</div></td>
+    </tr>
+</table>
 
-    <table>
-        <tr>
-            <td width="15%" class="center" style="font-size: 7.5pt;">Passport No.</td>
-            <td width="30%" style="font-size: 7.5pt;">{student.passport_no or ''}</td>
-            <td width="12%" class="center" style="font-size: 7.5pt;">Date of Issue</td>
-            <td width="16%" style="font-size: 7.5pt;">{student.passport_issue_date or ''}</td>
-            <td width="14%" class="center" style="font-size: 7.5pt;">Date of Expired</td>
-            <td width="13%" class="center" style="font-size: 7.5pt;">{student.passport_expiry_date or ''}</td>
-        </tr>
-    </table>
+<!-- PASSPORT ROW -->
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:13%">
+        <col style="width:27%">
+        <col style="width:13%">
+        <col style="width:17%">
+        <col style="width:13%">
+        <col style="width:17%">
+    </colgroup>
+    <tr style="height:24px;">
+        <td class="center" style="font-size:7.5pt;">Passport No.</td>
+        <td style="font-size:7.5pt;">{student.passport_no or ''}</td>
+        <td class="center" style="font-size:7.5pt;">Date of Issue</td>
+        <td style="font-size:7.5pt;">{passport_issue}</td>
+        <td class="center" style="font-size:7.5pt;">Date of Expiry</td>
+        <td style="font-size:7.5pt;">{passport_expiry}</td>
+    </tr>
+</table>
 
-    <table>
-        <tr class="center lbl-sm" style="height:16px;">
-            <td rowspan="3" width="15%" style="font-size: 7pt;">Personal Information</td>
-            <td width="10%" style="font-size: 7pt;">Height</td>
-            <td width="10%" style="font-size: 7pt;">Weight</td>
-            <td colspan="2" width="20%" style="font-size: 7pt;">Eye Lense</td>
-            <td width="10%" style="font-size: 7pt;">Blood Group</td>
-            <td width="10%" style="font-size: 7pt;">Past Visa Apply Record</td>
-            <td style="font-size: 7pt;">Visa Apply if Yes (Apply No. & Result)</td>
-        </tr>
-        <tr class="center lbl-sm" style="height:14px;">
-            <td rowspan="2" style="font-size: 7.5pt;">{student.height or ''}</td>
-            <td rowspan="2" style="font-size: 7.5pt;">{student.weight or ''}</td>
-            <td width="10%" style="font-size: 7pt;">Right</td><td width="10%" style="font-size: 7pt;">Left</td>
-            <td rowspan="2" style="font-size: 7.5pt;">{student.blood_group or ''}</td>
-            <td rowspan="2" style="font-size: 7.5pt;">{student.get_visa_apply_record_display() if student.visa_apply_record else ''}</td>
-            <td rowspan="2" style="font-size: 7.5pt;">{student.visa_details or ''}</td>
-        </tr>
-        <tr class="center">
-            <td style="font-size: 7.5pt;">{student.eye_lens_right or ''}</td><td style="font-size: 7.5pt;">{student.eye_lens_left or ''}</td>
-        </tr>
-    </table>
+<!-- PERSONAL INFORMATION (now includes TB Status) -->
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:12%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:9%">
+        <col style="width:33%">
+    </colgroup>
+    <tr class="center" style="height:18px;">
+        <td rowspan="3" style="font-size:7pt;">Personal<br>Information</td>
+        <td style="font-size:7pt;">Height</td>
+        <td style="font-size:7pt;">Weight</td>
+        <td colspan="2" style="font-size:7pt;">Eye Lense</td>
+        <td style="font-size:7pt;">Blood Group</td>
+        <td style="font-size:7pt;">TB Status</td>
+        <td style="font-size:7pt;">Past Visa Apply</td>
+        <td style="font-size:7pt;">Visa Details (No. &amp; Result)</td>
+    </tr>
+    <tr class="center" style="height:18px;">
+        <td rowspan="2" style="font-size:7.5pt;">{student.height or ''}</td>
+        <td rowspan="2" style="font-size:7.5pt;">{student.weight or ''}</td>
+        <td style="font-size:7pt;">Right</td>
+        <td style="font-size:7pt;">Left</td>
+        <td rowspan="2" style="font-size:7.5pt;">{student.blood_group or ''}</td>
+        <td rowspan="2" style="font-size:7.5pt;">{student.tb_status or ''}</td>
+        <td rowspan="2" style="font-size:7.5pt;">{student.get_visa_apply_record_display() if student.visa_apply_record else ''}</td>
+        <td rowspan="2" style="font-size:7.5pt;">{student.visa_details or ''}</td>
+    </tr>
+    <tr class="center" style="height:18px;">
+        <td style="font-size:7.5pt;">{student.eye_lens_right or ''}</td>
+        <td style="font-size:7.5pt;">{student.eye_lens_left or ''}</td>
+    </tr>
+</table>
 
-    <table>
-        <tr>
-            <td width="15%" class="center" style="font-size: 7.5pt;">Email ID</td>
-            <td width="50%" style="font-size: 7.5pt;">{student.email or ''}</td>
-            <td width="15%" class="center" style="font-size: 7.5pt;">Phone No.</td>
-            <td style="font-size: 7.5pt;">{student.phone or ''}</td>
-        </tr>
-        <tr>
-            <td class="center" style="font-size: 7.5pt;">Family Records</td>
-            <td colspan="3" style="height:22px; font-size: 7.5pt;">{student.family_records or ''}</td>
-        </tr>
-        <tr>
-            <td class="center" style="font-size: 7.5pt;">Spouse Name</td>
-            <td style="font-size: 7.5pt;">{student.spouse_name or ''}</td>
-            <td class="center" style="font-size: 7.5pt;">Contact No.</td>
-            <td style="font-size: 7.5pt;">{student.spouse_contact or ''}</td>
-        </tr>
-    </table>
+<!-- EMAIL / PHONE / FAMILY / SPOUSE -->
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:13%">
+        <col style="width:44%">
+        <col style="width:13%">
+        <col style="width:30%">
+    </colgroup>
+    <tr style="height:22px;">
+        <td class="center" style="font-size:7.5pt;">Email ID</td>
+        <td style="font-size:7.5pt;">{student.email or ''}</td>
+        <td class="center" style="font-size:7.5pt;">Phone No.</td>
+        <td style="font-size:7.5pt;">{student.phone or ''}</td>
+    </tr>
+    <tr style="height:22px;">
+        <td class="center" style="font-size:7.5pt;">Family Records</td>
+        <td colspan="3" style="font-size:7.5pt;">{student.family_records or ''}</td>
+    </tr>
+    <tr style="height:22px;">
+        <td class="center" style="font-size:7.5pt;">Spouse Name</td>
+        <td style="font-size:7.5pt;">{student.spouse_name or ''}</td>
+        <td class="center" style="font-size:7.5pt;">Contact No.</td>
+        <td style="font-size:7.5pt;">{student.spouse_contact or ''}</td>
+    </tr>
+</table>
 
-    <div class="bg-beige section-title" style="border-bottom: 1px solid #000; margin-top: 0; font-size: 9pt;">EDUCATIONAL HISTORY</div>
-    <table>
-        <tr class="center" style="font-size: 7.5pt; height: 22px;">
-            <th width="18%" rowspan="2" style="font-size: 7.5pt;">Pass Level</th>
-            <th width="40%" rowspan="2" style="font-size: 7.5pt;">Name of School</th>
-            <th colspan="4" width="28%" style="font-size: 7.5pt;">Admission & Graduation</th>
-            <th width="14%" rowspan="2" style="font-size: 7.5pt;">Enrolled Years</th>
-        </tr>
-        <tr class="center" style="font-size: 7pt; height: 14px;">
-            <td style="font-size: 7pt;">Year</td><td style="font-size: 7pt;">Month</td><td style="font-size: 7pt;">Year</td><td style="font-size: 7pt;">Month</td>
-        </tr>
-        {education_rows}
-    </table>
+<!-- EDUCATIONAL HISTORY -->
+<div class="section-bar-standalone" style="border-bottom:none; margin-top:3px;">EDUCATIONAL HISTORY</div>
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:17%">
+        <col style="width:40%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:15%">
+    </colgroup>
+    <tr class="center" style="height:20px;">
+        <th rowspan="2" style="font-size:7.5pt;">Pass Level</th>
+        <th rowspan="2" style="font-size:7.5pt;">Name of School</th>
+        <th colspan="4" style="font-size:7.5pt;">Admission &amp; Graduation</th>
+        <th rowspan="2" style="font-size:7.5pt;">Enrolled Years</th>
+    </tr>
+    <tr class="center" style="height:14px;">
+        <td style="font-size:6.8pt;">Year</td>
+        <td style="font-size:6.8pt;">Month</td>
+        <td style="font-size:6.8pt;">Year</td>
+        <td style="font-size:6.8pt;">Month</td>
+    </tr>
+    {education_rows}
+</table>
 
-    <div class="bg-beige section-title" style="border-bottom: 1px solid #000; margin-top: 0; font-size: 9pt;">WORKING EXPERIENCE</div>
-    <table>
-        <tr class="center" style="font-size: 7.5pt; height: 22px;">
-            <th width="18%" style="font-size: 7.5pt;">Type of Work</th>
-            <th width="45%" style="font-size: 7.5pt;">Name of Working Company</th>
-            <th width="23%" style="font-size: 7.5pt;">Date of Join & Resign</th>
-            <th width="14%" style="font-size: 7.5pt;">Working Years</th>
-        </tr>
-        {work_rows}
-    </table>
+<!-- WORKING EXPERIENCE -->
+<div class="section-bar-standalone" style="border-bottom:none; margin-top:3px;">WORKING EXPERIENCE</div>
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:17%">
+        <col style="width:45%">
+        <col style="width:23%">
+        <col style="width:15%">
+    </colgroup>
+    <tr class="center" style="height:20px;">
+        <th style="font-size:7.5pt;">Type of Work</th>
+        <th style="font-size:7.5pt;">Name of Working Company</th>
+        <th style="font-size:7.5pt;">Date of Join &amp; Resign</th>
+        <th style="font-size:7.5pt;">Working Years</th>
+    </tr>
+    {work_rows}
+</table>
 
-    <table>
-        <tr>
-            <td class="bg-beige" width="50%" style="font-size: 7.5pt; text-align: center;">LANGUAGE AND SKILLS PASSED CERTIFICATE</td>
-            <td class="bg-beige" style="font-size: 7.5pt; text-align: center;">LANGUAGE & SKILLS TRAINING STATUS</td>
-        </tr>
-        <tr>
-            <td style="padding:0;">
-                <table style="border:none;">
-                    <tr class="center" style="height:18px;">
-                        <td width="20%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Pass Year & Month</td>
-                        <td style="border:none; border-bottom: 1px solid #000; font-size: 6.5pt;">Name of Pass Exam</td>
-                    </tr>
-                    <tr style="height:24px;" class="center">
-                        <td style="border:none; border-right: 1px solid #000; font-size: 7.5pt;">{student.certificate_pass_year or ''}</td>
-                        <td style="border:none; font-size: 7.5pt;">{student.certificate_name or ''}</td>
-                    </tr>
-                    <tr style="height:24px;" class="center">
-                        <td style="border:none; border-right: 1px solid #000; border-top: 1px solid #000; font-size: 7.5pt;"></td>
-                        <td style="border:none; border-top: 1px solid #000; font-size: 7.5pt;"></td>
-                    </tr>
-                </table>
-            </td>
-            <td style="padding:0;">
-                <table style="border:none;">
-                    <tr class="center" style="height:18px;">
-                        <td width="22%" style="border:none; border-right: 1px solid #000; border-bottom: 1px solid #000; font-size: 6.5pt;">Join Year and Month</td>
-                        <td style="border:none; border-bottom: 1px solid #000; font-size: 6.5pt;">Organization</td>
-                    </tr>
-                    <tr style="height:24px;" class="center">
-                        <td style="border:none; border-right: 1px solid #000; font-size: 7.5pt;">{student.language_join_year or ''}</td>
-                        <td style="border:none; font-size: 7.5pt;">{student.organization or ''}</td>
-                    </tr>
-                    <tr style="height:24px;" class="center">
-                        <td style="border:none; border-right: 1px solid #000; border-top: 1px solid #000; font-size: 7.5pt;"></td>
-                        <td style="border:none; border-top: 1px solid #000; font-size: 7.5pt;"></td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-
-    <table style="margin-top:0;">
-        <tr>
-            <td rowspan="3" width="25%" class="bg-beige center" style="font-size: 9pt;">DRIVING LICENSE</td>
-            <td width="37.5%" class="center" style="font-size: 6.5pt;">Pass Year & Month</td>
-            <td width="37.5%" class="center" style="font-size: 6.5pt;">Type of License</td>
-        </tr>
-        <tr style="height:24px;">
-            <td class="center" style="font-size: 7.5pt;">{student.license_pass_year or ''}</td>
-            <td class="center" style="font-size: 7.5pt;">{student.driving_license or ''}</td>
-        </tr>
-        <tr style="height:24px;">
-            <td class="center" style="font-size: 7.5pt;">{student.license_pass_year_2 or ''}</td>
-            <td class="center" style="font-size: 7.5pt;">{student.license_type_2 or ''}</td>
-        </tr>
-    </table>
-
-    <table>
-        <tr style="height: 18px;">
-            <td width="50%" style="font-size: 7.5pt;"><b>Hobbies, Special skills, etc.</b></td>
-            <td style="font-size: 7.5pt;"><b>Motivation, Self-promotion</b></td>
-        </tr>
-        <tr style="height: 60px; vertical-align: top;">
-            <td style="font-size: 7.5pt;">{student.hobbies or ''}</td>
-            <td style="font-size: 7.5pt;">{student.motivation or ''}</td>
-        </tr>
-    </table>
-
-    <div class="clearfix" style="margin-top: 8px;">
-        <div style="width: 70%; float: left; font-size: 7pt; text-align: justify; line-height: 1.15;">
-            I hereby agree to study the Japanese language at the Aqua Education And Training Academy while strictly complying with all rules and regulations. After going to Japan, I promise to follow all Japanese rules and the immigration law. In the event that I fail to comply with company rules and law of Japan, I'm agree to accept all penalties in accordance with Japanese rules and Immigration Law.
-        </div>
-        <div style="width: 28%; float: right;">
-            <div style="font-size: 7.5pt; margin-bottom: 4px; text-align: right; padding-right: 18px;">Date : ________________</div>
-            <table class="sign-box">
-                <tr style="height: 32px;">
-                    <td class="label">SIGN</td>
-                    <td></td>
+<!-- LANGUAGE CERTS + TRAINING STATUS -->
+<table style="margin-top:3px;">
+    <colgroup>
+        <col style="width:50%">
+        <col style="width:50%">
+    </colgroup>
+    <tr>
+        <td class="bg-tan" style="font-size:8pt; text-align:center;">LANGUAGE AND SKILLS PASSED CERTIFICATE</td>
+        <td class="bg-tan" style="font-size:8pt; text-align:center;">LANGUAGE &amp; SKILLS TRAINING STATUS</td>
+    </tr>
+    <tr>
+        <!-- Left: cert table -->
+        <td style="padding:0;">
+            <table style="border:none; width:100%;">
+                <colgroup>
+                    <col style="width:28%">
+                    <col style="width:72%">
+                </colgroup>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-bottom:1px solid #000; font-size:6.5pt;">Pass Year &amp; Month</td>
+                    <td style="border:none; border-bottom:1px solid #000; font-size:6.5pt;">Name of Pass Exam</td>
+                </tr>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; font-size:7.5pt;">{student.certificate_pass_year or ''}</td>
+                    <td style="border:none; font-size:7.5pt;">{student.certificate_name or ''}</td>
+                </tr>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td>
+                    <td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td>
                 </tr>
             </table>
-        </div>
+        </td>
+        <!-- Right: training table -->
+        <td style="padding:0;">
+            <table style="border:none; width:100%;">
+                <colgroup>
+                    <col style="width:32%">
+                    <col style="width:68%">
+                </colgroup>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-bottom:1px solid #000; font-size:6.5pt;">Join Year and Month</td>
+                    <td style="border:none; border-bottom:1px solid #000; font-size:6.5pt;">Organization</td>
+                </tr>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; font-size:7.5pt;">{student.language_join_year or ''}</td>
+                    <td style="border:none; font-size:7.5pt;">{student.organization or ''}</td>
+                </tr>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td>
+                    <td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<!-- DRIVING LICENSE -->
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:25%">
+        <col style="width:37.5%">
+        <col style="width:37.5%">
+    </colgroup>
+    <tr class="center" style="height:26px;">
+        <td rowspan="3" class="bg-tan" style="font-size:9pt; font-weight:bold;">DRIVING LICENSE</td>
+        <td style="font-size:6.8pt;">Pass Year &amp; Month</td>
+        <td style="font-size:6.8pt;">Type of License</td>
+    </tr>
+    <tr style="height:26px;" class="center">
+        <td style="font-size:7.5pt;">{student.license_pass_year or ''}</td>
+        <td style="font-size:7.5pt;">{student.driving_license or ''}</td>
+    </tr>
+    <tr style="height:26px;" class="center">
+        <td style="font-size:7.5pt;">{student.license_pass_year_2 or ''}</td>
+        <td style="font-size:7.5pt;">{student.license_type_2 or ''}</td>
+    </tr>
+</table>
+
+<!-- HOBBIES / MOTIVATION -->
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:50%">
+        <col style="width:50%">
+    </colgroup>
+    <tr style="height:18px;">
+        <td style="font-size:7.5pt; font-weight:bold;">Hobbies, Special skills, etc.</td>
+        <td style="font-size:7.5pt; font-weight:bold;">Motivation, Self-promotion</td>
+    </tr>
+    <tr style="height:45px; vertical-align:top;">
+        <td style="font-size:7.5pt;">{student.hobbies or ''}</td>
+        <td style="font-size:7.5pt;">{student.motivation or ''}</td>
+    </tr>
+</table>
+
+<!-- DECLARATION + SIGNATURE -->
+<div class="sign-section clearfix" style="margin-top:7px;">
+    <div class="declaration-text">
+        I hereby agree to study the Japanese language at the Aqua Education And Training Academy while strictly complying with all rules and regulations. After going to Japan, I promise to follow all Japanese rules and the immigration law. In the event that I fail to comply with company rules and law of Japan, I'm agree to accept all penalties in accordance with Japanese rules and Immigration Law.
     </div>
+    <div class="sign-right">
+        <div class="date-line">Date : ________________</div>
+        <table class="sign-table">
+            <tr>
+                <td class="sign-label">SIGN</td>
+                <td class="sign-space"></td>
+            </tr>
+        </table>
+    </div>
+</div>
 
 </body>
 </html>
@@ -510,7 +734,7 @@ def _generate_student_pdf_internal(request, student_id):
         return response
 
     except Exception as e:
-        return HttpResponse(f"Error: {str(e)}", status=500)
+        return HttpResponse(f"Error generating PDF: {str(e)}", status=500)
 
 @login_required
 def generate_admission_fee_pdf(request, student_id):
