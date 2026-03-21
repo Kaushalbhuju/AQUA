@@ -1,0 +1,383 @@
+{% load static %}
+{% load i18n %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Students - {{ classroom.name }} - Aqua Group</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #004E89, #006ebc) !important;
+            box-shadow: 0 4px 20px rgba(0, 78, 137, 0.3);
+        }
+
+        .navbar h4 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        .content-area {
+            padding: 2.5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .btn-back {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-back:hover {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .page-header h2 {
+            font-weight: 800;
+            color: #1a365d;
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        .students-grid {
+            display: grid;
+            grid-template-columns: 1fr 80px 1fr;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .students-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .arrow-col {
+                transform: rotate(90deg);
+            }
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem;
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-available .panel-header {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            color: #475569;
+        }
+
+        .panel-enrolled .panel-header {
+            background: linear-gradient(135deg, #004E89, #006ebc);
+            color: white;
+        }
+
+        .panel-body {
+            padding: 1rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .student-item:hover {
+            background: #f8fafc;
+        }
+
+        .student-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #004E89;
+            cursor: pointer;
+        }
+
+        .student-item-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-ph {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #cbd5e1, #e2e8f0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .student-item-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1e293b;
+        }
+
+        .student-item-id {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .arrow-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding-top: 5rem;
+        }
+
+        .arrow-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+            color: #475569;
+        }
+
+        .arrow-btn:hover {
+            border-color: #004E89;
+            color: #004E89;
+            box-shadow: 0 4px 12px rgba(0, 78, 137, 0.15);
+            transform: scale(1.1);
+        }
+
+        .arrow-btn.add-btn:hover {
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .arrow-btn.remove-btn:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-top: 3rem;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #dcfce7, #f0fdf4);
+            border: 1px solid #86efac;
+            color: #166534;
+            border-radius: 12px;
+            padding: 14px 20px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
+                </li>
+            </ul>
+            <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
+                <h4>MANAGE STUDENTS</h4>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav"></div>
+        </div>
+    </nav>
+
+    <div class="content-area">
+        <a href="{% url 'dashboard:class_attendance' classroom.id %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Back to {{ classroom.name }}
+        </a>
+
+        {% for message in messages %}
+        <div class="alert-success">
+            <i class="fas fa-check-circle"></i> {{ message }}
+        </div>
+        {% endfor %}
+
+        <div class="page-header">
+            <h2><i class="fas fa-users-cog" style="color: #004E89;"></i> {{ classroom.name }} — Students</h2>
+            <p>Select students and use the arrows to add or remove them from this class.</p>
+        </div>
+
+        <div class="students-grid">
+            <!-- Available Students Panel -->
+            <div class="panel panel-available">
+                <div class="panel-header">
+                    <span><i class="fas fa-user-clock"></i> Available Students</span>
+                    <span class="badge bg-secondary">{{ available_students|length }}</span>
+                </div>
+                <div class="panel-body" id="availablePanel">
+                    <form id="addForm" method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="add">
+                        {% for student in available_students %}
+                        <label class="student-item">
+                            <input type="checkbox" name="student_ids" value="{{ student.id }}">
+                            {% if student.photo %}
+                            <img src="{{ student.photo.url }}" class="student-item-avatar" alt="">
+                            {% else %}
+                            <div class="avatar-ph">{{ student.full_name|slice:":2" }}</div>
+                            {% endif %}
+                            <div>
+                                <div class="student-item-name">{{ student.full_name }}</div>
+                                <div class="student-item-id">{{ student.student_id }}</div>
+                            </div>
+                        </label>
+                        {% empty %}
+                        <div class="empty-state">
+                            <i class="fas fa-user-check d-block"></i>
+                            <p>All students are already enrolled.</p>
+                        </div>
+                        {% endfor %}
+                    </form>
+                </div>
+            </div>
+
+            <!-- Arrow Buttons -->
+            <div class="arrow-col">
+                <button type="submit" form="addForm" class="arrow-btn add-btn" title="Add selected to class">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <button type="submit" form="removeForm" class="arrow-btn remove-btn" title="Remove selected from class">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <!-- Enrolled Students Panel -->
+            <div class="panel panel-enrolled">
+                <div class="panel-header">
+                    <span><i class="fas fa-user-graduate"></i> {{ classroom.name }} Students</span>
+                    <span class="badge bg-light text-dark">{{ enrolled_students|length }}</span>
+                </div>
+                <div class="panel-body" id="enrolledPanel">
+                    <form id="removeForm" method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="remove">
+                        {% for student in enrolled_students %}
+                        <label class="student-item">
+                            <input type="checkbox" name="student_ids" value="{{ student.id }}">
+                            {% if student.photo %}
+                            <img src="{{ student.photo.url }}" class="student-item-avatar" alt="">
+                            {% else %}
+                            <div class="avatar-ph">{{ student.full_name|slice:":2" }}</div>
+                            {% endif %}
+                            <div>
+                                <div class="student-item-name">{{ student.full_name }}</div>
+                                <div class="student-item-id">{{ student.student_id }}</div>
+                            </div>
+                        </label>
+                        {% empty %}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox d-block"></i>
+                            <p>No students enrolled yet.</p>
+                        </div>
+                        {% endfor %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; {% now "Y" %} Aqua Group. All Rights Reserved.
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

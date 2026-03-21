@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Report</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: Helvetica, sans-serif;
+            font-size: 10px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: #004E89;
+            font-size: 18px;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #004E89;
+            color: white;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .jp-name {
+            font-size: 8px;
+            color: #666;
+        }
+
+        .notes-list {
+            margin: 0;
+            padding: 0 0 0 10px;
+        }
+
+        .notes-list li {
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h2>{{ classroom.name }} - Monthly Report</h2>
+        <p>{{ month_name }} {{ year }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 5%;">S.N</th>
+                <th style="width: 25%;">Student Name</th>
+                <th style="width: 8%; text-align: center;">Gender</th>
+                <th style="width: 8%; text-align: center;">Age</th>
+                <th style="width: 12%; text-align: center;">Attendance %</th>
+                <th style="width: 42%;">Monthly Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in student_data %}
+            <tr>
+                <td class="text-center">{{ forloop.counter }}</td>
+                <td>
+                    <b>{{ item.student.full_name }}</b><br>
+                    <span class="jp-name">{{ item.student.japanese_name|default:'' }}</span>
+                </td>
+                <td class="text-center">{{ item.student.gender|default:'-' }}</td>
+                <td class="text-center">{{ item.student.calculated_age|default:item.student.age|default:'-' }}</td>
+                <td class="text-center"><b>{{ item.percentage }}%</b><br><small>{{ item.present_count }}/{{
+                        item.effective_days }} d</small></td>
+                <td>
+                    {% if item.notes %}
+                    <ul class="notes-list">
+                        {% for note in item.notes %}
+                        <li><b>{{ note.note_date|date:"d" }}日:</b> {{ note.content }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No student data available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

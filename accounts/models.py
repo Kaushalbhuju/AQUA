@@ -9,6 +9,7 @@ class User(AbstractUser):
         ('staff', 'Staff'),
         ('client', 'Recruitment Client'),
         ('college', 'College'),
+        ('teacher', 'Teacher'),
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='staff')
 
@@ -25,5 +26,6 @@ class User(AbstractUser):
             'staff': '/dashboard/staff/',
             'client': '/dashboard/recruitment_client/',
             'college': '/dashboard/college_student/',
+            'teacher': '/dashboard/teacher/',
         }
         return role_to_url.get(self.role, '/dashboard/')

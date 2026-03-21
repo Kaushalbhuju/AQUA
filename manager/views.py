@@ -28,6 +28,7 @@ from datetime import datetime
 
 
 def staff_registration_create(request):
+    form_valid = education_valid = work_valid = certificate_valid = training_valid = license_valid = bank_valid = True
     if request.method == 'POST':
         print("POST Data:", request.POST)  # Debug
         print("FILES Data:", request.FILES)  # Debug
@@ -109,8 +110,10 @@ def staff_registration_create(request):
                         license = license_form.save(commit=False)
                         license.staff = staff
                         license.save()
-                       #Bank Information 
+                        #Bank Information 
                     bank_instances = bank_formset.save(commit=False)
+                    if not bank_instances:
+                        raise ValueError("At least one bank information record is required.")
                     for bank in bank_instances:
                         bank.staff = staff
                         bank.save()
@@ -141,12 +144,15 @@ def staff_registration_create(request):
         'training_formset': training_formset,
         'license_form': license_form,
         'bank_formset': bank_formset, 
+        'has_errors': (not form_valid or not education_valid or not work_valid or 
+                        not certificate_valid or not training_valid or not license_valid or not bank_valid),
     }
     
     return render(request, 'dashboards/staff_registration.html', context)
 
 
 def staff_registration_update(request, pk):
+    form_valid = education_valid = work_valid = certificate_valid = training_valid = license_valid = bank_valid = True
     staff = get_object_or_404(StaffRegistration, pk=pk)
     
     if request.method == 'POST':
@@ -164,7 +170,16 @@ def staff_registration_update(request, pk):
         except DrivingLicense.DoesNotExist:
             license_form = DrivingLicenseForm(request.POST, prefix='license')
         
-        if form.is_valid() and education_formset.is_valid() and work_formset.is_valid() and certificate_formset.is_valid() and training_formset.is_valid() and license_form.is_valid() and bank_formset.is_valid():
+        # Check validity
+        form_valid = form.is_valid()
+        education_valid = education_formset.is_valid()
+        work_valid = work_formset.is_valid()
+        certificate_valid = certificate_formset.is_valid()
+        training_valid = training_formset.is_valid()
+        license_valid = license_form.is_valid()
+        bank_valid = bank_formset.is_valid()
+
+        if form_valid and education_valid and work_valid and certificate_valid and training_valid and license_valid and bank_valid:
             try:
                 with transaction.atomic():
                     staff = form.save()
@@ -223,6 +238,10 @@ def staff_registration_update(request, pk):
         'license_form': license_form,
         'staff': staff,
         'bank_formset': bank_formset,
+        'has_errors': (request.method == 'POST' and (
+            not form_valid or not education_valid or not work_valid or 
+            not certificate_valid or not training_valid or not license_valid or not bank_valid
+        )),
     }
     
     return render(request, 'dashboards/staff_registration.html', context)

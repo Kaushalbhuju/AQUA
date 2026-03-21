@@ -1,0 +1,538 @@
+{% load static %}
+{% load i18n %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Daily Notes - {{ student.full_name }} - Aqua Group</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #004E89, #006ebc) !important;
+            box-shadow: 0 4px 20px rgba(0, 78, 137, 0.3);
+        }
+
+        .navbar h4 {
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        .content-area {
+            padding: 3rem 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .btn-back {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-back:hover {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .student-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+        }
+
+        .student-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-ph {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #cbd5e1, #e2e8f0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .student-info h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1a365d;
+            margin-bottom: 0.25rem;
+        }
+
+        .student-info p {
+            color: #64748b;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Today's Note Editor */
+        .editor-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 78, 137, 0.08);
+            border: 1px solid rgba(0, 78, 137, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .date-badge {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        textarea.note-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            resize: vertical;
+            font-size: 1rem;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        textarea.note-input:focus {
+            outline: none;
+            border-color: #004E89;
+            box-shadow: 0 0 0 4px rgba(0, 78, 137, 0.1);
+        }
+
+        textarea.note-input:disabled {
+            background: #f8fafc;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .lock-warning {
+            color: #f59e0b;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #004E89, #006ebc);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 78, 137, 0.2);
+        }
+
+        .btn-save:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        /* Note History Timeline */
+        .history-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 7px;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -2rem;
+            top: 0.25rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #004E89;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #e2e8f0;
+            z-index: 2;
+        }
+
+        .note-bubble {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .note-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .note-author {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .note-status-locked {
+            color: #ef4444;
+            background: #fee2e2;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .note-status-editable {
+            color: #10b981;
+            background: #dcfce7;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .note-content {
+            color: #1e293b;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        .empty-history i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            z-index: 9999;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast-notification.show {
+            transform: translateX(0);
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
+                </li>
+            </ul>
+            <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
+                <h4>DAILY NOTES</h4>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav"></div>
+        </div>
+    </nav>
+
+    <div class="content-area">
+        <a href="{% url 'dashboard:student_records' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Back to Student Records
+        </a>
+
+        <div class="student-header">
+            {% if student.photo %}
+            <img src="{{ student.photo.url }}" class="student-avatar" alt="">
+            {% else %}
+            <div class="avatar-ph">{{ student.full_name|slice:":2" }}</div>
+            {% endif %}
+            <div class="student-info">
+                <h1>{{ student.full_name }}</h1>
+                <p>
+                    <i class="fas fa-id-card"></i> {{ student.student_id|default:"N/A" }} &nbsp;|&nbsp;
+                    <i class="fas fa-venus-mars"></i> {{ student.gender|default:"—" }} &nbsp;|&nbsp;
+                    <i class="fas fa-calendar"></i> Age: {{ student.calculated_age|default:student.age|default:'—' }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Today's Editor -->
+        {% if not today_note or today_note.is_editable %}
+        <div class="editor-card">
+            <div class="editor-header">
+                <div class="section-title mb-0">
+                    <i class="fas fa-pen-square" style="color: #004E89;"></i> Today's Note
+                </div>
+                <div class="date-badge">
+                    <i class="fas fa-calendar-day"></i> {{ today_date|date:"F j, Y" }}
+                </div>
+            </div>
+
+            {% if today_note %}
+            <div class="lock-warning">
+                <i class="fas fa-exclamation-circle"></i> This note is editable until 24 hours after it was first
+                created.
+            </div>
+            {% endif %}
+
+            <textarea id="todayNoteContent" class="note-input"
+                placeholder="Write your observations, progress, or any specific notes for today...">{{ today_note.content|default:"" }}</textarea>
+
+            <div class="text-end">
+                <button id="saveNoteBtn" class="btn-save" onclick="saveTodayNote()">
+                    <i class="fas fa-save"></i> {% if today_note %}Update Note{% else %}Save Note{% endif %}
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- History -->
+        <div class="history-card">
+            <div class="section-title">
+                <i class="fas fa-history" style="color: #64748b;"></i> Note History
+            </div>
+
+            {% if notes %}
+            <div class="timeline">
+                {% for note in notes %}
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="note-bubble">
+                        <div class="note-meta">
+                            <div>
+                                <span class="note-author"><i class="fas fa-user-edit"></i> 
+                                {% with teacher_name=note.teacher.get_full_name %}
+                                    {% if teacher_name %}
+                                        {{ teacher_name }}
+                                    {% else %}
+                                        {{ note.teacher.username }}
+                                    {% endif %}
+                                {% endwith %}
+                                </span>
+                                &nbsp;&bull;&nbsp; {{ note.note_date|date:"F j, Y" }}
+                            </div>
+                            <div>
+                                {% if note.is_editable %}
+                                <span class="note-status-editable"><i class="fas fa-unlock"></i> Editable</span>
+                                {% else %}
+                                <span class="note-status-locked"><i class="fas fa-lock"></i> Locked</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="note-content">{{ note.content }}</div>
+                        <div class="text-muted" style="font-size: 0.75rem; margin-top: 8px;">
+                            Created at: {{ note.created_at|date:"M d, Y H:i" }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-history">
+                <i class="fas fa-clipboard"></i>
+                <h4>No notes yet</h4>
+                <p>Daily notes will appear here once saved.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast-notification" id="toastNotification"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function saveTodayNote() {
+            const btn = document.getElementById('saveNoteBtn');
+            const content = document.getElementById('todayNoteContent').value.trim();
+
+            if (!content) {
+                showToast('❌ Note cannot be empty', 'error');
+                return;
+            }
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+            btn.disabled = true;
+
+            fetch(`{% url 'dashboard:save_daily_note' student.id %}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    content: content,
+                    date: '{{ today_date|date:"Y-m-d" }}'
+                })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('✅ ' + data.message, 'success');
+                        setTimeout(() => location.reload(), 1500); // Reload to update history timeline
+                    } else {
+                        showToast('❌ ' + data.error, 'error');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    showToast('❌ Network error. Please try again.', 'error');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toastNotification');
+            toast.textContent = message;
+            toast.className = 'toast-notification toast-' + type + ' show';
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+
+</html>

@@ -11,31 +11,61 @@ class StaffRegistrationForm(forms.ModelForm):
         fields = '__all__'
         exclude = ['created_at', 'updated_at']
         widgets = {
-            'staff_id': forms.TextInput(attrs={'class': 'form-control'}),
-            'gender': forms.Select(attrs={'class': 'form-control'}),
-            'full_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'marital_status': forms.Select(attrs={'class': 'form-control'}),
-            'permanent_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'present_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'staff_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Auto-generated if left blank'}),
+            'gender': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
+            'full_name': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'marital_status': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
+            'permanent_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'required': 'required'}),
+            'present_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'required': 'required'}),
             'candidate_photo': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
-            'id_passport_no': forms.TextInput(attrs={'class': 'form-control'}),
-            'date_of_issue': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'issue_from': forms.TextInput(attrs={'class': 'form-control'}),
-            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'eye_lense_right': forms.TextInput(attrs={'class': 'form-control'}),
-            'eye_lense_left': forms.TextInput(attrs={'class': 'form-control'}),
-            'blood_group': forms.Select(attrs={'class': 'form-control'}),
-            'phone_no': forms.TextInput(attrs={'class': 'form-control'}),
-            'email_id': forms.EmailInput(attrs={'class': 'form-control'}),
+            'id_passport_no': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'date_of_issue': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'required': 'required'}),
+            'issue_from': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'required': 'required'}),
+            'eye_lense_right': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'eye_lense_left': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'blood_group': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
+            'phone_no': forms.TextInput(attrs={'class': 'form-control', 'maxlength': '10', 'placeholder': '10 digits only', 'required': 'required'}),
+            'email_id': forms.EmailInput(attrs={'class': 'form-control', 'required': 'required'}),
             'spouse_name': forms.TextInput(attrs={'class': 'form-control'}),
             'contact_no': forms.TextInput(attrs={'class': 'form-control'}),
-            'hobbies': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'motivation': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'staff_bio_data_pdf': forms.FileInput(attrs={'class': 'form-control', 'accept': 'application/pdf'}),
-            'staff_id_doc_pdf': forms.FileInput(attrs={'class': 'form-control', 'accept': 'application/pdf'}),
+            'hobbies': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'required': 'required'}),
+            'motivation': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'required': 'required'}),
+            'staff_bio_data_pdf': forms.FileInput(attrs={'class': 'form-control', 'accept': 'application/pdf', 'required': 'required'}),
+            'staff_id_doc_pdf': forms.FileInput(attrs={'class': 'form-control', 'accept': 'application/pdf', 'required': 'required'}),
             'staff_login_report_pdf': forms.FileInput(attrs={'class': 'form-control', 'accept': 'application/pdf'}),
             'staff_login_id_pdf': forms.FileInput(attrs={'class': 'form-control', 'accept': 'application/pdf'}),
         }
+
+    def clean_date_of_birth(self):
+        dob = self.cleaned_data.get('date_of_birth')
+        if dob:
+            from datetime import date
+            today = date.today()
+            age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            if age < 18:
+                raise forms.ValidationError("Staff must be at least 18 years old.")
+            if dob > today:
+                raise forms.ValidationError("Date of birth cannot be in the future.")
+        return dob
+
+    def clean_date_of_issue(self):
+        doi = self.cleaned_data.get('date_of_issue')
+        if doi:
+            from datetime import date
+            if doi > date.today():
+                raise forms.ValidationError("Date of issue cannot be in the future.")
+        return doi
+
+    def clean_email_id(self):
+        email = self.cleaned_data.get('email_id')
+        if email:
+            qs = StaffRegistration.objects.filter(email_id=email)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError("This email is already registered.")
+        return email
 class BankInformationForm(forms.ModelForm):
     class Meta:
         model = BankInformation
@@ -62,7 +92,7 @@ BankFormSet = inlineformset_factory(
     BankInformation,
     fields=["bank_name", "branch_name", "account_no", "account_holder_name"],
     extra=1,
-    can_delete=True
+    can_delete=False
 )
 
 

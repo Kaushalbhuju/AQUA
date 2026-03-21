@@ -3,9 +3,12 @@ from django.urls import path
 from .views.dashboard_views import (
     operation_head_dashboard, manager_dashboard, staff_dashboard,
     college_student_dashboard, recruitment_client_dashboard, 
-    move_to_next_stage
+    move_to_next_stage, teacher_dashboard, student_attendance, save_attendance_data, student_records,
+    class_list, class_attendance, save_class_attendance, manage_class_students,
+    student_daily_notes, save_daily_note
 )
 from .views.other_views import home_view, dashboard_view, profile_view, settings_view
+from .views.report_views import teacher_report, export_report_excel, export_report_pdf
 from .views.student_views import (
     registration_success, student_registration, student_list, student_detail,
     student_application_detail, update_student_status,
@@ -39,6 +42,19 @@ urlpatterns = [
     path('manager/', manager_dashboard, name='manager_dashboard'),
     path('staff/', staff_dashboard, name='staff_dashboard'),
     path('college_student/', college_student_dashboard, name='college_student_dashboard'),
+    path('teacher/', teacher_dashboard, name='teacher_dashboard'),
+    path('teacher/student-attendance/', student_attendance, name='student_attendance'),
+    path('teacher/save-attendance/', save_attendance_data, name='save_attendance_data'),
+    path('teacher/student-records/', student_records, name='student_records'),
+    path('teacher/classes/', class_list, name='class_list'),
+    path('teacher/classes/<int:classroom_id>/attendance/', class_attendance, name='class_attendance'),
+    path('teacher/classes/<int:classroom_id>/save-attendance/', save_class_attendance, name='save_class_attendance'),
+    path('teacher/classes/<int:classroom_id>/students/', manage_class_students, name='manage_class_students'),
+    path('teacher/student/<int:student_id>/notes/', student_daily_notes, name='student_daily_notes'),
+    path('teacher/student/<int:student_id>/notes/save/', save_daily_note, name='save_daily_note'),
+    path('teacher/report/', teacher_report, name='teacher_report'),
+    path('teacher/report/export/excel/', export_report_excel, name='export_report_excel'),
+    path('teacher/report/export/pdf/', export_report_pdf, name='export_report_pdf'),
     path('recruitment_client/', recruitment_client_dashboard, name='recruitment_client_dashboard'),
 
     # Student management (Admin/Staff side)

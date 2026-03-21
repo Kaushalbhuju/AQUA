@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,30 +12,35 @@
             background-color: #f5f5f5;
             padding: 20px 0;
         }
+
         .form-container {
             max-width: 1400px;
             margin: 0 auto;
             background: white;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
+
         .header-section {
             background: linear-gradient(135deg, #ffb380 0%, #ffa366 100%);
             padding: 30px;
             text-align: center;
             border-bottom: 4px solid #ff9966;
         }
+
         .header-section h1 {
             font-size: 2.5rem;
             font-weight: bold;
             color: #333;
             margin: 0;
         }
+
         .header-section h2 {
             font-size: 1.5rem;
             font-weight: 600;
             color: #555;
             margin-top: 10px;
         }
+
         .section-title {
             background: #f8f9fa;
             padding: 12px;
@@ -44,17 +50,21 @@
             margin-top: 20px;
             font-size: 1.1rem;
         }
+
         .form-section {
             border: 2px solid #666;
             margin-bottom: 20px;
         }
+
         .form-row-custom {
             display: flex;
             border-bottom: 2px solid #666;
         }
+
         .form-row-custom:last-child {
             border-bottom: none;
         }
+
         .label-cell {
             background: #f8f9fa;
             padding: 12px;
@@ -63,12 +73,14 @@
             display: flex;
             align-items: center;
         }
+
         .input-cell {
             padding: 8px 12px;
             flex: 1;
             display: flex;
             align-items: center;
         }
+
         .input-cell input,
         .input-cell select,
         .input-cell textarea {
@@ -77,6 +89,7 @@
             padding: 8px;
             border-radius: 4px;
         }
+
         .photo-section {
             border-left: 2px solid #666;
             padding: 15px;
@@ -87,6 +100,7 @@
             justify-content: center;
             align-items: center;
         }
+
         .photo-box {
             width: 150px;
             height: 180px;
@@ -101,25 +115,30 @@
             cursor: pointer;
             transition: all 0.3s;
         }
+
         .photo-box:hover {
             border-color: #ff9966;
             background: #fff;
         }
+
         .photo-box img {
             max-width: 100%;
             max-height: 100%;
             object-fit: cover;
         }
+
         .photo-placeholder {
             text-align: center;
             color: #999;
             padding: 20px;
         }
+
         .photo-placeholder i {
             font-size: 3rem;
             margin-bottom: 10px;
             color: #ccc;
         }
+
         .upload-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -131,18 +150,22 @@
             transition: all 0.3s;
             display: inline-block;
         }
+
         .upload-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
+
         .upload-btn i {
             margin-right: 5px;
         }
+
         .file-name {
             font-size: 0.85rem;
             color: #666;
             margin-top: 5px;
         }
+
         .btn-submit {
             background: linear-gradient(135deg, #ffb380 0%, #ffa366 100%);
             border: none;
@@ -153,24 +176,29 @@
             border-radius: 8px;
             transition: all 0.3s;
         }
+
         .btn-submit:hover {
             background: linear-gradient(135deg, #ffa366 0%, #ff9966 100%);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
+
         .formset-table {
             width: 100%;
             border-collapse: collapse;
         }
+
         .formset-table th,
         .formset-table td {
             border: 2px solid #666;
             padding: 10px;
         }
+
         .formset-table th {
             background: #f8f9fa;
             font-weight: bold;
         }
+
         .formset-table input,
         .formset-table select {
             width: 100%;
@@ -178,9 +206,11 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+
         .alert {
             margin: 20px;
         }
+
         .errorlist {
             color: red;
             list-style: none;
@@ -188,9 +218,11 @@
             margin: 5px 0;
             font-size: 0.9rem;
         }
+
         .hidden-file-input {
             display: none;
         }
+
         .doc-card {
             border: 3px solid #666;
             padding: 30px 20px;
@@ -201,31 +233,64 @@
             border-radius: 10px;
             height: 100%;
         }
+
         .doc-card:hover {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             border-color: #ff9966;
         }
+
         .doc-card i {
             font-size: 3rem;
             color: #667eea;
             margin-bottom: 15px;
         }
+
         .doc-card:hover i {
             color: #ff9966;
             animation: pulse 0.5s ease-in-out;
         }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+
+        .doc-card.uploaded {
+            border-color: #28a745;
+            background-color: #f8fff9;
         }
+
+        .doc-card.uploaded i {
+            color: #28a745;
+            transform: scale(1.1);
+        }
+
+        .file-name-display {
+            font-size: 0.75rem;
+            color: #28a745;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
         .doc-title {
             font-weight: bold;
             font-size: 1rem;
             margin-bottom: 8px;
             color: #333;
         }
+
         .doc-subtitle {
             color: #666;
             font-size: 0.85rem;
@@ -233,6 +298,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="form-container">
         <!-- Header -->
@@ -243,99 +309,99 @@
 
         <!-- Messages -->
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle"></i> {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
         {% endif %}
 
         <!-- Form Errors Display -->
-        {% if form.errors or education_formset.errors or work_formset.errors or certificate_formset.errors or training_formset.errors or license_form.errors or bank_formset.errors %}
-            <div class="alert alert-danger" role="alert">
-                <strong><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</strong>
-                <ul class="mb-0">
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                            <li><strong>{{ field|capfirst }}</strong>: {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
+        {% if has_errors %}
+        <div class="alert alert-danger" role="alert">
+            <strong><i class="fas fa-exclamation-triangle"></i> Please fix the following errors:</strong>
+            <ul class="mb-0">
+                {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                <li><strong>{{ field|capfirst }}</strong>: {{ error }}</li>
+                {% endfor %}
+                {% endfor %}
 
-                    {% for error in form.non_field_errors %}
-                        <li><strong>Form</strong>: {{ error }}</li>
-                    {% endfor %}
+                {% for error in form.non_field_errors %}
+                <li><strong>Form</strong>: {{ error }}</li>
+                {% endfor %}
 
-                    {% for error in education_formset.non_form_errors %}
-                        <li><strong>Education</strong>: {{ error }}</li>
-                    {% endfor %}
-                    {% for form_err in education_formset.errors %}
-                        {% for field, errors in form_err.items %}
-                            {% for error in errors %}
-                                <li><strong>Education</strong> ({{ field|capfirst }}): {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    {% endfor %}
+                {% for error in education_formset.non_form_errors %}
+                <li><strong>Education</strong>: {{ error }}</li>
+                {% endfor %}
+                {% for form_err in education_formset.errors %}
+                {% for field, errors in form_err.items %}
+                {% for error in errors %}
+                <li><strong>Education</strong> ({{ field|capfirst }}): {{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+                {% endfor %}
 
-                    {% for error in work_formset.non_form_errors %}
-                        <li><strong>Work</strong>: {{ error }}</li>
-                    {% endfor %}
-                    {% for form_err in work_formset.errors %}
-                        {% for field, errors in form_err.items %}
-                            {% for error in errors %}
-                                <li><strong>Work</strong> ({{ field|capfirst }}): {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    {% endfor %}
+                {% for error in work_formset.non_form_errors %}
+                <li><strong>Work</strong>: {{ error }}</li>
+                {% endfor %}
+                {% for form_err in work_formset.errors %}
+                {% for field, errors in form_err.items %}
+                {% for error in errors %}
+                <li><strong>Work</strong> ({{ field|capfirst }}): {{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+                {% endfor %}
 
-                    {% for error in certificate_formset.non_form_errors %}
-                        <li><strong>Certificate</strong>: {{ error }}</li>
-                    {% endfor %}
-                    {% for form_err in certificate_formset.errors %}
-                        {% for field, errors in form_err.items %}
-                            {% for error in errors %}
-                                <li><strong>Certificate</strong> ({{ field|capfirst }}): {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    {% endfor %}
+                {% for error in certificate_formset.non_form_errors %}
+                <li><strong>Certificate</strong>: {{ error }}</li>
+                {% endfor %}
+                {% for form_err in certificate_formset.errors %}
+                {% for field, errors in form_err.items %}
+                {% for error in errors %}
+                <li><strong>Certificate</strong> ({{ field|capfirst }}): {{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+                {% endfor %}
 
-                    {% for error in training_formset.non_form_errors %}
-                        <li><strong>Training</strong>: {{ error }}</li>
-                    {% endfor %}
-                    {% for form_err in training_formset.errors %}
-                        {% for field, errors in form_err.items %}
-                            {% for error in errors %}
-                                <li><strong>Training</strong> ({{ field|capfirst }}): {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    {% endfor %}
+                {% for error in training_formset.non_form_errors %}
+                <li><strong>Training</strong>: {{ error }}</li>
+                {% endfor %}
+                {% for form_err in training_formset.errors %}
+                {% for field, errors in form_err.items %}
+                {% for error in errors %}
+                <li><strong>Training</strong> ({{ field|capfirst }}): {{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+                {% endfor %}
 
-                    {% for field, errors in license_form.errors.items %}
-                        {% for error in errors %}
-                            <li><strong>Driving License</strong> ({{ field|capfirst }}): {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                    {% for error in license_form.non_field_errors %}
-                        <li><strong>Driving License</strong>: {{ error }}</li>
-                    {% endfor %}
+                {% for field, errors in license_form.errors.items %}
+                {% for error in errors %}
+                <li><strong>Driving License</strong> ({{ field|capfirst }}): {{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+                {% for error in license_form.non_field_errors %}
+                <li><strong>Driving License</strong>: {{ error }}</li>
+                {% endfor %}
 
-                    {% for error in bank_formset.non_form_errors %}
-                        <li><strong>Bank</strong>: {{ error }}</li>
-                    {% endfor %}
-                    {% for form_err in bank_formset.errors %}
-                        {% for field, errors in form_err.items %}
-                            {% for error in errors %}
-                                <li><strong>Bank</strong> ({{ field|capfirst }}): {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                    {% endfor %}
-                </ul>
-            </div>
+                {% for error in bank_formset.non_form_errors %}
+                <li><strong>Bank</strong>: {{ error }}</li>
+                {% endfor %}
+                {% for form_err in bank_formset.errors %}
+                {% for field, errors in form_err.items %}
+                {% for error in errors %}
+                <li><strong>Bank</strong> ({{ field|capfirst }}): {{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
         {% endif %}
 
         <form method="post" enctype="multipart/form-data" class="p-4" id="staffForm">
             {% csrf_token %}
-            
+
             <!-- Basic Information Section -->
             <div class="form-section">
                 <div class="form-row-custom">
@@ -346,25 +412,30 @@
                     </div>
                     <div class="label-cell" style="width: 15%;">Gender *</div>
                     <div class="input-cell" style="width: 20%; border-right: 2px solid #666;">
+                        <input type="hidden" name="gender" id="gender_hidden"
+                            value="{{ form.gender.value|default:'' }}">
                         {{ form.gender }}
                         {{ form.gender.errors }}
                     </div>
                     <div class="photo-section" style="width: 15%;">
-                        <div class="photo-box" id="photoPreview" onclick="document.getElementById('photoInput').click()">
+                        <div class="photo-box" id="photoPreview"
+                            onclick="document.getElementById('photoInput').click()">
                             {% if staff.candidate_photo %}
-                                <img src="{{ staff.candidate_photo.url }}" alt="Photo">
+                            <img src="{{ staff.candidate_photo.url }}" alt="Photo">
                             {% else %}
-                                <div class="photo-placeholder">
-                                    <i class="fas fa-camera"></i>
-                                    <div style="font-weight: bold; font-size: 0.8rem;">CANDIDATE</div>
-                                    <div style="font-weight: bold; font-size: 0.8rem;">PHOTO</div>
-                                    <div style="font-size: 0.7rem; margin-top: 5px;">Click to upload</div>
-                                </div>
+                            <div class="photo-placeholder">
+                                <i class="fas fa-camera"></i>
+                                <div style="font-weight: bold; font-size: 0.8rem;">CANDIDATE</div>
+                                <div style="font-weight: bold; font-size: 0.8rem;">PHOTO</div>
+                                <div style="font-size: 0.7rem; margin-top: 5px;">Click to upload</div>
+                            </div>
                             {% endif %}
                         </div>
-                        <input type="file" id="photoInput" name="candidate_photo" accept="image/*" class="hidden-file-input">
+                        <input type="file" id="photoInput" name="candidate_photo" accept="image/*"
+                            class="hidden-file-input">
                         <div class="file-name" id="fileName">No file chosen</div>
-                        <button type="button" class="upload-btn mt-2" onclick="document.getElementById('photoInput').click()">
+                        <button type="button" class="upload-btn mt-2"
+                            onclick="document.getElementById('photoInput').click()">
                             <i class="fas fa-upload"></i> Choose Photo
                         </button>
                         {{ form.candidate_photo.errors }}
@@ -377,7 +448,7 @@
                         {{ form.full_name }}
                         {{ form.full_name.errors }}
                     </div>
-                    <div class="label-cell" style="width: 15%;">Marital Status</div>
+                    <div class="label-cell" style="width: 15%;">Marital Status *</div>
                     <div class="input-cell" style="width: 35%;">
                         {{ form.marital_status }}
                         {{ form.marital_status.errors }}
@@ -408,12 +479,12 @@
                         {{ form.id_passport_no }}
                         {{ form.id_passport_no.errors }}
                     </div>
-                    <div class="label-cell" style="width: 15%;">Date of Issue</div>
+                    <div class="label-cell" style="width: 15%;">Date of Issue *</div>
                     <div class="input-cell" style="width: 15%; border-right: 2px solid #666;">
                         {{ form.date_of_issue }}
                         {{ form.date_of_issue.errors }}
                     </div>
-                    <div class="label-cell" style="width: 10%;">Issue From</div>
+                    <div class="label-cell" style="width: 10%;">Issue From *</div>
                     <div class="input-cell" style="width: 15%;">
                         {{ form.issue_from }}
                         {{ form.issue_from.errors }}
@@ -425,28 +496,34 @@
                     <div class="input-cell" style="width: 80%;">
                         <div class="row w-100">
                             <div class="col-md-2">
-                                <label class="form-label small">Date of Birth</label>
+                                <label class="form-label small">Date of Birth *</label>
                                 {{ form.date_of_birth }}
+                                {{ form.date_of_birth.errors }}
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label small">Eye Lense (R)</label>
+                                <label class="form-label small">Eye Lense (R) *</label>
                                 {{ form.eye_lense_right }}
+                                {{ form.eye_lense_right.errors }}
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label small">Eye Lense (L)</label>
+                                <label class="form-label small">Eye Lense (L) *</label>
                                 {{ form.eye_lense_left }}
+                                {{ form.eye_lense_left.errors }}
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label small">Blood Group</label>
+                                <label class="form-label small">Blood Group *</label>
                                 {{ form.blood_group }}
+                                {{ form.blood_group.errors }}
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label small">Phone No *</label>
                                 {{ form.phone_no }}
+                                {{ form.phone_no.errors }}
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label small">Email ID *</label>
                                 {{ form.email_id }}
+                                {{ form.email_id.errors }}
                             </div>
                         </div>
                     </div>
@@ -470,8 +547,8 @@
 
 
             <!-- Bank Information Section -->
-             <div class="section-title mt-4">BANK INFORMATION</div>
-             <table class="formset-table">
+            <div class="section-title mt-4">BANK INFORMATION *</div>
+            <table class="formset-table">
                 <thead>
                     <tr>
                         <th style="width: 20%;">Bank Name</th>
@@ -483,16 +560,15 @@
                 <tbody>
                     {{ bank_formset.management_form }}
                     {% for bank_row in bank_formset %}
-                        <tr>
-                            <td>
-                                {% for hidden in bank_row.hidden_fields %}{{ hidden }}{% endfor %}
-                                {{ bank_row.bank_name }}
-                            </td>
-                            <td>{{ bank_row.branch_name }}</td>
-                            <td>{{ bank_row.account_no }}</td>
-                            <td>{{ bank_row.account_holder_name }}</td>
-                            <td>{{ bank_row.DELETE }}</td>
-                        </tr>
+                    <tr>
+                        <td>
+                            {% for hidden in bank_row.hidden_fields %}{{ hidden }}{% endfor %}
+                            {{ bank_row.bank_name }}
+                        </td>
+                        <td>{{ bank_row.branch_name }}</td>
+                        <td>{{ bank_row.account_no }}</td>
+                        <td>{{ bank_row.account_holder_name }}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -514,18 +590,18 @@
                 <tbody>
                     {{ education_formset.management_form }}
                     {% for edu_form in education_formset %}
-                        <tr>
-                            <td>
-                                {% for hidden in edu_form.hidden_fields %}{{ hidden }}{% endfor %}
-                                {{ edu_form.pass_level }}
-                            </td>
-                            <td>{{ edu_form.name_of_school }}</td>
-                            <td>{{ edu_form.admission_year }}</td>
-                            <td>{{ edu_form.admission_month }}</td>
-                            <td>{{ edu_form.graduation_year }}</td>
-                            <td>{{ edu_form.graduation_month }}</td>
-                            <td>{{ edu_form.enrolled_years }}</td>
-                        </tr>
+                    <tr>
+                        <td>
+                            {% for hidden in edu_form.hidden_fields %}{{ hidden }}{% endfor %}
+                            {{ edu_form.pass_level }}
+                        </td>
+                        <td>{{ edu_form.name_of_school }}</td>
+                        <td>{{ edu_form.admission_year }}</td>
+                        <td>{{ edu_form.admission_month }}</td>
+                        <td>{{ edu_form.graduation_year }}</td>
+                        <td>{{ edu_form.graduation_month }}</td>
+                        <td>{{ edu_form.enrolled_years }}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -547,18 +623,18 @@
                 <tbody>
                     {{ work_formset.management_form }}
                     {% for work_form in work_formset %}
-                        <tr>
-                            <td>
-                                {% for hidden in work_form.hidden_fields %}{{ hidden }}{% endfor %}
-                                {{ work_form.type_of_work }}
-                            </td>
-                            <td>{{ work_form.name_of_company }}</td>
-                            <td>{{ work_form.join_year }}</td>
-                            <td>{{ work_form.join_month }}</td>
-                            <td>{{ work_form.resign_year }}</td>
-                            <td>{{ work_form.resign_month }}</td>
-                            <td>{{ work_form.working_years }}</td>
-                        </tr>
+                    <tr>
+                        <td>
+                            {% for hidden in work_form.hidden_fields %}{{ hidden }}{% endfor %}
+                            {{ work_form.type_of_work }}
+                        </td>
+                        <td>{{ work_form.name_of_company }}</td>
+                        <td>{{ work_form.join_year }}</td>
+                        <td>{{ work_form.join_month }}</td>
+                        <td>{{ work_form.resign_year }}</td>
+                        <td>{{ work_form.resign_month }}</td>
+                        <td>{{ work_form.working_years }}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -579,17 +655,17 @@
                 <tbody>
                     {{ certificate_formset.management_form }}
                     {% for cert_form in certificate_formset %}
-                        <tr>
-                            <td>
-                                {% for hidden in cert_form.hidden_fields %}{{ hidden }}{% endfor %}
-                                {{ cert_form.pass_year }}
-                            </td>
-                            <td>{{ cert_form.pass_month }}</td>
-                            <td>{{ cert_form.name_of_certificate }}</td>
-                            <td>{{ cert_form.join_year }}</td>
-                            <td>{{ cert_form.join_month }}</td>
-                            <td>{{ cert_form.organization }}</td>
-                        </tr>
+                    <tr>
+                        <td>
+                            {% for hidden in cert_form.hidden_fields %}{{ hidden }}{% endfor %}
+                            {{ cert_form.pass_year }}
+                        </td>
+                        <td>{{ cert_form.pass_month }}</td>
+                        <td>{{ cert_form.name_of_certificate }}</td>
+                        <td>{{ cert_form.join_year }}</td>
+                        <td>{{ cert_form.join_month }}</td>
+                        <td>{{ cert_form.organization }}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -610,17 +686,17 @@
                 <tbody>
                     {{ training_formset.management_form }}
                     {% for training_form in training_formset %}
-                        <tr>
-                            <td>
-                                {% for hidden in training_form.hidden_fields %}{{ hidden }}{% endfor %}
-                                {{ training_form.pass_year }}
-                            </td>
-                            <td>{{ training_form.pass_month }}</td>
-                            <td>{{ training_form.name_of_training }}</td>
-                            <td>{{ training_form.join_year }}</td>
-                            <td>{{ training_form.join_month }}</td>
-                            <td>{{ training_form.organization }}</td>
-                        </tr>
+                    <tr>
+                        <td>
+                            {% for hidden in training_form.hidden_fields %}{{ hidden }}{% endfor %}
+                            {{ training_form.pass_year }}
+                        </td>
+                        <td>{{ training_form.pass_month }}</td>
+                        <td>{{ training_form.name_of_training }}</td>
+                        <td>{{ training_form.join_year }}</td>
+                        <td>{{ training_form.join_month }}</td>
+                        <td>{{ training_form.organization }}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -652,13 +728,15 @@
             <div class="form-section mt-4">
                 <div class="form-row-custom">
                     <div style="width: 50%; border-right: 2px solid #666;">
-                        <div class="label-cell" style="border-bottom: 2px solid #666;">Hobbies, Special skills, etc.</div>
+                        <div class="label-cell" style="border-bottom: 2px solid #666;">Hobbies, Special skills, etc. *
+                        </div>
                         <div class="input-cell" style="min-height: 120px;">
                             {{ form.hobbies }}
                         </div>
                     </div>
                     <div style="width: 50%;">
-                        <div class="label-cell" style="border-bottom: 2px solid #666;">Motivation, Self-promotion</div>
+                        <div class="label-cell" style="border-bottom: 2px solid #666;">Motivation, Self-promotion *
+                        </div>
                         <div class="input-cell" style="min-height: 120px;">
                             {{ form.motivation }}
                         </div>
@@ -671,88 +749,96 @@
             <div class="row mt-3 mb-4">
                 <!-- Staff Bio Data PDF -->
                 <div class="col-md-3 mb-3">
-                    <div class="doc-card" onclick="document.getElementById('bioDataInput').click()">
+                    <div class="doc-card {% if staff.staff_bio_data_pdf %}uploaded{% endif %}"
+                        onclick="document.getElementById('bioDataInput').click()">
                         <i class="fas fa-file-pdf" id="bioDataIcon"></i>
-                        <div class="doc-title">STAFF BIO DATA</div>
+                        <div class="doc-title">STAFF BIO DATA *</div>
                         <div class="doc-subtitle">PDF DOC</div>
                         <div class="upload-status" id="bioDataStatus">
                             {% if staff.staff_bio_data_pdf %}
-                                <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
+                            <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
                             {% else %}
-                                <small class="text-muted">Click to upload</small>
+                            <small class="text-muted">Click to upload</small>
                             {% endif %}
                         </div>
                     </div>
-                    <input type="file" id="bioDataInput" name="staff_bio_data_pdf" accept="application/pdf" class="hidden-file-input" onchange="handleFileUpload(this, 'bioData')">
+                    <input type="file" id="bioDataInput" name="staff_bio_data_pdf" accept="application/pdf"
+                        class="hidden-file-input" onchange="handleFileUpload(this, 'bioData')">
                     <div class="file-name-display" id="bioDataFileName">
                         {% if staff.staff_bio_data_pdf %}
-                            {{ staff.staff_bio_data_pdf.name|default:"No file" }}
+                        {{ staff.staff_bio_data_pdf.name|default:"No file" }}
                         {% endif %}
                     </div>
                 </div>
 
                 <!-- Staff ID Doc PDF -->
                 <div class="col-md-3 mb-3">
-                    <div class="doc-card" onclick="document.getElementById('idDocInput').click()">
+                    <div class="doc-card {% if staff.staff_id_doc_pdf %}uploaded{% endif %}"
+                        onclick="document.getElementById('idDocInput').click()">
                         <i class="fas fa-id-card" id="idDocIcon"></i>
-                        <div class="doc-title">STAFF ID DOC</div>
+                        <div class="doc-title">CITIZENSHIP / PASSPORT ID*</div>
                         <div class="doc-subtitle">PDF DOC</div>
                         <div class="upload-status" id="idDocStatus">
                             {% if staff.staff_id_doc_pdf %}
-                                <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
+                            <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
                             {% else %}
-                                <small class="text-muted">Click to upload</small>
+                            <small class="text-muted">Click to upload</small>
                             {% endif %}
                         </div>
                     </div>
-                    <input type="file" id="idDocInput" name="staff_id_doc_pdf" accept="application/pdf" class="hidden-file-input" onchange="handleFileUpload(this, 'idDoc')">
+                    <input type="file" id="idDocInput" name="staff_id_doc_pdf" accept="application/pdf"
+                        class="hidden-file-input" onchange="handleFileUpload(this, 'idDoc')">
                     <div class="file-name-display" id="idDocFileName">
                         {% if staff.staff_id_doc_pdf %}
-                            {{ staff.staff_id_doc_pdf.name|default:"No file" }}
+                        {{ staff.staff_id_doc_pdf.name|default:"No file" }}
                         {% endif %}
                     </div>
                 </div>
 
                 <!-- Staff Login Report PDF -->
                 <div class="col-md-3 mb-3">
-                    <div class="doc-card" onclick="document.getElementById('loginReportInput').click()">
+                    <div class="doc-card {% if staff.staff_login_report_pdf %}uploaded{% endif %}"
+                        onclick="document.getElementById('loginReportInput').click()">
                         <i class="fas fa-chart-line" id="loginReportIcon"></i>
                         <div class="doc-title">STAFF LOGIN REPORT</div>
                         <div class="doc-subtitle">PDF DOC</div>
                         <div class="upload-status" id="loginReportStatus">
                             {% if staff.staff_login_report_pdf %}
-                                <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
+                            <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
                             {% else %}
-                                <small class="text-muted">Click to upload</small>
+                            <small class="text-muted">Click to upload</small>
                             {% endif %}
                         </div>
                     </div>
-                    <input type="file" id="loginReportInput" name="staff_login_report_pdf" accept="application/pdf" class="hidden-file-input" onchange="handleFileUpload(this, 'loginReport')">
+                    <input type="file" id="loginReportInput" name="staff_login_report_pdf" accept="application/pdf"
+                        class="hidden-file-input" onchange="handleFileUpload(this, 'loginReport')">
                     <div class="file-name-display" id="loginReportFileName">
                         {% if staff.staff_login_report_pdf %}
-                            {{ staff.staff_login_report_pdf.name|default:"No file" }}
+                        {{ staff.staff_login_report_pdf.name|default:"No file" }}
                         {% endif %}
                     </div>
                 </div>
 
                 <!-- Staff Login ID PDF -->
                 <div class="col-md-3 mb-3">
-                    <div class="doc-card" onclick="document.getElementById('loginIdInput').click()">
+                    <div class="doc-card {% if staff.staff_login_id_pdf %}uploaded{% endif %}"
+                        onclick="document.getElementById('loginIdInput').click()">
                         <i class="fas fa-user-lock" id="loginIdIcon"></i>
                         <div class="doc-title">STAFF LOGIN ID</div>
                         <div class="doc-subtitle">PDF DOC</div>
                         <div class="upload-status" id="loginIdStatus">
                             {% if staff.staff_login_id_pdf %}
-                                <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
+                            <small class="text-success"><i class="fas fa-check-circle"></i> Uploaded</small>
                             {% else %}
-                                <small class="text-muted">Click to upload</small>
+                            <small class="text-muted">Click to upload</small>
                             {% endif %}
                         </div>
                     </div>
-                    <input type="file" id="loginIdInput" name="staff_login_id_pdf" accept="application/pdf" class="hidden-file-input" onchange="handleFileUpload(this, 'loginId')">
+                    <input type="file" id="loginIdInput" name="staff_login_id_pdf" accept="application/pdf"
+                        class="hidden-file-input" onchange="handleFileUpload(this, 'loginId')">
                     <div class="file-name-display" id="loginIdFileName">
                         {% if staff.staff_login_id_pdf %}
-                            {{ staff.staff_login_id_pdf.name|default:"No file" }}
+                        {{ staff.staff_login_id_pdf.name|default:"No file" }}
                         {% endif %}
                     </div>
                 </div>
@@ -761,10 +847,11 @@
             <!-- Submit Button -->
             <div class="text-center mt-4 mb-4">
                 <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-check-circle"></i> 
+                    <i class="fas fa-check-circle"></i>
                     {% if staff %}Update Registration{% else %}Submit Registration{% endif %}
                 </button>
-                <a href="{% url 'staff_list' %}" class="btn btn-secondary ms-3" style="padding: 15px 50px; font-size: 1.2rem;">
+                <a href="{% url 'staff_list' %}" class="btn btn-secondary ms-3"
+                    style="padding: 15px 50px; font-size: 1.2rem;">
                     <i class="fas fa-times-circle"></i> Cancel
                 </a>
             </div>
@@ -783,16 +870,42 @@
         const photoPreview = document.getElementById('photoPreview');
         const fileName = document.getElementById('fileName');
 
-        photoInput.addEventListener('change', function(e) {
+        function handleFileUpload(input, type) {
+            const file = input.files[0];
+            if (file) {
+                // Find elements
+                const icon = document.getElementById(type + 'Icon');
+                const status = document.getElementById(type + 'Status');
+                const fileNameDisplay = document.getElementById(type + 'FileName');
+                const card = icon.closest('.doc-card');
+
+                // Update UI
+                card.classList.add('uploaded');
+                status.innerHTML = '<small class="text-success" style="font-weight: bold;"><i class="fas fa-check-circle"></i> Selected: ' + file.name.substring(0, 15) + '...</small>';
+                if (fileNameDisplay) {
+                    fileNameDisplay.textContent = file.name;
+                    fileNameDisplay.style.display = 'block';
+                }
+
+                // Add success animation
+                icon.style.transition = 'all 0.3s ease';
+                icon.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    icon.style.transform = 'scale(1.1)';
+                }, 300);
+            }
+        }
+
+        photoInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
                 // Display file name
                 fileName.textContent = file.name;
                 fileName.style.color = '#28a745';
-                
+
                 // Display preview
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = function (event) {
                     photoPreview.innerHTML = '<img src="' + event.target.result + '" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">';
                 };
                 reader.readAsDataURL(file);
@@ -800,7 +913,7 @@
         });
 
         // Form submission confirmation
-        document.getElementById('staffForm').addEventListener('submit', function(e) {
+        document.getElementById('staffForm').addEventListener('submit', function (e) {
             // Show loading state
             const submitBtn = this.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
@@ -810,14 +923,14 @@
         // PDF Generation Functions
         function generatePDF(type) {
             const staffId = '{{ staff.pk|default:"" }}';
-            
+
             if (!staffId) {
                 alert('Please save the staff record first before generating documents.');
                 return;
             }
 
             let pdfUrl = '';
-            switch(type) {
+            switch (type) {
                 case 'bio':
                     pdfUrl = `/manager/${staffId}/pdf/bio/`;
                     break;
@@ -840,4 +953,5 @@
         }
     </script>
 </body>
+
 </html>

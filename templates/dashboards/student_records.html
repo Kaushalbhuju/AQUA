@@ -1,0 +1,541 @@
+{% load static %}
+{% load i18n %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student Records - Aqua Group</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    .navbar {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #004E89, #006ebc) !important;
+      box-shadow: 0 4px 20px rgba(0, 78, 137, 0.3);
+    }
+
+    .navbar h4 {
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .logout-btn {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+    }
+
+    .content-area {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .btn-back {
+      background: white;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      transition: all 0.2s;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-back:hover {
+      background: #f8fafc;
+      color: #334155;
+    }
+
+    .table-container {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .page-header h2 {
+      font-weight: 800;
+      color: #1a365d;
+      margin: 0;
+    }
+
+    .search-box input {
+      border-radius: 20px;
+      padding: 10px 20px;
+      border: 2px solid #e2e8f0;
+      min-width: 300px;
+    }
+
+    .search-box input:focus {
+      border-color: #004E89;
+      box-shadow: none;
+    }
+
+    .table th {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 1rem;
+      border: none;
+      vertical-align: middle;
+    }
+
+    .table td {
+      vertical-align: middle;
+      padding: 1rem;
+      border-color: #f1f5f9;
+    }
+
+    .student-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar-ph {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #cbd5e1, #e2e8f0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+
+    .student-name {
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0px;
+    }
+
+    /* Editable Fields */
+    .input-jp {
+      width: 100%;
+      padding: 6px 12px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .input-jp:focus {
+      outline: none;
+    }
+
+    .input-note {
+      width: 100%;
+      min-height: 50px;
+      max-height: 150px;
+      padding: 8px 12px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      font-size: 0.9rem;
+      resize: vertical;
+      transition: all 0.2s;
+    }
+
+    .input-note:focus {
+      outline: none;
+    }
+
+    /* Editing State Styles */
+    tr.editing .input-jp,
+    tr.editing .input-note {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    tr.editing .input-jp:focus,
+    tr.editing .input-note:focus {
+      border-color: #004E89;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(0, 78, 137, 0.1);
+    }
+
+    /* Past Note indicator */
+    .note-locked-msg {
+      font-size: 0.75rem;
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-edit {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .btn-edit:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    .btn-save {
+      background: #10b981;
+      color: white;
+      display: none;
+    }
+
+    .btn-save:hover {
+      background: #059669;
+    }
+
+    .btn-cancel {
+      background: #f87171;
+      color: white;
+      display: none;
+      margin-left: 4px;
+    }
+
+    .btn-cancel:hover {
+      background: #dc2626;
+    }
+
+    tr.editing .btn-edit {
+      display: none;
+    }
+
+    tr.editing .btn-save {
+      display: inline-flex;
+    }
+
+    tr.editing .btn-cancel {
+      display: inline-flex;
+    }
+
+    .toast-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.95rem;
+      z-index: 9999;
+      transform: translateX(120%);
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .toast-notification.show {
+      transform: translateX(0);
+    }
+
+    .toast-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .toast-error {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
+        </li>
+      </ul>
+      <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
+        <h4>{{ page_title }}</h4>
+      </a>
+      <div class="collapse navbar-collapse" id="navbarNav"></div>
+    </div>
+  </nav>
+
+  <div class="content-area">
+    <a href="{% url 'dashboard:teacher_dashboard' %}" class="btn-back">
+      <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="table-container">
+      <div class="page-header">
+        <h2><i class="fas fa-user-graduate" style="color: #004E89;"></i> Student Records</h2>
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Search by name...">
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover" id="students-table">
+          <thead>
+            <tr>
+              <th style="width: 5%;">#</th>
+              <th style="width: 8%;">Photo</th>
+              <th style="width: 18%;">Full Name</th>
+              <th style="width: 20%;">Japanese Name</th>
+              <th style="width: 10%;">Gender</th>
+              <th style="width: 27%;">Today's Notes</th>
+              <th style="width: 12%; text-align: center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in student_data %}
+            <tr class="student-row" data-name="{{ item.student.full_name|lower }}" data-id="{{ item.student.id }}">
+              <td><span class="text-muted fw-bold">{{ forloop.counter }}</span></td>
+
+              <td>
+                {% if item.student.photo %}
+                <img src="{{ item.student.photo.url }}" alt="Photo" class="student-avatar">
+                {% else %}
+                <div class="avatar-ph">{{ item.student.full_name|slice:":2" }}</div>
+                {% endif %}
+              </td>
+
+              <td>
+                <div class="student-name">{{ item.student.full_name }}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">{{ item.student.student_id|default:'' }}</div>
+              </td>
+
+              <td>
+                <input type="text" class="input-jp" value="{{ item.student.japanese_name|default:'' }}" placeholder="—"
+                  disabled data-original="{{ item.student.japanese_name|default:'' }}">
+              </td>
+
+              <td>
+                <span style="font-size: 0.9rem; color: #475569;">{{ item.student.gender|default:'—' }}</span>
+              </td>
+
+              <td>
+                <textarea class="input-note" placeholder="No notes for today." disabled
+                  data-original="{{ item.today_note.content|default:'' }}">{% if item.today_note %}{{ item.today_note.content }}{% endif %}</textarea>
+
+                {% if item.today_note and item.today_note.teacher %}
+                <div class="text-muted" style="font-size: 0.75rem; margin-top: 4px;">
+                  <i class="fas fa-user-edit"></i> 
+                  {% with teacher_name=item.today_note.teacher.get_full_name %}
+                    {% if teacher_name %}
+                      {{ teacher_name }}
+                    {% else %}
+                      {{ item.today_note.teacher.username }}
+                    {% endif %}
+                  {% endwith %}
+                </div>
+                {% endif %}
+
+                {% if item.today_note and not item.today_note.is_editable %}
+                <div class="note-locked-msg"><i class="fas fa-lock"></i> Locked (> 24hrs)</div>
+                {% endif %}
+              </td>
+
+              <td style="text-align: center;">
+                <button type="button" class="action-btn btn-edit" title="Edit row" onclick="toggleEdit(this, true)" {% if item.today_note and not item.today_note.is_editable %}disabled{% endif %}>
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button type="button" class="action-btn btn-save" title="Save changes" onclick="saveRow(this)">
+                  <i class="fas fa-check"></i>
+                </button>
+                <button type="button" class="action-btn btn-cancel" title="Cancel" onclick="cancelEdit(this)">
+                  <i class="fas fa-times"></i>
+                </button>
+
+                <a href="{% url 'dashboard:student_daily_notes' item.student.id %}" class="action-btn btn-edit ms-1"
+                  title="View Note History" style="background:#e0f2fe; color:#0369a1;">
+                  <i class="fas fa-history"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-5">
+                <i class="fas fa-users fa-3x mb-3 text-light"></i><br>No students found.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-notification" id="toastNotification"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Search functionality
+    document.getElementById('search-input').addEventListener('keyup', function () {
+      const searchTerm = this.value.toLowerCase();
+      const rows = document.querySelectorAll('.student-row');
+
+      rows.forEach(row => {
+        const name = row.getAttribute('data-name');
+        if (name.includes(searchTerm)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+
+    // Row Edit Toggle
+    function toggleEdit(btn, isEditing) {
+      const row = btn.closest('tr');
+      const inputJp = row.querySelector('.input-jp');
+      const inputNote = row.querySelector('.input-note');
+
+      if (isEditing) {
+        row.classList.add('editing');
+        inputJp.disabled = false;
+        inputNote.disabled = false;
+        inputNote.focus();
+      } else {
+        row.classList.remove('editing');
+        inputJp.disabled = true;
+        inputNote.disabled = true;
+      }
+    }
+
+    // Cancel Edit (Restore Originals)
+    function cancelEdit(btn) {
+      const row = btn.closest('tr');
+      const inputJp = row.querySelector('.input-jp');
+      const inputNote = row.querySelector('.input-note');
+
+      inputJp.value = inputJp.dataset.original;
+      inputNote.value = inputNote.dataset.original;
+
+      toggleEdit(btn, false);
+    }
+
+    // Save Row via AJAX
+    function saveRow(btn) {
+      const row = btn.closest('tr');
+      const studentId = row.dataset.id;
+      const inputJp = row.querySelector('.input-jp');
+      const inputNote = row.querySelector('.input-note');
+
+      const newJp = inputJp.value.trim();
+      const newNote = inputNote.value.trim();
+
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+      btn.disabled = true;
+      row.querySelector('.btn-cancel').disabled = true;
+
+      // Make dynamic URL mapping replacing a placeholder ID
+      const baseUrl = "{% url 'dashboard:save_daily_note' 999999 %}".replace('999999', studentId);
+
+      fetch(baseUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+          japanese_name: newJp,
+          content: newNote,
+          date: '{{ today_date|date:"Y-m-d" }}'
+        })
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            showToast('✅ Saved successfully', 'success');
+            // Update originals
+            inputJp.dataset.original = newJp;
+            inputNote.dataset.original = newNote;
+            toggleEdit(btn, false);
+          } else {
+            showToast('❌ ' + data.error, 'error');
+          }
+        })
+        .catch(err => {
+          showToast('❌ Network error', 'error');
+        })
+        .finally(() => {
+          btn.innerHTML = originalHtml;
+          btn.disabled = false;
+          row.querySelector('.btn-cancel').disabled = false;
+        });
+    }
+
+    function showToast(message, type) {
+      const toast = document.getElementById('toastNotification');
+      toast.textContent = message;
+      toast.className = 'toast-notification toast-' + type + ' show';
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  </script>
+</body>
+
+</html>

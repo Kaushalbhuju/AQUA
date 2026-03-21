@@ -75,6 +75,7 @@ class Student(models.Model):
     student_id = models.CharField(max_length=20, unique=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     full_name = models.CharField(max_length=100)
+    japanese_name = models.CharField(max_length=100, blank=True, null=True, verbose_name='Japanese Name (Katakana/Hiragana)')
     date_of_birth = models.DateField()
     photo = models.ImageField(upload_to='student_photos/')
     permanent_address = models.TextField()
@@ -141,6 +142,17 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.student_id} - {self.full_name}"
     
+    @property
+    def calculated_age(self):
+        """Calculate age from date_of_birth"""
+        if self.date_of_birth:
+            from datetime import date
+            today = date.today()
+            return today.year - self.date_of_birth.year - (
+                (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
+            )
+        return self.age
+    
     def generate_student_id(self):
         """Generate student ID based on agent code and highest existing numeric suffix"""
         if self.agent:
@@ -170,6 +182,93 @@ class Student(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+
+
+class Classroom(models.Model):
+    """Model to represent a classroom/class group"""
+    name = models.CharField(max_length=100)
+    teacher = models.ForeignKey(
+        'accounts.User', on_delete=models.SET_NULL, 
+        null=True, blank=True, related_name='classrooms'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+    
+    @property
+    def student_count(self):
+        return self.class_students.count()
+
+
+class ClassStudent(models.Model):
+    """Model to link students to classrooms (roster)"""
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='class_students')
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='class_memberships')
+    added_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['classroom', 'student']
+        ordering = ['student__full_name']
+    
+    def __str__(self):
+        return f"{self.student.full_name} - {self.classroom.name}"
+
+
+class AttendanceRecord(models.Model):
+    """Model to store student attendance records"""
+    STATUS_CHOICES = [
+        ('present', 'Present'),
+        ('absent', 'Absent'),
+        ('late', 'Late'),
+        ('excused', 'Excused'),
+        ('holiday', 'Holiday'),
+    ]
+    
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='attendance_records')
+    classroom = models.ForeignKey(Classroom, on_delete=models.SET_NULL, null=True, blank=True, related_name='attendance_records')
+    attendance_date = models.DateField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='present')
+    marked_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['student', 'attendance_date', 'classroom']
+        ordering = ['-attendance_date', '-created_at']
+    
+    def __str__(self):
+        return f"{self.student.full_name} - {self.attendance_date} ({self.status})"
+
+
+class StudentDailyNote(models.Model):
+    """Daily notes written by teachers for individual students"""
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='daily_notes')
+    teacher = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='written_notes')
+    note_date = models.DateField()
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['student', 'note_date', 'teacher']
+        ordering = ['-note_date', '-created_at']
+    
+    def __str__(self):
+        return f"{self.student.full_name} - {self.note_date}"
+    
+    @property
+    def is_editable(self):
+        """Note is editable only within 24 hours of creation"""
+        from django.utils import timezone
+        if not self.created_at:
+            return True
+        return (timezone.now() - self.created_at).total_seconds() < 86400  # 24 hours
+
 
 class EducationalHistory(models.Model):
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='education_history')

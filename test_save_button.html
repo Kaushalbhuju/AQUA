@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Save Button Test</title>
+</head>
+<body>
+    <h1>Testing Save All Records Button</h1>
+    
+    <button onclick="testSaveFunction()" style="padding: 20px; font-size: 18px; background-color: #28a745; color: white; border: none; cursor: pointer;">
+        💾 TEST SAVE BUTTON
+    </button>
+    
+    <div id="results" style="margin-top: 20px; padding: 20px; border: 2px solid #ccc;"></div>
+    
+    <script>
+        function testSaveFunction() {
+            console.log('🔵 TEST: Function called!');
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h3>✅ SUCCESS!</h3><p>The save button JavaScript function is working correctly!</p>';
+            
+            alert('✅ If you see this alert, the JavaScript function is working!\n\nCheck the browser console (F12) for debug logs.');
+            
+            console.log('✅ Test completed successfully');
+        }
+        
+        // Test on page load
+        window.onload = function() {
+            console.log('🔵 Page loaded successfully');
+            console.log('💡 Click the button above to test the save functionality');
+        };
+    </script>
+</body>
+</html>

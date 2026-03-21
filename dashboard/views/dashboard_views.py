@@ -51,6 +51,448 @@ def college_student_dashboard(request):
     return render(request, 'dashboards/college_student_dashboard.html', context)
 
 @login_required(login_url='login')
+@check_role('teacher')
+def teacher_dashboard(request):
+    context = {
+        'user': request.user, 
+        'role_name': 'Teacher', 
+        'role_description': 'Manage student attendance and records'
+    }
+    return render(request, 'dashboards/teacher_dashboard.html', context)
+
+@login_required(login_url='login')
+@check_role('teacher')
+def student_attendance(request):
+    """Redirect to class list for class-based attendance"""
+    return redirect('dashboard:class_list')
+
+
+@login_required(login_url='login')
+@check_role('teacher')
+def class_list(request):
+    """View showing all classes for the teacher"""
+    from dashboard.models import Classroom
+    classrooms = Classroom.objects.all()
+    
+    # Auto-create 4 default classes if none exist
+    if not classrooms.exists():
+        for name in ['Class A', 'Class B', 'Class C', 'Class D']:
+            Classroom.objects.create(name=name, teacher=request.user)
+        classrooms = Classroom.objects.all()
+    
+    context = {
+        'user': request.user,
+        'role_name': 'Teacher',
+        'classrooms': classrooms,
+        'page_title': 'Student Attendance'
+    }
+    return render(request, 'dashboards/class_list.html', context)
+
+
+@login_required(login_url='login')
+@check_role('teacher')
+def class_attendance(request, classroom_id):
+    """View for marking attendance inside a class"""
+    from dashboard.models import Classroom, ClassStudent, AttendanceRecord
+    import calendar
+    from datetime import date
+    
+    classroom = get_object_or_404(Classroom, pk=classroom_id)
+    class_students = ClassStudent.objects.filter(classroom=classroom).select_related('student')
+    students = [cs.student for cs in class_students]
+    
+    # Get month/year from query params (default: current month)
+    today = date.today()
+    try:
+        year = int(request.GET.get('year', today.year))
+        month = int(request.GET.get('month', today.month))
+        if month < 1 or month > 12:
+            month = today.month
+    except (ValueError, TypeError):
+        year = today.year
+        month = today.month
+    
+    days_in_month = calendar.monthrange(year, month)[1]
+    month_name = calendar.month_name[month]
+    days = list(range(1, days_in_month + 1))
+    
+    # Compute prev/next month
+    if month == 1:
+        prev_month, prev_year = 12, year - 1
+    else:
+        prev_month, prev_year = month - 1, year
+    if month == 12:
+        next_month, next_year = 1, year + 1
+    else:
+        next_month, next_year = month + 1, year
+    
+    # Build attendance matrix
+    student_data = []
+    for student in students:
+        records = AttendanceRecord.objects.filter(
+            student=student,
+            classroom=classroom,
+            attendance_date__year=year,
+            attendance_date__month=month
+        )
+        attendance_map = {r.attendance_date.day: r.status for r in records}
+        
+        day_statuses = []
+        present_count = 0
+        holiday_count = 0
+        for day in days:
+            status = attendance_map.get(day, '')  # empty = not marked
+            day_statuses.append(status)
+            if status == 'present':
+                present_count += 1
+            elif status == 'holiday':
+                holiday_count += 1
+        
+        effective_days = days_in_month - holiday_count
+        percentage = round((present_count / effective_days) * 100) if effective_days > 0 else 0
+        
+        student_data.append({
+            'student': student,
+            'day_statuses': day_statuses,
+            'present_count': present_count,
+            'percentage': percentage,
+        })
+    
+    context = {
+        'user': request.user,
+        'classroom': classroom,
+        'student_data': student_data,
+        'days': days,
+        'month_name': month_name,
+        'year': year,
+        'month': month,
+        'prev_month': prev_month,
+        'prev_year': prev_year,
+        'next_month': next_month,
+        'next_year': next_year,
+        'page_title': f'Attendance - {classroom.name}',
+    }
+    return render(request, 'dashboards/class_attendance.html', context)
+
+
+@login_required(login_url='login')
+@check_role('teacher')
+def save_class_attendance(request, classroom_id):
+    """AJAX endpoint to save O/X attendance for a class"""
+    from django.http import JsonResponse
+    from dashboard.models import Classroom, ClassStudent, AttendanceRecord, Student
+    import json
+    from datetime import date
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'})
+    
+    try:
+        classroom = get_object_or_404(Classroom, pk=classroom_id)
+        data = json.loads(request.body)
+        records = data.get('records', [])
+        
+        saved_count = 0
+        for rec in records:
+            student_id = rec.get('studentId')
+            day = rec.get('day')
+            status = rec.get('status')  # 'present' or 'absent'
+            japanese_name = rec.get('japaneseName', None)
+            
+            try:
+                student = Student.objects.get(id=student_id)
+                
+                # Update Japanese name if provided
+                if japanese_name is not None:
+                    student.japanese_name = japanese_name
+                    student.save()
+                
+                # Build the date
+                year = data.get('year', date.today().year)
+                month = data.get('month', date.today().month)
+                att_date = date(year, month, day)
+                if status in ('present', 'absent', 'holiday'):
+                    attendance, created = AttendanceRecord.objects.update_or_create(
+                        student=student,
+                        classroom=classroom,
+                        attendance_date=att_date,
+                        defaults={
+                            'status': status,
+                            'marked_by': request.user
+                        }
+                    )
+                    saved_count += 1
+                elif status == '':
+                    # Remove existing record if unmarked
+                    AttendanceRecord.objects.filter(
+                        student=student,
+                        classroom=classroom,
+                        attendance_date=att_date
+                    ).delete()
+                    
+            except Student.DoesNotExist:
+                continue
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Saved {saved_count} attendance records',
+            'records_saved': saved_count
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='login')
+@check_role('teacher')
+def manage_class_students(request, classroom_id):
+    """View for adding/removing students from a class"""
+    from dashboard.models import Classroom, ClassStudent, Student
+    
+    classroom = get_object_or_404(Classroom, pk=classroom_id)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        student_ids = request.POST.getlist('student_ids')
+        
+        if action == 'add':
+            for sid in student_ids:
+                try:
+                    student = Student.objects.get(id=sid)
+                    ClassStudent.objects.get_or_create(
+                        classroom=classroom, student=student
+                    )
+                except Student.DoesNotExist:
+                    continue
+            messages.success(request, f'Added {len(student_ids)} student(s) to {classroom.name}')
+        elif action == 'remove':
+            ClassStudent.objects.filter(
+                classroom=classroom, student_id__in=student_ids
+            ).delete()
+            messages.success(request, f'Removed {len(student_ids)} student(s) from {classroom.name}')
+        
+        return redirect('dashboard:manage_class_students', classroom_id=classroom.id)
+    
+    # GET: Show roster management page
+    enrolled_ids = ClassStudent.objects.filter(classroom=classroom).values_list('student_id', flat=True)
+    enrolled_students = Student.objects.filter(id__in=enrolled_ids).order_by('full_name')
+    available_students = Student.objects.exclude(id__in=enrolled_ids).order_by('full_name')
+    
+    context = {
+        'user': request.user,
+        'classroom': classroom,
+        'enrolled_students': enrolled_students,
+        'available_students': available_students,
+        'page_title': f'Manage Students - {classroom.name}',
+    }
+    return render(request, 'dashboards/manage_students.html', context)
+
+
+@login_required(login_url='login')
+@check_role('teacher')
+def student_daily_notes(request, student_id):
+    """View to show and manage daily notes for a specific student"""
+    from dashboard.models import Student, StudentDailyNote
+    from datetime import date
+    
+    student = get_object_or_404(Student, pk=student_id)
+    notes = StudentDailyNote.objects.filter(student=student).order_by('-note_date', '-created_at')
+    
+    # Check if a note already exists for today
+    today = date.today()
+    today_note = notes.filter(note_date=today).first()
+    
+    context = {
+        'user': request.user,
+        'role_name': 'Teacher',
+        'student': student,
+        'notes': notes,
+        'today_note': today_note,
+        'today_date': today,
+        'page_title': f'Daily Notes - {student.full_name}'
+    }
+    return render(request, 'dashboards/student_daily_notes.html', context)
+
+
+@login_required(login_url='login')
+@check_role('teacher')
+def save_daily_note(request, student_id):
+    """AJAX endpoint to save or update a daily note"""
+    from django.http import JsonResponse
+    from dashboard.models import Student, StudentDailyNote
+    from datetime import date
+    import json
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'})
+    
+    try:
+        student = get_object_or_404(Student, pk=student_id)
+        data = json.loads(request.body)
+        content = data.get('content', '').strip()
+        note_date_str = data.get('date') # Format: YYYY-MM-DD
+        japanese_name = data.get('japanese_name')
+        
+        # Update japanese name if provided
+        if japanese_name is not None:
+            student.japanese_name = japanese_name.strip()
+            student.save(update_fields=['japanese_name'])
+        
+        # If content is completely missing and there's no date, we might just be saving JP name
+        if 'content' not in data and japanese_name is not None:
+            return JsonResponse({'success': True, 'message': 'Japanese name updated successfully.'})
+            
+        if not content and 'content' in data:
+            return JsonResponse({'success': False, 'error': 'Note content cannot be empty if saving a note'})
+            
+        if note_date_str:
+            note_date = date.fromisoformat(note_date_str)
+        else:
+            note_date = date.today()
+            
+        # Try to find existing note for this date
+        note = StudentDailyNote.objects.filter(
+            student=student, 
+            note_date=note_date
+        ).first()
+        
+        if note:
+            # Check 24-hour lock
+            if not note.is_editable:
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'This note is older than 24 hours and can no longer be edited.'
+                })
+            note.content = content
+            note.teacher = request.user
+            note.save()
+            action = 'updated'
+        else:
+            # Create new note
+            note = StudentDailyNote.objects.create(
+                student=student,
+                teacher=request.user,
+                note_date=note_date,
+                content=content
+            )
+            action = 'created'
+            
+        return JsonResponse({
+            'success': True,
+            'message': f'Note {action} successfully.',
+            'note': {
+                'id': note.id,
+                'date': note.note_date.isoformat(),
+                'content': note.content,
+                'teacher': note.teacher.username if note.teacher else 'Unknown',
+                'created_at': note.created_at.isoformat()
+            }
+        })
+        
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Invalid date format'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required(login_url='login')
+@check_role('teacher')
+def save_attendance_data(request):
+    """API endpoint to save attendance data to database"""
+    from django.http import JsonResponse
+    from django.views.decorators.csrf import ensure_csrf_cookie
+    from django.utils import timezone
+    import json
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'})
+    
+    try:
+        # Parse JSON data from request
+        data = json.loads(request.body)
+        attendance_records = data.get('attendance', [])
+        
+        if not attendance_records:
+            return JsonResponse({'success': False, 'error': 'No attendance data provided'})
+        
+        saved_count = 0
+        from dashboard.models import Student
+        
+        for record in attendance_records:
+            student_id = record.get('studentId')
+            japanese_name = record.get('japaneseName', '')
+            attended_dates = record.get('attendedDates', [])
+            
+            # Find student by ID (using database ID, not student_id field)
+            try:
+                student = Student.objects.get(id=student_id)
+                
+                # Update Japanese name
+                if japanese_name is not None:
+                    student.japanese_name = japanese_name
+                    student.save()
+                
+                # Save attendance records
+                from dashboard.models import AttendanceRecord
+                for date_str in attended_dates:
+                    # Check if attendance already exists for this date
+                    attendance, created = AttendanceRecord.objects.get_or_create(
+                        student=student,
+                        attendance_date=date_str,
+                        defaults={'status': 'present', 'marked_by': request.user}
+                    )
+                    if not created:
+                        # Update existing record
+                        attendance.status = 'present'
+                        attendance.marked_by = request.user
+                        attendance.save()
+                    saved_count += 1
+                    
+            except Student.DoesNotExist:
+                continue
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully saved {saved_count} attendance records',
+            'records_saved': saved_count
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@login_required(login_url='login')
+@check_role('teacher')
+def student_records(request):
+    """View for viewing student records with inline editable today's note and Japanese name"""
+    from dashboard.models import Student, StudentDailyNote
+    from datetime import date
+    
+    students = Student.objects.all().order_by('full_name')
+    today = date.today()
+    
+    # Pre-fetch today's notes for efficient rendering
+    today_notes = StudentDailyNote.objects.filter(note_date=today)
+    notes_dict = {note.student_id: note for note in today_notes}
+    
+    student_data = []
+    for student in students:
+        student_data.append({
+            'student': student,
+            'today_note': notes_dict.get(student.id)
+        })
+        
+    context = {
+        'user': request.user,
+        'role_name': 'Teacher',
+        'student_data': student_data,
+        'today_date': today,
+        'page_title': 'Student Records'
+    }
+    return render(request, 'dashboards/student_records.html', context)
+
+@login_required(login_url='login')
 @check_role('client', 'manager', 'staff')
 def recruitment_client_dashboard(request):
     # Get counts for each pipeline stage

@@ -28,7 +28,7 @@ class StaffRegistration(models.Model):
     ]
     
     # Basic Information
-    staff_id = models.CharField(max_length=50, unique=True)
+    staff_id = models.CharField(max_length=50, unique=True, blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     full_name = models.CharField(max_length=200)
     marital_status = models.CharField(max_length=20, choices=MARITAL_STATUS_CHOICES)
@@ -38,15 +38,18 @@ class StaffRegistration(models.Model):
     
     # ID/Passport Information
     id_passport_no = models.CharField(max_length=50)
-    date_of_issue = models.DateField(null=True, blank=True)
-    issue_from = models.CharField(max_length=100, blank=True)
+    date_of_issue = models.DateField()
+    issue_from = models.CharField(max_length=100)
     
     # Personal Information
-    date_of_birth = models.DateField(null=True, blank=True)
-    eye_lense_right = models.CharField(max_length=20, blank=True)
-    eye_lense_left = models.CharField(max_length=20, blank=True)
-    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, blank=True)
-    phone_no = models.CharField(max_length=20)
+    date_of_birth = models.DateField()
+    eye_lense_right = models.CharField(max_length=20)
+    eye_lense_left = models.CharField(max_length=20)
+    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES)
+    phone_no = models.CharField(
+        max_length=10,
+        validators=[RegexValidator(r'^\d{10}$', 'Phone number must be exactly 10 digits.')]
+    )
     email_id = models.EmailField()
     
     # Family Records
@@ -54,21 +57,17 @@ class StaffRegistration(models.Model):
     contact_no = models.CharField(max_length=20, blank=True)
     
     # Additional Information
-    hobbies = models.TextField(blank=True)
-    motivation = models.TextField(blank=True)
+    hobbies = models.TextField()
+    motivation = models.TextField()
     
     #datapdf
 
     staff_bio_data_pdf = models.FileField(
         upload_to='staff_documents/bio_data/', 
-        null=True, 
-        blank=True,
         help_text='Upload Staff Bio Data PDF'
     )
     staff_id_doc_pdf = models.FileField(
         upload_to='staff_documents/id_docs/', 
-        null=True, 
-        blank=True,
         help_text='Upload Staff ID Document PDF'
     )
     staff_login_report_pdf = models.FileField(
@@ -94,6 +93,16 @@ class StaffRegistration(models.Model):
         verbose_name = 'Staff Registration'
         verbose_name_plural = 'Staff Registrations'
     
+    def save(self, *args, **kwargs):
+        if not self.staff_id:
+            # Finding the first available ID to fill gaps
+            existing_ids = set(StaffRegistration.objects.values_list('staff_id', flat=True))
+            counter = 1
+            while f"{counter:03d}" in existing_ids:
+                counter += 1
+            self.staff_id = f"{counter:03d}"
+        super(StaffRegistration, self).save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.staff_id} - {self.full_name}"
     

@@ -1,0 +1,617 @@
+{% load static %}
+{% load i18n %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ classroom.name }} Attendance - Aqua Group</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #004E89, #006ebc) !important;
+            box-shadow: 0 4px 20px rgba(0, 78, 137, 0.3);
+        }
+
+        .navbar h4 {
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        .content-area {
+            padding: 2rem;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .btn-back {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .btn-back:hover {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-header h2 {
+            font-weight: 800;
+            color: #1a365d;
+            font-size: 1.6rem;
+        }
+
+        .page-header .badge-month {
+            background: linear-gradient(135deg, #004E89, #006ebc);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .month-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .month-nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .month-nav-btn:hover {
+            background: #004E89;
+            color: white;
+            border-color: #004E89;
+        }
+
+        .info-cell {
+            font-size: 0.8rem;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        thead th {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: #e2e8f0;
+            padding: 12px 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 2px solid #004E89;
+        }
+
+        thead th.sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 11;
+            background: linear-gradient(135deg, #1e293b, #334155);
+        }
+
+        thead th.day-header {
+            min-width: 38px;
+            max-width: 38px;
+        }
+
+        tbody td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .student-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-placeholder {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #cbd5e1, #e2e8f0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.85rem;
+        }
+
+        .jp-name-input {
+            width: 110px;
+            padding: 4px 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .jp-name-input:focus {
+            outline: none;
+            border-color: #004E89;
+            box-shadow: 0 0 0 2px rgba(0, 78, 137, 0.15);
+        }
+
+        /* O/X attendance cells */
+        .att-cell {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            background: #f1f5f9;
+            color: #94a3b8;
+        }
+
+        .att-cell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .att-cell.present {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+        }
+
+        .att-cell.absent {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            color: white;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+        }
+
+        .att-cell.holiday {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: white;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Percentage badge */
+        .pct-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: inline-block;
+            min-width: 55px;
+        }
+
+        .pct-excellent {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .pct-good {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .pct-poor {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Action bar */
+        .action-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-bar .btn {
+            padding: 12px 32px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .action-bar .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-top: 2rem;
+        }
+
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            z-index: 9999;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .toast-notification.show {
+            transform: translateX(0);
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
+                </li>
+            </ul>
+            <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
+                <h4>{{ classroom.name }} — ATTENDANCE</h4>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav"></div>
+        </div>
+    </nav>
+
+    <div class="content-area">
+        <a href="{% url 'dashboard:class_list' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Back to Classes
+        </a>
+
+        <div class="page-header">
+            <h2><i class="fas fa-clipboard-check" style="color: #004E89;"></i> {{ classroom.name }}</h2>
+            <div class="month-nav">
+                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="month-nav-btn" title="Previous Month">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                <span class="badge-month">
+                    <i class="fas fa-calendar-alt"></i> {{ month_name }} {{ year }}
+                </span>
+                <a href="?month={{ next_month }}&year={{ next_year }}" class="month-nav-btn" title="Next Month">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+
+        {% if not student_data %}
+        <div class="table-wrapper text-center p-5">
+            <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No students in this class yet</h4>
+            <p class="text-muted">Add students to this class first.</p>
+            <a href="{% url 'dashboard:manage_class_students' classroom.id %}" class="btn btn-primary mt-2">
+                <i class="fas fa-user-plus"></i> Add Students
+            </a>
+        </div>
+        {% else %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="sticky-col" style="min-width: 40px;">#</th>
+                        <th class="sticky-col" style="min-width: 180px; left: 40px; text-align: left;">Student</th>
+                        <th style="min-width: 120px;">Japanese Name</th>
+                        <th style="min-width: 60px;">Gender</th>
+                        <th style="min-width: 45px;">Age</th>
+                        {% for day in days %}
+                        <th class="day-header">{{ day }}</th>
+                        {% endfor %}
+                        <th style="min-width: 70px;">%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in student_data %}
+                    <tr data-student-id="{{ item.student.id }}">
+                        <td style="font-weight: 700; color: #64748b;">{{ forloop.counter }}</td>
+                        <td style="text-align: left;">
+                            <div class="student-info">
+                                {% if item.student.photo %}
+                                <img src="{{ item.student.photo.url }}" alt="" class="student-avatar">
+                                {% else %}
+                                <div class="avatar-placeholder">{{ item.student.full_name|slice:":2" }}</div>
+                                {% endif %}
+                                <span class="student-name">{{ item.student.full_name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" class="jp-name-input" data-student-id="{{ item.student.id }}"
+                                value="{{ item.student.japanese_name|default:'' }}" placeholder="カタカナ">
+                        </td>
+                        <td class="info-cell">{{ item.student.gender|default:'—' }}</td>
+                        <td class="info-cell">{{ item.student.calculated_age|default:item.student.age|default:'—' }}
+                        </td>
+                        {% for status in item.day_statuses %}
+                        <td>
+                            <button type="button"
+                                class="att-cell {% if status == 'present' %}present{% elif status == 'absent' %}absent{% elif status == 'holiday' %}holiday{% endif %}"
+                                data-student-id="{{ item.student.id }}" data-day="{{ forloop.counter }}"
+                                data-status="{{ status }}" onclick="toggleAttendance(this)">
+                                {% if status == 'present' %}O{% elif status == 'absent' %}X{% elif status == 'holiday'
+                                %}H{% else %}—{% endif %}
+                            </button>
+                        </td>
+                        {% endfor %}
+                        <td>
+                            <span
+                                class="pct-badge {% if item.percentage >= 75 %}pct-excellent{% elif item.percentage >= 50 %}pct-good{% else %}pct-poor{% endif %}">
+                                {{ item.percentage }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-success btn-lg" onclick="saveAttendance()" id="saveBtn">
+                <i class="fas fa-save"></i> Save Attendance
+            </button>
+            <a href="{% url 'dashboard:manage_class_students' classroom.id %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-user-plus"></i> Manage Students
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        &copy; {% now "Y" %} Aqua Group. All Rights Reserved.
+    </div>
+
+    <!-- Toast notification -->
+    <div class="toast-notification" id="toastNotification"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleAttendance(btn) {
+            const currentStatus = btn.dataset.status;
+
+            if (currentStatus === '' || currentStatus === undefined) {
+                // Empty → Present (O)
+                btn.dataset.status = 'present';
+                btn.className = 'att-cell present';
+                btn.textContent = 'O';
+            } else if (currentStatus === 'present') {
+                // Present → Absent (X)
+                btn.dataset.status = 'absent';
+                btn.className = 'att-cell absent';
+                btn.textContent = 'X';
+            } else if (currentStatus === 'absent') {
+                // Absent → Holiday (H)
+                btn.dataset.status = 'holiday';
+                btn.className = 'att-cell holiday';
+                btn.textContent = 'H';
+            } else {
+                // Holiday → Empty
+                btn.dataset.status = '';
+                btn.className = 'att-cell';
+                btn.textContent = '—';
+            }
+
+            updatePercentage(btn.closest('tr'));
+        }
+
+        function updatePercentage(row) {
+            const cells = row.querySelectorAll('.att-cell');
+            let present = 0;
+            let holiday = 0;
+            let total = cells.length;
+
+            cells.forEach(cell => {
+                if (cell.dataset.status === 'present') present++;
+                else if (cell.dataset.status === 'holiday') holiday++;
+            });
+
+            const effectiveTotal = total - holiday;
+            const pct = effectiveTotal > 0 ? Math.round((present / effectiveTotal) * 100) : 0;
+            const badge = row.querySelector('.pct-badge');
+            badge.textContent = pct + '%';
+            badge.className = 'pct-badge ' + (pct >= 75 ? 'pct-excellent' : pct >= 50 ? 'pct-good' : 'pct-poor');
+        }
+
+        function saveAttendance() {
+            const saveBtn = document.getElementById('saveBtn');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+            saveBtn.disabled = true;
+
+            const records = [];
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const studentId = row.dataset.studentId;
+                const jpInput = row.querySelector('.jp-name-input');
+                const japaneseName = jpInput ? jpInput.value : '';
+
+                row.querySelectorAll('.att-cell').forEach(cell => {
+                    const day = parseInt(cell.dataset.day);
+                    const status = cell.dataset.status;
+                    records.push({
+                        studentId: studentId,
+                        day: day,
+                        status: status || '',
+                        japaneseName: japaneseName
+                    });
+                });
+            });
+
+            fetch(`{% url 'dashboard:save_class_attendance' classroom.id %}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    records: records,
+                    year: {{ year }},
+                month: {{ month }}
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('✅ ' + data.message, 'success');
+                } else {
+                    showToast('❌ ' + data.error, 'error');
+                }
+            })
+            .catch(err => {
+                showToast('❌ Network error. Please try again.', 'error');
+            })
+            .finally(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            });
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toastNotification');
+            toast.textContent = message;
+            toast.className = 'toast-notification toast-' + type + ' show';
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+
+</html>
