@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Upload Document</title>
@@ -10,28 +11,34 @@
             margin: 0;
             padding: 0;
         }
+
         .container {
             max-width: 600px;
             margin: 50px auto;
             background: #fff;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+
         h1 {
             text-align: center;
             color: #333;
         }
+
         form {
             margin-top: 20px;
         }
-        input, button {
+
+        input,
+        button {
             width: 100%;
             padding: 12px;
             margin: 8px 0;
             border: 1px solid #ccc;
             border-radius: 6px;
         }
+
         button {
             background: #007bff;
             color: #fff;
@@ -39,9 +46,11 @@
             cursor: pointer;
             transition: background 0.3s ease;
         }
+
         button:hover {
             background: #0056b3;
         }
+
         .link {
             display: block;
             text-align: center;
@@ -49,6 +58,7 @@
             color: #007bff;
             text-decoration: none;
         }
+
         .link:hover {
             text-decoration: underline;
         }
@@ -69,6 +79,7 @@
         }
     </script>
 </head>
+
 <body>
     <div class="container">
         <h1>Upload a PDF Document</h1>
@@ -80,4 +91,5 @@
         <a href="{% url 'sswdash:list_documents' %}" class="link">View Uploaded Documents</a>
     </div>
 </body>
+
 </html>

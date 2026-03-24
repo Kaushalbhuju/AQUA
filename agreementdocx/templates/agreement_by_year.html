@@ -9,9 +9,11 @@
         margin-bottom: 20px;
         font-weight: 600;
     }
+
     .actions {
         margin-bottom: 20px;
     }
+
     .actions a {
         display: inline-block;
         padding: 10px 18px;
@@ -22,36 +24,43 @@
         font-size: 15px;
         transition: background 0.3s ease;
     }
+
     .actions a:hover {
         background: #388e3c;
     }
+
     ul {
         list-style: none;
         padding: 0;
     }
+
     li {
         background: #fafafa;
         margin: 10px 0;
         padding: 15px;
         border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
+
     .agreement-title {
         font-weight: 500;
         color: #333;
     }
+
     .agreement-actions a {
         margin-left: 10px;
         color: #4CAF50;
         text-decoration: none;
         font-weight: 500;
     }
+
     .agreement-actions a:hover {
         text-decoration: underline;
     }
+
     .empty {
         text-align: center;
         color: #777;
@@ -61,24 +70,31 @@
 {% endblock %}
 
 {% block content %}
-    <h2>Agreement Documents</h2>
+<h2>Agreement Documents</h2>
 
-    <div class="actions">
-        <a href="{% url 'agreement_create' %}">Upload New Agreement</a>
-    </div>
+<div class="actions">
+    <h3>Upload New Agreement for {{ year }}</h3>
+    <form method="post" enctype="multipart/form-data"
+        style="background: #f0f4f8; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit"
+            style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Upload</button>
+    </form>
+</div>
 
-    <ul>
-        {% for agreement in agreements %}
-            <li>
-                <span class="agreement-title">{{ agreement.title }}</span>
-                <div class="agreement-actions">
-                    <a href="{{ agreement.document.url }}" target="_blank">Download</a>
-                    <a href="{% url 'agreement_update' agreement.pk %}">Edit</a>
-                    <a href="{% url 'agreement_delete' agreement.pk %}">Delete</a>
-                </div>
-            </li>
-        {% empty %}
-            <li class="empty">No agreements found.</li>
-        {% endfor %}
-    </ul>
+<ul>
+    {% for agreement in agreements %}
+    <li>
+        <span class="agreement-title">{{ agreement.title }}</span>
+        <div class="agreement-actions">
+            <a href="{{ agreement.document.url }}" target="_blank">Download</a>
+            <a href="{% url 'agreement_update' agreement.pk %}">Edit</a>
+            <a href="{% url 'agreement_delete' agreement.pk %}">Delete</a>
+        </div>
+    </li>
+    {% empty %}
+    <li class="empty">No agreements found.</li>
+    {% endfor %}
+</ul>
 {% endblock %}

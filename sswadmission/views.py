@@ -542,23 +542,19 @@ def generate_receipt(request, payment_id):
             <tr>
                 <td class="label-cell">Received From</td>
                 <td class="value-cell" colspan="2">{payment.student.full_name}</td>
-                <td class="memo-cell" rowspan="2">MEMO</td>
+                <td class="memo-cell" rowspan="4">MEMO</td>
             </tr>
             <tr>
                 <td class="label-cell">Received Contents</td>
                 <td class="value-cell" colspan="2">{payment.student.course}</td>
             </tr>
             <tr>
-                <td class="empty-cell"></td>
                 <td class="label-cell center">Received Amount</td>
-                <td class="value-cell right">Rs. {amount_val:,.2f}</td>
-                <td class="border-cell"></td>
+                <td class="value-cell right" colspan="2">Rs. {amount_val:,.2f}</td>
             </tr>
             <tr>
-                <td class="empty-cell"></td>
                 <td class="label-cell center">Payment Method</td>
-                <td class="value-cell right">{payment.get_payment_method_display()}</td>
-                <td class="border-cell"></td>
+                <td class="value-cell right" colspan="2">{payment.get_payment_method_display()}</td>
             </tr>
             <tr class="total-row">
                 <td class="label-cell left" colspan="2">TOTAL RECEIVED AMOUNT IN NRP</td>
@@ -596,9 +592,9 @@ def generate_receipt(request, payment_id):
     <meta charset="UTF-8">
     <title>Receipt - {payment.receipt_number}</title>
     <style>
-        @page {{ size: A4; margin: 3mm; }}
+        @page {{ size: 176mm 250mm; margin: 5mm; }}
         * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }}
-        body {{ background: #f0f2f5; padding: 3mm 0; }}
+        body {{ background: #f0f2f5; padding: 5mm 0; }}
         
         .print-btn {{
             position: fixed; top: 20px; right: 20px; padding: 12px 24px;
@@ -606,74 +602,74 @@ def generate_receipt(request, payment_id):
             cursor: pointer; z-index: 1000; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }}
         
-        .receipt-wrapper {{ max-width: 210mm; margin: 0 auto; padding: 0 5mm; }}
+        .receipt-wrapper {{ max-width: 176mm; margin: 0 auto; padding: 0 5mm; }}
         
         .receipt {{
-            background: white; border: 1.5px solid #333; border-radius: 20px;
-            padding: 5mm; margin-bottom: 4mm; position: relative;
+            background: white; border: 1.5px solid #333; border-radius: 12px;
+            padding: 3mm; margin-bottom: 2mm; position: relative;
             overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            height: 120mm; /* Fixed height for each copy on screen */
+            height: 105mm; /* Compact height for B5 - two copies fit */
         }}
         
         /* Header Styling */
-        .header {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }}
-        .header-left {{ width: 85px; flex-shrink: 0; }}
-        .logo {{ width: 80px; height: auto; }}
+        .header {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 1px; }}
+        .header-left {{ width: 70px; flex-shrink: 0; }}
+        .logo {{ width: 65px; height: auto; }}
         
-        .header-center {{ flex: 1; text-align: center; padding: 0 10px; }}
-        .top-row {{ display: flex; justify-content: space-around; margin-bottom: 1px; }}
-        .gov-reg, .vat-no {{ color: #d01111; font-weight: bold; font-size: 9px; }}
+        .header-center {{ flex: 1; text-align: center; padding: 0 8px; }}
+        .top-row {{ display: flex; justify-content: space-around; margin-bottom: 0px; }}
+        .gov-reg, .vat-no {{ color: #d01111; font-weight: bold; font-size: 7px; }}
         
-        .company-name {{ color: #003399; font-size: 16px; font-weight: 800; margin: 0; letter-spacing: 0.2px; }}
-        .address {{ font-size: 10px; font-weight: 600; color: #333; margin: 0; }}
-        .contact {{ font-size: 9px; font-weight: 600; color: #333; }}
+        .company-name {{ color: #003399; font-size: 13px; font-weight: 800; margin: 0; letter-spacing: 0.2px; }}
+        .address {{ font-size: 8px; font-weight: 600; color: #333; margin: 0; }}
+        .contact {{ font-size: 7px; font-weight: 600; color: #333; }}
         
-        .header-right {{ width: 110px; flex-shrink: 0; text-align: right; }}
-        .receipt-label {{ font-size: 10px; font-weight: bold; color: #d01111; }}
-        .receipt-val {{ font-size: 14px; font-weight: 800; color: #d01111; display: block; }}
+        .header-right {{ width: 90px; flex-shrink: 0; text-align: right; }}
+        .receipt-label {{ font-size: 8px; font-weight: bold; color: #d01111; }}
+        .receipt-val {{ font-size: 12px; font-weight: 800; color: #d01111; display: block; }}
         
         /* Title Bar */
         .title-bar {{
             background: #5c6bc0; color: white; text-align: center;
-            padding: 6px; font-size: 15px; font-weight: bold;
-            margin: 6px -5mm; letter-spacing: 2px;
+            padding: 4px; font-size: 13px; font-weight: bold;
+            margin: 4px -3mm; letter-spacing: 1.5px;
         }}
         
         /* Table Details */
-        .details-table {{ width: 100%; border-collapse: collapse; margin-top: 4px; border: 1px solid #777; }}
-        .details-table td {{ border: 1px solid #777; padding: 5px 10px; font-size: 11px; color: #000; font-weight: 500; }}
+        .details-table {{ width: 100%; border-collapse: collapse; margin-top: 3px; border: 1px solid #777; }}
+        .details-table td {{ border: 1px solid #777; padding: 2px 6px; font-size: 9px; color: #000; font-weight: 500; }}
         
-        .label-cell {{ font-weight: bold; width: 22%; }}
-        .memo-cell {{ width: 15%; text-align: center; font-weight: 900; font-size: 15px; vertical-align: middle; }}
-        .empty-cell {{ width: 22%; border: none !important; }}
+        .label-cell {{ font-weight: bold; width: 28%; }}
+        .memo-cell {{ width: 12%; text-align: center; font-weight: 900; font-size: 12px; vertical-align: middle; background: #f0f0f0; }}
+        .empty-cell {{ width: 28%; border: none !important; }}
         .center {{ text-align: center; }}
         .right {{ text-align: right; font-weight: bold; }}
         .border-cell {{ border-top: none !important; border-bottom: none !important; }}
         
         .total-row {{ background: white; }}
-        .total-row td {{ font-weight: 800; font-size: 12px; padding: 8px; }}
+        .total-row td {{ font-weight: 800; font-size: 10px; padding: 5px 8px; }}
         
         /* Footer Styling */
-        .footer {{ display: flex; justify-content: space-between; margin-top: 10px; align-items: flex-end; }}
-        .received-by-section {{ font-size: 10px; font-weight: 600; line-height: 1.4; color: #333; }}
-        .received-by-label {{ font-size: 11px; font-weight: bold; margin-bottom: 2px; }}
+        .footer {{ display: flex; justify-content: space-between; margin-top: 6px; align-items: flex-end; }}
+        .received-by-section {{ font-size: 8px; font-weight: 600; line-height: 1.3; color: #333; }}
+        .received-by-label {{ font-size: 9px; font-weight: bold; margin-bottom: 2px; }}
         
-        .signature-section {{ display: flex; gap: 20px; }}
-        .signature-box {{ text-align: center; min-width: 120px; }}
-        .sign-line {{ border-bottom: 1px solid #000; height: 25px; margin-bottom: 4px; }}
-        .signature-box p {{ font-size: 9px; font-weight: bold; color: #333; }}
-        .date-val {{ margin-top: 1px; color: #555; }}
+        .signature-section {{ display: flex; gap: 15px; }}
+        .signature-box {{ text-align: center; min-width: 90px; }}
+        .sign-line {{ border-bottom: 1px solid #000; height: 18px; margin-bottom: 3px; }}
+        .signature-box p {{ font-size: 7px; font-weight: bold; color: #333; }}
+        .date-val {{ margin-top: 1px; color: #555; font-size: 8px; }}
         
         .cut-line {{
-            text-align: center; padding: 5px 0; font-size: 9px; color: #888;
+            text-align: center; padding: 3px 0; font-size: 8px; color: #888;
             border-top: 1px dashed #999; margin: 2mm 0; font-weight: bold;
         }}
         
         @media print {{
             body {{ background: transparent; padding: 0; }}
             .print-btn {{ display: none; }}
-            .receipt {{ box-shadow: none; border-width: 1.5px; height: 130mm; margin-bottom: 4mm; }}
-            .receipt-wrapper {{ height: 285mm; overflow: hidden; }}
+            .receipt {{ box-shadow: none; border-width: 1.5px; height: 105mm; margin-bottom: 2mm; }}
+            .receipt-wrapper {{ height: 240mm; overflow: hidden; }}
         }}
     </style>
 </head>

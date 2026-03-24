@@ -7,186 +7,306 @@
     <style>
         @page {
             size: A4;
-            margin: 10mm;
+            margin: 15mm 20mm 15mm 20mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Times New Roman', serif;
-            font-size: 10pt;
-            line-height: 1.25;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            line-height: 1.4;
             color: #000;
         }
 
+        /* For browser preview only */
+        @media screen {
+            body {
+                background: #e0e0e0;
+                display: flex;
+                justify-content: center;
+                padding: 20px;
+            }
+
+            .page {
+                width: 210mm;
+                min-height: 297mm;
+                background: #fff;
+                padding: 15mm 20mm;
+                box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        /* For print / PDF generation */
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+                display: block;
+            }
+
+            .page {
+                width: 100%;
+                min-height: auto;
+                padding: 0;
+                box-shadow: none;
+            }
+        }
+
+        /* Header - MCL code top right */
         .header {
             text-align: right;
             font-weight: bold;
-            color: #c00000;
-            /* Red color for MCL code */
-            margin-bottom: 10px;
+            font-size: 11pt;
+            color: #000;
+            margin-bottom: 8px;
         }
 
-        .title {
+        /* Title */
+        .title-wrapper {
             text-align: center;
-            font-size: 14pt;
+            margin-bottom: 14px;
+        }
+
+        .title-inner {
+            display: inline-block;
+        }
+
+        .title-text {
+            font-size: 24pt;
             font-weight: bold;
             text-transform: uppercase;
-            text-decoration: underline;
-            margin-bottom: 20px;
+            letter-spacing: 1px;
         }
 
+        .title-double-line {
+            margin-top: 4px;
+            height: 0;
+            border: none;
+            border-top: 3px double #000;
+        }
+
+        /* Candidate info */
         .candidate-info {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             color: #c00000;
-            /* Red color for candidate info */
             font-weight: bold;
+            font-size: 11pt;
+            line-height: 1.5;
         }
 
+        /* Content paragraphs */
         .content {
             text-align: justify;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            font-size: 11pt;
+            line-height: 1.4;
         }
 
+        /* Section titles */
         .section-title {
             font-weight: bold;
             text-decoration: underline;
-            margin-top: 10px;
-            margin-bottom: 5px;
+            margin-top: 8px;
+            margin-bottom: 6px;
             text-transform: uppercase;
+            font-size: 11pt;
         }
 
-        ol {
-            margin-left: 20px;
+        /* Ordered list */
+        .terms-list {
+            margin-left: 8px;
             padding-left: 0;
+            margin-bottom: 8px;
+            list-style: none;
         }
 
-        li {
-            margin-bottom: 5px;
+        .terms-list li {
+            margin-bottom: 2px;
+            font-size: 11pt;
+            line-height: 1.4;
+            text-align: justify;
+            padding-left: 22px;
+            text-indent: -22px;
         }
 
-        .footer {
-            margin-top: 20px;
-            position: relative;
+        /* Companies section */
+        .companies {
+            margin-left: 22px;
+            font-weight: bold;
+            font-size: 11pt;
+            margin-bottom: 8px;
         }
 
+        /* Note section */
+        .note {
+            text-align: justify;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            font-size: 11pt;
+            line-height: 1.4;
+        }
+
+        /* Date */
         .date {
             text-align: right;
             color: #c00000;
             font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 13pt;
+            margin-bottom: 8px;
+            margin-top: 15px;
         }
 
-        .signature-block {
-            margin-top: 20px;
-        }
-
-        .stamp {
-            position: absolute;
-            bottom: -20px;
-            left: 50px;
-            width: 100px;
-            opacity: 0.8;
-            color: red;
-            border: 3px double red;
-            padding: 5px;
-            font-size: 10px;
-            font-weight: bold;
-            text-align: center;
-            transform: rotate(-5deg);
-        }
-
-        /* Custom stamp simulation if image not used */
-        .stamp-box {
-            border: 2px solid red;
-            color: red;
-            width: 120px;
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.5);
+        /* Footer / Signature block */
+        .footer-block {
+            position: relative;
+            margin-top: 5px;
+            page-break-inside: avoid;
         }
 
         .signature-text {
             font-weight: bold;
-            margin-top: 50px;
-            /* Space for stamp */
-            line-height: 1.2;
+            font-size: 10.5pt;
+            line-height: 1.45;
+            position: relative;
+            z-index: 1;
         }
 
-        .dynamic-red {
-            color: #c00000;
+        /* Stamp overlay - using position absolute within footer-block */
+        .stamp-container {
+            position: absolute;
+            top: -8px;
+            left: 120px;
+            width: 125px;
+            height: 125px;
+            z-index: 2;
+            transform: rotate(-8deg);
+            -webkit-transform: rotate(-8deg);
+        }
+
+        .stamp-border {
+            width: 125px;
+            height: 125px;
+            border: 3px solid #cc3333;
+            text-align: center;
+            padding-top: 15px;
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .stamp-text-top {
+            color: #cc3333;
+            font-size: 18pt;
             font-weight: bold;
+            letter-spacing: 2px;
+            line-height: 1.1;
+        }
+
+        .stamp-text-middle {
+            color: #cc3333;
+            font-size: 8pt;
+            font-weight: bold;
+            line-height: 1.3;
+        }
+
+        .stamp-divider {
+            width: 80%;
+            border-top: 2px solid #cc3333;
+            margin: 3px auto;
+        }
+
+        .stamp-text-bottom {
+            color: #cc3333;
+            font-size: 12pt;
+            font-weight: bold;
+            letter-spacing: 1px;
+            line-height: 1.2;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="header">
-        MCL-01F2026
-    </div>
+    <div class="page">
 
-    <div class="title">
-        JOB GAURANTEE LETTER
-    </div>
+        <!-- Header -->
+        <div class="header">
+            {{student.student_id}}
+        </div>
 
-    <div class="candidate-info">
-        <div>{% if student.gender == 'female' %}MS.{% else %}MR.{% endif %} {{ student.full_name|upper }}</div>
-        <div>Date of Birth: {{ student.date_of_birth|date:"d, M Y"|upper }}</div>
-    </div>
+        <!-- Title with double underline matching title width -->
+        <div class="title-wrapper">
+            <div class="title-inner">
+                <div class="title-text">JOB GAURANTEE LETTER</div>
+                <hr class="title-double-line">
+            </div>
+        </div>
 
-    <div class="content">
-        Thank you very much for candidate applying for the <b>Specified Skilled Worker (SSW) program</b> of the company
-        mentioned below from Nepal. Based on the documents you submitted, and after careful consideration in
-        coordination with the Job hiring company in Japan, it has been decided to hire you employment under the <b>terms
-            and conditions stated below.</b>
-    </div>
+        <!-- Candidate Info -->
+        <div class="candidate-info">
+            <div>{% if student.gender == 'female' %}MS.{% else %}MR.{% endif %} {{ student.full_name|upper }}</div>
+            <div>Date of Birth: {{ student.date_of_birth|date:"d, M Y"|upper }}</div>
+        </div>
 
-    <div class="section-title">
-        HIRE TERM AND CONDITION
-    </div>
+        <!-- Main Content -->
+        <div class="content">
+            Thank you very much for candidate applying for the <b>Specified Skilled Worker (SSW)
+                program</b> of the company mentioned below from Nepal. Based on the documents you
+            submitted, and after careful consideration in coordination with the Job hiring company in
+            Japan, it has been decided to hire you employment under the <b>terms and conditions stated
+                below</b>.
+        </div>
 
-    <ol style="margin-bottom: 10px;">
-        <li>You must complete the <b>Six (6) months Japanese Language Course</b> at Aqua Education and Training Academy
-            Pvt. Ltd located in Lazimpat-02, Kathmandu Nepal.</li>
-        <li>You must pass the <b>Japanese Language Test N4 and N3 Level</b> before Interview in Nepal.</li>
-        <li>You must pass the <b>SSW Skill Examination</b> before our Physical Interview held in Nepal.</li>
-        <li>You must pass the final interview conducted by Japanese company mention below.</li>
-        <li>Basic Monthly salary: <b>+2 Graduate: JPY 195,000 ～ / Bachelor's Pass: JPY 200,000 ～</b></li>
-        <li>The terms and condition of employment will be fixed in the job agreement after you pass the interview.</li>
-        <li>Only after all conditions are fulfilled, our company will guarantee and support your work visa application
-            in Japan. If any condition is not met, this offer may be withdrawn.</li>
-    </ol>
+        <!-- Hire Terms -->
+        <div class="section-title">HIRE TERM AND CONDITION</div>
 
-    <div class="section-title">
-        JOB HIRING COMPANYS
-    </div>
-    <div style="margin-left: 20px; font-weight: bold;">
-        ☞ ZENSYO GROUP (SUKIYA), TECHNO SMILE INC, TOKYU GROUP, SEIBU GROUP
-    </div>
+        <ul class="terms-list">
+            <li>1. You must complete the <b>Six (6) months Japanese Language Course</b> at Aqua Education
+                and Training Academy Pvt. Ltd located in Lazimpat-02, Kathmandu Nepal.</li>
+            <li>2. You must pass the <b>Japanese Language Test N4 and N3 Level</b> before Interview in Nepal.</li>
+            <li>3. You must pass the <b>SSW Skill Examination</b> before our Physical Interview held in Nepal.</li>
+            <li>4. You must pass the final interview conducted by Japanese company mention below.</li>
+            <li>5. Basic Monthly salary: <b>+2 Graduate: JPY 195,000 ～ / Bachelor's Pass: JPY 200,000 ～</b></li>
+            <li>6. The terms and condition of employment will be fixed in the job agreement after you pass
+                the interview.</li>
+            <li>7. Only after all conditions are fulfilled, our company will guarantee and support your work
+                visa application in Japan. If any condition is not met, this offer may be withdrawn.</li>
+        </ul>
 
-    <div class="content" style="margin-top: 10px;">
-        <b>Note:</b> This job guarantee letter is issued in according with the job guarantee offer provided <b>on behalf
-            of</b> the company mentioned above. You must need to fallow immigration law of Japan.
-    </div>
+        <!-- Job Hiring Companies -->
+        <div class="section-title">JOB HIRING COMPANYS</div>
+        <div class="companies">
+            ☞ZENSYO GROUP (SUKIYA), TECHNO SMILE INC, TOKYU GROUP, SEIBU GROUP
+        </div>
 
-    <div class="footer">
+        <!-- Note -->
+        <div class="note">
+            <b>Note:</b> This job guarantee letter is issued in according with the job guarantee offer provided
+            <b>on behalf of</b> the company mentioned above. You must need to fallow immigration law of
+            Japan.
+        </div>
+
+        <!-- Date -->
         <div class="date">
             Date: {{ date|date:"d F Y" }}
         </div>
 
-        <div class="signature-block">
-            <!-- Simulated Stamp/Signature Area -->
-            <!-- In a real scenario, you'd use an <img> tag here for the stamp/signature artifact -->
-            <!-- <div class="stamp-box">
-                AQUA GROUP
-                <br>SEAL
-            </div> -->
+        <!-- Footer / Signature Block -->
+        <div class="footer-block">
+            <!-- Stamp -->
+            <div class="stamp-container">
+                <div class="stamp-border">
+                    <div class="stamp-text-top">アクアグ</div>
+                    <div class="stamp-text-middle">ループ総合ビジネ</div>
+                    <div class="stamp-divider"></div>
+                    <div class="stamp-text-bottom">ス企画社</div>
+                </div>
+            </div>
 
+            <!-- Signature Text -->
             <div class="signature-text">
                 アクアグループ<br>
                 総合ビジネス企画社<br>
@@ -197,6 +317,7 @@
                 E-mail:ssw.japan.aie@gmail.com
             </div>
         </div>
+
     </div>
 
 </body>

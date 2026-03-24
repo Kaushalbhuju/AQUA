@@ -13,11 +13,11 @@ def upload_document(request):
             return redirect('sswdash:list_documents')
     else:
         form = DocumentForm()
-    return render(request, 'upload.html', {'form': form})
+    return render(request, 'sswdash/upload.html', {'form': form})
 
 def list_documents(request):
     documents = Document.objects.all().order_by('-upload_date')
-    return render(request, 'list.html', {'documents': documents})
+    return render(request, 'sswdash/list.html', {'documents': documents})
 
 @require_POST
 def delete_document(request, pk):

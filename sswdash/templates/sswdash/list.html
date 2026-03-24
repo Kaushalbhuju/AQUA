@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Uploaded Documents</title>
@@ -10,22 +11,26 @@
             margin: 0;
             padding: 0;
         }
+
         .container {
             max-width: 800px;
             margin: 50px auto;
             background: #fff;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+
         h1 {
             text-align: center;
             color: #333;
         }
+
         ul {
             list-style: none;
             padding: 0;
         }
+
         li {
             background: #f9f9f9;
             margin: 10px 0;
@@ -35,14 +40,17 @@
             justify-content: space-between;
             align-items: center;
         }
+
         li a {
             color: #007bff;
             text-decoration: none;
             margin-right: 15px;
         }
+
         li a:hover {
             text-decoration: underline;
         }
+
         button {
             background: #dc3545;
             color: #fff;
@@ -52,9 +60,11 @@
             cursor: pointer;
             transition: background 0.3s ease;
         }
+
         button:hover {
             background: #a71d2a;
         }
+
         .link {
             display: block;
             text-align: center;
@@ -62,6 +72,7 @@
             color: #007bff;
             text-decoration: none;
         }
+
         .link:hover {
             text-decoration: underline;
         }
@@ -72,27 +83,30 @@
         }
     </script>
 </head>
+
 <body>
     <div class="container">
         <h1>Uploaded Documents</h1>
         <ul>
             {% for doc in documents %}
-                <li>
-                    <span>
-                        <strong>{{ doc.title }}</strong> 
-                        (Uploaded on {{ doc.upload_date }})
-                        <a href="{{ doc.uploaded_file.url }}" target="_blank">View PDF</a>
-                    </span>
-                    <form method="post" action="{% url 'sswdash:delete_document' doc.pk %}" onsubmit="return confirmDelete();" style="margin:0;">
-                        {% csrf_token %}
-                        <button type="submit">Delete</button>
-                    </form>
-                </li>
+            <li>
+                <span>
+                    <strong>{{ doc.title }}</strong>
+                    (Uploaded on {{ doc.upload_date }})
+                    <a href="{{ doc.uploaded_file.url }}" target="_blank">View PDF</a>
+                </span>
+                <form method="post" action="{% url 'sswdash:delete_document' doc.pk %}"
+                    onsubmit="return confirmDelete();" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
             {% empty %}
-                <li>No documents uploaded yet.</li>
+            <li>No documents uploaded yet.</li>
             {% endfor %}
         </ul>
         <a href="{% url 'sswdash:upload_document' %}" class="link">Upload New Document</a>
     </div>
 </body>
+
 </html>

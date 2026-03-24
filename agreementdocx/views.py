@@ -41,11 +41,13 @@ def agreement_by_year(request, year):
     if request.method == 'POST':
         form = AgreementForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            agreement = form.save(commit=False)
+            agreement.year = year
+            agreement.save()
     else:
         form = AgreementForm()
 
-    agreements = Agreement.objects.filter(uploaded_at__year=year)
+    agreements = Agreement.objects.filter(year=year)
     return render(request, "agreement_by_year.html", {"year": year, "form": form, "agreements": agreements})
 
 
@@ -54,5 +56,3 @@ def year_buttons(request):
     # Generate years from 2025 to 2036
     years = list(range(2025, 2025 + 12))
     return render(request, "year_buttons.html", {"years": years})
-
-
