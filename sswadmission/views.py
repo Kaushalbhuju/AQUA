@@ -127,7 +127,7 @@ def process_quick_payment(request):
                     created_by=request.user
                 )
                 
-                messages.success(request, f'Payment of ₹{amount} recorded for {student.full_name}!')
+                messages.success(request, f'Payment of रु {amount} recorded for {student.full_name}!')
                 return redirect('sswdashboard:professional_dashboard')
                 
             except Student.DoesNotExist:
@@ -144,17 +144,75 @@ def process_quick_payment(request):
 
 @login_required
 def student_registration(request):
-    """Student registration form"""
+    """Student registration form
+
+    Supports two modes:
+    - New registration (no selected student)
+    - Prefill from an already-created Dashboard student (selected from list)
+    """
+    # Optional: select an existing Dashboard student to prefill registration
+    from dashboard.models import Student as DashboardStudent
+
+    selected_student_id = request.GET.get('student_id') or None
     if request.method == 'POST':
-        form = StudentForm(request.POST)
+        selected_student_id = request.POST.get('selected_student_id') or selected_student_id
+
+    selected_dashboard_student = None
+    if selected_student_id:
+        try:
+            selected_dashboard_student = DashboardStudent.objects.get(id=selected_student_id)
+        except (DashboardStudent.DoesNotExist, ValueError, TypeError):
+            selected_dashboard_student = None
+            selected_student_id = None
+
+    # If we can match an existing SSW admission student by email/phone, update that record instead of creating duplicate
+    matched_admission_student = None
+    if selected_dashboard_student:
+        if getattr(selected_dashboard_student, 'email', None):
+            matched_admission_student = Student.objects.filter(email=selected_dashboard_student.email).first()
+        if not matched_admission_student and getattr(selected_dashboard_student, 'phone', None):
+            matched_admission_student = Student.objects.filter(phone=selected_dashboard_student.phone).first()
+
+    if request.method == 'POST':
+        form = StudentForm(request.POST, instance=matched_admission_student)
         if form.is_valid():
             try:
                 with transaction.atomic():
                     student = form.save(commit=False)
-                    student.created_by = request.user
+                    # Only set created_by when first creating a student
+                    if not student.pk:
+                        student.created_by = request.user
+
+                    # Keep Student ID aligned with selected Dashboard student ID
+                    if selected_dashboard_student and selected_dashboard_student.student_id:
+                        dashboard_student_id = selected_dashboard_student.student_id.strip()
+                        conflict_qs = Student.objects.filter(student_id=dashboard_student_id)
+                        if student.pk:
+                            conflict_qs = conflict_qs.exclude(pk=student.pk)
+                        if conflict_qs.exists():
+                            messages.error(
+                                request,
+                                f"Cannot assign Student ID {dashboard_student_id}: already used by another admission record."
+                            )
+                            return redirect(f"{request.path}?student_id={selected_dashboard_student.id}")
+                        student.student_id = dashboard_student_id
+
+                    # Keep traceability back to Dashboard student (no hard DB link)
+                    if selected_dashboard_student:
+                        dash_ref = f"[DashboardStudent:{selected_dashboard_student.student_id}]"
+                        if dash_ref not in (student.remarks or ""):
+                            student.remarks = (student.remarks + "\n" if student.remarks else "") + dash_ref
                     student.save()
-                    
-                    messages.success(request, f'Student {student.full_name} registered successfully! Student ID: {student.student_id}')
+
+                    submit_action = request.POST.get('submit_action', 'submit')
+                    if submit_action == 'draft':
+                        messages.info(request, f'Draft saved for {student.full_name}. Student ID: {student.student_id}')
+                        return redirect(f"{request.path}?student_id={student.id}")
+
+                    if matched_admission_student:
+                        messages.success(request, f'Student {student.full_name} updated successfully! Student ID: {student.student_id}')
+                    else:
+                        messages.success(request, f'Student {student.full_name} registered successfully! Student ID: {student.student_id}')
                     return redirect('sswdashboard:student_detail', student_id=student.id)
             except Exception as e:
                 messages.error(request, f'Error saving student: {str(e)}')
@@ -163,9 +221,32 @@ def student_registration(request):
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
     else:
-        form = StudentForm()
+        initial = {}
+        if selected_dashboard_student:
+            # Prefill the admission form with available dashboard data
+            initial = {
+                'full_name': getattr(selected_dashboard_student, 'full_name', '') or '',
+                'email': getattr(selected_dashboard_student, 'email', '') or '',
+                'phone': getattr(selected_dashboard_student, 'phone', '') or '',
+                'date_of_birth': getattr(selected_dashboard_student, 'date_of_birth', None),
+                'gender': getattr(selected_dashboard_student, 'gender', '') or 'male',
+                'blood_group': getattr(selected_dashboard_student, 'blood_group', '') or '',
+                'qualification': getattr(selected_dashboard_student, 'qualification', '') or '',
+            }
+            # Address mapping (best-effort)
+            perm_addr = getattr(selected_dashboard_student, 'permanent_address', '') or ''
+            pres_addr = getattr(selected_dashboard_student, 'present_address', '') or ''
+            initial['address'] = (pres_addr or perm_addr)
+        form = StudentForm(instance=matched_admission_student, initial=initial)
+
+    # Show selectable students (useful for completing registrations)
+    selectable_students = DashboardStudent.objects.order_by('-created_at')[:500]
     
-    return render(request, 'sswadmission/student_registration.html', {'form': form})
+    return render(request, 'sswadmission/student_registration.html', {
+        'form': form,
+        'selectable_students': selectable_students,
+        'selected_student_id': str(selected_dashboard_student.id) if selected_dashboard_student else '',
+    })
 
 @login_required
 def student_list(request):
@@ -334,7 +415,7 @@ def add_payment(request, student_id=None):
                     
                     payment.save()
                     
-                    messages.success(request, f'Payment of ₹{payment.amount} recorded successfully! Payment ID: {payment.payment_id}')
+                    messages.success(request, f'Payment of रु {payment.amount} recorded successfully! Payment ID: {payment.payment_id}')
                     
                     if student_id:
                         return redirect('sswdashboard:student_detail', student_id=student_id)
@@ -506,20 +587,25 @@ from .models import FeePayment
 
 @login_required
 def generate_receipt(request, payment_id):
-    """Generate payment receipt with two copies"""
+    """Generate payment receipt with two copies - Office & Student on B5 page"""
     payment = get_object_or_404(FeePayment, id=payment_id)
     
     # Calculate amounts
     amount_val = float(payment.amount)
     
-    # Receipt HTML template
-    receipt_html = f"""
+    # Receipt HTML template function
+    def build_receipt(copy_label):
+        return f"""
     <div class="receipt">
+        <!-- Copy Label -->
+        <div class="copy-label">{copy_label}</div>
+
+        <!-- Header -->
         <div class="header">
             <div class="header-left">
                 <img src="/static/images/logo.png" alt="Logo" class="logo">
             </div>
-            <div class="header-center">
+            <div class="header-right-block">
                 <div class="top-row">
                     <span class="gov-reg">GOVERMENT REGISTER NO: 376328/82/83</span>
                     <span class="vat-no">VAT NO: 622456452</span>
@@ -527,63 +613,69 @@ def generate_receipt(request, payment_id):
                 <h1 class="company-name">AQUA EDUCATION AND TRAINING ACADEMY PVT LTD</h1>
                 <p class="address">Lazimpat, Kathmandu Metropolitan City-02, Kathmandu, Nepal</p>
                 <p class="contact">Web: www.aquagroupnp.com, E-mail: ssw.edu.academy@gmail.com</p>
-            </div>
-            <div class="header-right">
-                <div class="receipt-no-container">
+                <div class="receipt-no-line">
                     <span class="receipt-label">Receipt Number:</span>
                     <span class="receipt-val">{payment.receipt_number}</span>
                 </div>
             </div>
         </div>
-        
-        <div class="title-bar">CASH RECEIPT</div>
-        
+
+        <!-- Red Line -->
+        <div class="red-line"></div>
+
+        <!-- Title Bar -->
+        <div class="title-bar">CASH &nbsp; RECEIPT</div>
+
+        <!-- Details Table -->
         <table class="details-table">
             <tr>
-                <td class="label-cell">Received From</td>
-                <td class="value-cell" colspan="2">{payment.student.full_name}</td>
-                <td class="memo-cell" rowspan="4">MEMO</td>
+                <td class="label-cell" style="width:22%; border-right:1px solid #555;">Received From</td>
+                <td class="value-cell" style="width:50%;">{payment.student.full_name}</td>
+                <td class="memo-cell" rowspan="2" style="width:16%;">MEMO</td>
             </tr>
             <tr>
-                <td class="label-cell">Received Contents</td>
-                <td class="value-cell" colspan="2">{payment.student.course}</td>
+                <td class="label-cell" style="border-right:1px solid #555;">Received Contents</td>
+                <td class="value-cell">{payment.student.course}</td>
             </tr>
             <tr>
-                <td class="label-cell center">Received Amount</td>
-                <td class="value-cell right" colspan="2">Rs. {amount_val:,.2f}</td>
+                <td class="right-label" colspan="1" style="border-left:none; border-right:1px solid #555; text-align:right; font-weight:bold;">Received Amount</td>
+                <td class="value-cell">Rs. {amount_val:,.2f}</td>
+                <td style="border-left:1px solid #555;"></td>
             </tr>
             <tr>
-                <td class="label-cell center">Payment Method</td>
-                <td class="value-cell right" colspan="2">{payment.get_payment_method_display()}</td>
+                <td class="right-label" colspan="1" style="border-left:none; border-right:1px solid #555; text-align:right; font-weight:bold; color:#6366f1;">Payment Method</td>
+                <td class="value-cell">{payment.get_payment_method_display()}</td>
+                <td style="border-left:1px solid #555;"></td>
             </tr>
             <tr class="total-row">
-                <td class="label-cell left" colspan="2">TOTAL RECEIVED AMOUNT IN NRP</td>
-                <td class="value-cell right" colspan="2">Rs. {amount_val:,.2f}</td>
+                <td class="total-label" colspan="1" style="text-align:center; font-weight:900;">TOTAL RECEIVED AMOUNT IN NRP</td>
+                <td class="total-value">Rs. {amount_val:,.2f}</td>
+                <td style="border-left:1px solid #555;"></td>
             </tr>
         </table>
-        
+
+        <!-- Footer -->
         <div class="footer">
             <div class="received-by-section">
-                <p class="received-by-label"><u>Received By</u></p>
-                <p>Account Department</p>
-                <p>Aqua Education And Training Academy Pvt. Ltd</p>
-                <p>Telephone: +977-01-000000</p>
+                <p class="received-by-title"><u>Received By</u></p>
+                <p class="rb-line">&nbsp;&nbsp;&nbsp;&nbsp;Account Department</p>
+                <p class="rb-line">&nbsp;&nbsp;&nbsp;&nbsp;Aqua Education And Training Academy Pvt. Ltd</p>
+                <p class="rb-line">&nbsp;&nbsp;&nbsp;&nbsp;Telephone: +977-01-000000</p>
             </div>
             <div class="signature-section">
                 <div class="signature-box">
-                    <div class="sign-line"></div>
-                    <p>Received Date</p>
-                    <p class="date-val">{payment.payment_date.strftime('%d-%m-%Y')}</p>
+                    <div class="sign-line"><span class="date-on-line">{payment.payment_date.strftime('%d-%m-%Y')}</span></div>
+                    <p class="sign-label">Received Date</p>
                 </div>
                 <div class="signature-box">
                     <div class="sign-line"></div>
-                    <p>Received Sign & Stamp</p>
+                    <p class="sign-label">Received Sign &amp; Stamp</p>
                 </div>
             </div>
         </div>
     </div>
     """
-    
+
     # Full page with two copies
     html = f"""
 <!DOCTYPE html>
@@ -592,100 +684,302 @@ def generate_receipt(request, payment_id):
     <meta charset="UTF-8">
     <title>Receipt - {payment.receipt_number}</title>
     <style>
-        @page {{ size: 176mm 250mm; margin: 5mm; }}
-        * {{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }}
-        body {{ background: #f0f2f5; padding: 5mm 0; }}
-        
+        @page {{
+            size: 176mm 250mm;
+            margin: 5mm 8mm;
+        }}
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: #e8eaf0;
+            padding: 10px 0;
+        }}
+
         .print-btn {{
-            position: fixed; top: 20px; right: 20px; padding: 12px 24px;
-            background: #2563eb; color: white; border: none; border-radius: 8px;
-            cursor: pointer; z-index: 1000; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 28px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1000;
+            font-weight: bold;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }}
-        
-        .receipt-wrapper {{ max-width: 176mm; margin: 0 auto; padding: 0 5mm; }}
-        
+        .print-btn:hover {{
+            background: #1d4ed8;
+        }}
+
+        .receipt-wrapper {{
+            max-width: 176mm;
+            margin: 0 auto;
+            padding: 0 2mm;
+        }}
+
+        /* ===== RECEIPT CARD ===== */
         .receipt {{
-            background: white; border: 1.5px solid #333; border-radius: 12px;
-            padding: 3mm; margin-bottom: 2mm; position: relative;
-            overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            height: 105mm; /* Compact height for B5 - two copies fit */
+            background: white;
+            border: 1.5px solid #444;
+            border-radius: 14px;
+            padding: 5mm 5mm 4mm 5mm;
+            margin-bottom: 0;
+            position: relative;
+            overflow: hidden;
         }}
-        
-        /* Header Styling */
-        .header {{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 1px; }}
-        .header-left {{ width: 70px; flex-shrink: 0; }}
-        .logo {{ width: 65px; height: auto; }}
-        
-        .header-center {{ flex: 1; text-align: center; padding: 0 8px; }}
-        .top-row {{ display: flex; justify-content: space-around; margin-bottom: 0px; }}
-        .gov-reg, .vat-no {{ color: #d01111; font-weight: bold; font-size: 7px; }}
-        
-        .company-name {{ color: #003399; font-size: 13px; font-weight: 800; margin: 0; letter-spacing: 0.2px; }}
-        .address {{ font-size: 8px; font-weight: 600; color: #333; margin: 0; }}
-        .contact {{ font-size: 7px; font-weight: 600; color: #333; }}
-        
-        .header-right {{ width: 90px; flex-shrink: 0; text-align: right; }}
-        .receipt-label {{ font-size: 8px; font-weight: bold; color: #d01111; }}
-        .receipt-val {{ font-size: 12px; font-weight: 800; color: #d01111; display: block; }}
-        
-        /* Title Bar */
+
+        .copy-label {{
+            position: absolute;
+            top: 3px;
+            right: 10px;
+            font-size: 7px;
+            color: #999;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }}
+
+        /* ===== HEADER ===== */
+        .header {{
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 2px;
+        }}
+        .header-left {{
+            flex-shrink: 0;
+            width: 72px;
+        }}
+        .logo {{
+            width: 68px;
+            height: auto;
+            display: block;
+        }}
+        .header-right-block {{
+            flex: 1;
+            text-align: center;
+        }}
+        .top-row {{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1px;
+            padding: 0 5px;
+        }}
+        .gov-reg, .vat-no {{
+            color: #d01111;
+            font-weight: 800;
+            font-size: 8.5px;
+            font-style: italic;
+        }}
+        .company-name {{
+            color: #003399;
+            font-size: 14px;
+            font-weight: 900;
+            margin: 1px 0;
+            letter-spacing: 0.3px;
+            line-height: 1.2;
+        }}
+        .address {{
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #222;
+            margin: 0;
+            line-height: 1.3;
+        }}
+        .contact {{
+            font-size: 9px;
+            font-weight: 700;
+            color: #222;
+            margin: 0;
+            line-height: 1.3;
+        }}
+        .receipt-no-line {{
+            text-align: right;
+            margin-top: 1px;
+        }}
+        .receipt-label {{
+            font-size: 10px;
+            font-weight: 700;
+            color: #d01111;
+        }}
+        .receipt-val {{
+            font-size: 16px;
+            font-weight: 900;
+            color: #d01111;
+            letter-spacing: 0.5px;
+        }}
+
+        /* ===== RED LINE ===== */
+        .red-line {{
+            height: 3px;
+            background: #cc1111;
+            margin: 3px -5mm;
+        }}
+
+        /* ===== TITLE BAR ===== */
         .title-bar {{
-            background: #5c6bc0; color: white; text-align: center;
-            padding: 4px; font-size: 13px; font-weight: bold;
-            margin: 4px -3mm; letter-spacing: 1.5px;
+            background: #5c6bc0;
+            color: white;
+            text-align: center;
+            padding: 5px 0;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin: 0 -5mm;
         }}
-        
-        /* Table Details */
-        .details-table {{ width: 100%; border-collapse: collapse; margin-top: 3px; border: 1px solid #777; }}
-        .details-table td {{ border: 1px solid #777; padding: 2px 6px; font-size: 9px; color: #000; font-weight: 500; }}
-        
-        .label-cell {{ font-weight: bold; width: 28%; }}
-        .memo-cell {{ width: 12%; text-align: center; font-weight: 900; font-size: 12px; vertical-align: middle; background: #f0f0f0; }}
-        .empty-cell {{ width: 28%; border: none !important; }}
-        .center {{ text-align: center; }}
-        .right {{ text-align: right; font-weight: bold; }}
-        .border-cell {{ border-top: none !important; border-bottom: none !important; }}
-        
-        .total-row {{ background: white; }}
-        .total-row td {{ font-weight: 800; font-size: 10px; padding: 5px 8px; }}
-        
-        /* Footer Styling */
-        .footer {{ display: flex; justify-content: space-between; margin-top: 6px; align-items: flex-end; }}
-        .received-by-section {{ font-size: 8px; font-weight: 600; line-height: 1.3; color: #333; }}
-        .received-by-label {{ font-size: 9px; font-weight: bold; margin-bottom: 2px; }}
-        
-        .signature-section {{ display: flex; gap: 15px; }}
-        .signature-box {{ text-align: center; min-width: 90px; }}
-        .sign-line {{ border-bottom: 1px solid #000; height: 18px; margin-bottom: 3px; }}
-        .signature-box p {{ font-size: 7px; font-weight: bold; color: #333; }}
-        .date-val {{ margin-top: 1px; color: #555; font-size: 8px; }}
-        
+
+        /* ===== TABLE ===== */
+        .details-table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            border: 1.5px solid #555;
+        }}
+        .details-table td {{
+            border-top: 1px solid #555;
+            border-bottom: 1px solid #555;
+            padding: 4px 8px;
+            font-size: 10px;
+            color: #000;
+            font-weight: 500;
+            vertical-align: middle;
+        }}
+        .label-cell {{
+            font-weight: 700 !important;
+            font-size: 11px !important;
+        }}
+        .value-cell {{
+            font-size: 10.5px !important;
+        }}
+        .memo-cell {{
+            text-align: center;
+            font-weight: 900 !important;
+            font-size: 16px !important;
+            vertical-align: middle;
+            border-left: 1.5px solid #555;
+            letter-spacing: 1px;
+        }}
+        .right-label {{
+            font-size: 11px !important;
+        }}
+        .total-row td {{
+            font-weight: 900 !important;
+            font-size: 10.5px !important;
+            border-top: 1.5px solid #555;
+        }}
+        .total-label {{
+            font-size: 11px !important;
+        }}
+        .total-value {{
+            font-weight: 900 !important;
+        }}
+
+        /* ===== FOOTER ===== */
+        .footer {{
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 10px;
+            padding: 0 2px;
+        }}
+        .received-by-section {{
+            line-height: 1.4;
+        }}
+        .received-by-title {{
+            font-size: 11px;
+            font-weight: 800;
+            color: #000;
+            margin-bottom: 2px;
+        }}
+        .rb-line {{
+            font-size: 9px;
+            font-weight: 500;
+            color: #333;
+        }}
+        .signature-section {{
+            display: flex;
+            gap: 30px;
+            align-items: flex-end;
+        }}
+        .signature-box {{
+            text-align: center;
+            min-width: 110px;
+        }}
+        .sign-line {{
+            border-bottom: 1.5px solid #000;
+            height: 25px;
+            margin-bottom: 3px;
+        }}
+        .sign-label {{
+            font-size: 9px;
+            font-weight: 600;
+            color: #333;
+        }}
+        .date-on-line {{
+            display: block;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: #333;
+            position: relative;
+            top: 12px;
+        }}
+
+        /* ===== CUT LINE ===== */
         .cut-line {{
-            text-align: center; padding: 3px 0; font-size: 8px; color: #888;
-            border-top: 1px dashed #999; margin: 2mm 0; font-weight: bold;
+            text-align: center;
+            padding: 4px 0;
+            font-size: 8px;
+            color: #888;
+            border-top: 2px dashed #aaa;
+            margin: 3mm 0;
+            font-weight: bold;
+            letter-spacing: 1px;
         }}
-        
+
+        /* ===== PRINT STYLES ===== */
         @media print {{
-            body {{ background: transparent; padding: 0; }}
-            .print-btn {{ display: none; }}
-            .receipt {{ box-shadow: none; border-width: 1.5px; height: 105mm; margin-bottom: 2mm; }}
-            .receipt-wrapper {{ height: 240mm; overflow: hidden; }}
+            body {{
+                background: transparent;
+                padding: 0;
+                margin: 0;
+            }}
+            .print-btn {{
+                display: none;
+            }}
+            .receipt {{
+                box-shadow: none;
+                page-break-inside: avoid;
+            }}
+            .receipt-wrapper {{
+                padding: 0;
+            }}
+            .cut-line {{
+                margin: 2mm 0;
+            }}
         }}
     </style>
 </head>
 <body>
-    <button class="print-btn" onclick="window.print()">🖨️ Print Receipt</button>
+    <button class="print-btn" onclick="window.print()">&#128424; Print Receipt</button>
     <div class="receipt-wrapper">
-        {receipt_html}
-        <div class="cut-line">✂️ OFFICE COPY (TEAR ALONG THIS LINE) ✂️</div>
-        {receipt_html}
+        {build_receipt("STUDENT COPY")}
+        <div class="cut-line">&#9986; &#9986; &#9986; OFFICE COPY (TEAR ALONG THIS LINE) &#9986; &#9986; &#9986;</div>
+        {build_receipt("OFFICE COPY")}
     </div>
 </body>
 </html>
 """
     
     return HttpResponse(html)
-# ========== INSTALLMENT MANAGEMENT ==========
+
+# ========== INSTALLMENT MANAGEMENT ==========0
 
 @login_required
 def create_installments(request, student_id):

@@ -152,19 +152,23 @@
                         <div class="row">
                             <div class="col-md-3 text-center">
                                 <h6>Total Fee</h6>
-                                <h3 class="text-primary">₹{{ student.total_fee|intcomma }}</h3>
+                                <h3 class="text-primary">रु {{ student.total_fee|intcomma }}</h3>
+</xai:function_call />
+
+<xai:function_call name="edit_file">
+<parameter name="path">
                             </div>
                             <div class="col-md-3 text-center">
                                 <h6>Discount</h6>
-                                <h3 class="text-success">-₹{{ student.discount|intcomma }}</h3>
+                                <h3 class="text-success">-रु{{ student.discount|intcomma }}</h3>
                             </div>
                             <div class="col-md-3 text-center">
                                 <h6>Paid</h6>
-                                <h3 class="text-success">₹{{ student.paid_amount|intcomma }}</h3>
+                                <h3 class="text-success">रु{{ student.paid_amount|intcomma }}</h3>
                             </div>
                             <div class="col-md-3 text-center">
                                 <h6>Due</h6>
-                                <h3 class="text-danger">₹{{ student.due_amount|intcomma }}</h3>
+                                <h3 class="text-danger">रु{{ student.due_amount|intcomma }}</h3>
                             </div>
                         </div>
                         
@@ -177,8 +181,8 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between mt-2">
-                                <small>₹0</small>
-                                <small>₹{{ student.total_fee|intcomma }}</small>
+                                <small>रु0</small>
+                                <small>रु{{ student.total_fee|intcomma }}</small>
                             </div>
                         </div>
                         
@@ -226,7 +230,7 @@
                                         {% for installment in installments %}
                                         <tr {% if installment.is_overdue %}class="table-danger"{% endif %}>
                                             <td>{{ installment.installment_number }}</td>
-                                            <td>₹{{ installment.amount|intcomma }}</td>
+                                            <td>रु{{ installment.amount|intcomma }}</td>
                                             <td>{{ installment.due_date|date:"d M Y" }}</td>
                                             <td>
                                                 <span class="badge {% if installment.status == 'paid' %}bg-success{% elif installment.status == 'overdue' %}bg-danger{% elif installment.status == 'pending' %}bg-warning{% else %}bg-secondary{% endif %}">
@@ -297,7 +301,7 @@
                                 </td>
                                 <td>{{ payment.payment_date|date:"d M Y H:i" }}</td>
                                 <td>
-                                    <strong class="text-success">₹{{ payment.amount|intcomma }}</strong>
+                                    <strong class="text-success">रु{{ payment.amount|intcomma }}</strong>
                                 </td>
                                 <td>{{ payment.get_payment_method_display }}</td>
                                 <td>

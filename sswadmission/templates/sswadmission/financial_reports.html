@@ -68,7 +68,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="card-title mb-1">Total Collection</h6>
-                        <h2 class="mb-0">₹{{ summary.total_collected|intcomma }}</h2>
+                        <h2 class="mb-0">रु{{ summary.total_collected|intcomma }}</h2>
                     </div>
                     <i class="bi bi-cash-stack display-4 opacity-50"></i>
                 </div>
@@ -85,7 +85,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="card-title mb-1">Average Transaction</h6>
-                        <h2 class="mb-0">₹{{ summary.avg_payment|floatformat:0|intcomma }}</h2>
+                        <h2 class="mb-0">रु{{ summary.avg_payment|floatformat:0|intcomma }}</h2>
                     </div>
                     <i class="bi bi-graph-up display-4 opacity-50"></i>
                 </div>
@@ -202,9 +202,9 @@
                                 <td>{{ day.date|date:"l" }}</td>
                                 <td>{{ day.count }}</td>
                                 <td>
-                                    <strong class="text-success">₹{{ day.total|intcomma }}</strong>
+                                    <strong class="text-success">रु{{ day.total|intcomma }}</strong>
                                 </td>
-                                <td>₹{{ day.avg_amount|floatformat:0|intcomma }}</td>
+                                <td>रु{{ day.avg_amount|floatformat:0|intcomma }}</td>
                                 <td>
                                     {% if summary.total_collected > 0 %}
                                         {% widthratio day.total summary.total_collected 100 as percentage %}
@@ -245,8 +245,8 @@
                             <tr>
                                 <th colspan="2">TOTAL</th>
                                 <th>{{ summary.total_transactions }}</th>
-                                <th>₹{{ summary.total_collected|intcomma }}</th>
-                                <th>₹{{ summary.avg_payment|floatformat:0|intcomma }}</th>
+                                <th>रु{{ summary.total_collected|intcomma }}</th>
+                                <th>रु{{ summary.avg_payment|floatformat:0|intcomma }}</th>
                                 <th>100%</th>
                                 <th>-</th>
                             </tr>
@@ -286,7 +286,7 @@
                                 </td>
                                 <td>{{ method.count }}</td>
                                 <td>
-                                    <strong class="text-success">₹{{ method.total|intcomma }}</strong>
+                                    <strong class="text-success">रु{{ method.total|intcomma }}</strong>
                                 </td>
                                 <td>
                                     <div class="progress" style="height: 15px;">
@@ -296,7 +296,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>₹{{ method.avg_amount|floatformat:0|intcomma }}</td>
+                                <td>रु{{ method.avg_amount|floatformat:0|intcomma }}</td>
                             </tr>
                             {% empty %}
                             <tr>
@@ -344,9 +344,9 @@
                                 </td>
                                 <td>{{ stat.student_count }}</td>
                                 <td>
-                                    <strong class="text-success">₹{{ stat.total_paid|intcomma }}</strong>
+                                    <strong class="text-success">रु{{ stat.total_paid|intcomma }}</strong>
                                 </td>
-                                <td>₹{{ stat.avg_per_student|floatformat:0|intcomma }}</td>
+                                <td>रु{{ stat.avg_per_student|floatformat:0|intcomma }}</td>
                                 <td>
                                     {% if summary.total_collected > 0 %}
                                         {% widthratio stat.total_paid summary.total_collected 100 as percentage %}
@@ -389,7 +389,7 @@
                                 {% if daily_summary %}
                                     {% with daily_summary|dictsortreversed:"total"|first as top_day %}
                                     <p class="mb-1">{{ top_day.date|date:"l, d M Y" }}</p>
-                                    <h4 class="text-success">₹{{ top_day.total|intcomma }}</h4>
+                                    <h4 class="text-success">रु{{ top_day.total|intcomma }}</h4>
                                     <small class="text-muted">{{ top_day.count }} payments</small>
                                     {% endwith %}
                                 {% else %}
@@ -407,7 +407,7 @@
                                     {% with method_summary|first as top_method %}
                                     <p class="mb-1">{{ top_method.payment_method|title }}</p>
                                     <h4 class="text-primary">{{ top_method.count }} transactions</h4>
-                                    <small class="text-muted">₹{{ top_method.total|intcomma }} total</small>
+                                    <small class="text-muted">रु{{ top_method.total|intcomma }} total</small>
                                     {% endwith %}
                                 {% else %}
                                     <p class="mb-1">No data available</p>
@@ -421,7 +421,7 @@
                             <div class="card-body">
                                 <h6><i class="bi bi-graph-up-arrow text-info"></i> Collection Rate</h6>
                                 <p class="mb-1">Daily Average</p>
-                                <h4 class="text-success">₹{{ day_avg|floatformat:0|intcomma }}</h4>
+                                <h4 class="text-success">रु{{ day_avg|floatformat:0|intcomma }}</h4>
                                 <small class="text-muted">Per day average</small>
                             </div>
                         </div>
@@ -476,7 +476,7 @@
                         {% endfor %}
                     ],
                     datasets: [{
-                        label: 'Daily Collection (₹)',
+                        label: 'Daily Collection (रु)',
                         data: [
                             {% for day in daily_summary %}
                             {{ day.total }},
@@ -498,7 +498,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return '₹' + context.parsed.y.toLocaleString('en-IN');
+                                    return 'रु' + context.parsed.y.toLocaleString('en-IN');
                                 }
                             }
                         }
@@ -508,7 +508,7 @@
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return '₹' + value.toLocaleString('en-IN');
+                                    return 'रु' + value.toLocaleString('en-IN');
                                 }
                             }
                         }
@@ -557,7 +557,7 @@
                                     const value = context.parsed;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     const percentage = Math.round((value / total) * 100);
-                                    return `${context.label}: ₹${value.toLocaleString('en-IN')} (${percentage}%)`;
+                                    return `${context.label}: रु${value.toLocaleString('en-IN')} (${percentage}%)`;
                                 }
                             }
                         }

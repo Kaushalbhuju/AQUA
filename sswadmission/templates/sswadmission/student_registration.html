@@ -24,8 +24,26 @@
                 <h5 class="mb-0"><i class="bi bi-person-plus"></i> Student Registration Form</h5>
             </div>
             <div class="card-body">
+                <!-- Student Selection (optional) -->
+                <div class="mb-4">
+                    <label for="selectedStudent" class="form-label">Select Student (optional)</label>
+                    <select id="selectedStudent" class="form-control" onchange="onStudentSelectChange(this.value)">
+                        <option value="">-- New student (blank form) --</option>
+                        {% for s in selectable_students %}
+                            <option value="{{ s.id }}" {% if selected_student_id == s.id|stringformat:"s" %}selected{% endif %}>
+                                {{ s.student_id|default:"(no id yet)" }} - {{ s.full_name }}{% if s.phone %} ({{ s.phone }}){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted d-block mt-1">
+                        Pick an existing student to prefill the form, then complete missing information and Save/Register.
+                    </small>
+                </div>
+
                 <form method="post" id="studentForm">
                     {% csrf_token %}
+                    <input type="hidden" name="selected_student_id" id="selectedStudentHidden" value="{{ selected_student_id }}">
+                    <input type="hidden" name="submit_action" id="submitAction" value="submit">
                     
                     <!-- Progress Bar -->
                     <div class="mb-4">
@@ -173,7 +191,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.total_fee.id_for_label }}" class="form-label">Total Fee *</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text">रु</span>
                                     {{ form.total_fee }}
                                 </div>
                                 {% if form.total_fee.errors %}
@@ -185,7 +203,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.discount.id_for_label }}" class="form-label">Discount</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text">रु</span>
                                     {{ form.discount }}
                                 </div>
                                 {% if form.discount.errors %}
@@ -203,15 +221,15 @@
                                         <div class="row text-center">
                                             <div class="col-md-4">
                                                 <h6>Total Fee</h6>
-                                                <h4 id="totalFeeDisplay">₹0</h4>
+                                                <h4 id="totalFeeDisplay">रु0</h4>
                                             </div>
                                             <div class="col-md-4">
                                                 <h6>After Discount</h6>
-                                                <h4 id="afterDiscountDisplay">₹0</h4>
+                                                <h4 id="afterDiscountDisplay">रु0</h4>
                                             </div>
                                             <div class="col-md-4">
                                                 <h6>Due Amount</h6>
-                                                <h4 id="dueAmountDisplay" class="text-danger">₹0</h4>
+                                                <h4 id="dueAmountDisplay" class="text-danger">रु0</h4>
                                             </div>
                                         </div>
                                     </div>
@@ -332,6 +350,14 @@
 
 {% block extra_js %}
 <script>
+    function onStudentSelectChange(studentId) {
+        if (studentId) {
+            window.location.search = 'student_id=' + encodeURIComponent(studentId);
+        } else {
+            window.location.search = '';
+        }
+    }
+
     // Calculate and display fee summary
     function calculateFeeSummary() {
         const totalFee = parseFloat(document.getElementById('{{ form.total_fee.id_for_label }}').value) || 0;
@@ -341,9 +367,9 @@
         const dueAmount = afterDiscount; // Initially, due amount equals total after discount
         
         // Update displays
-        document.getElementById('totalFeeDisplay').textContent = '₹' + totalFee.toLocaleString('en-IN');
-        document.getElementById('afterDiscountDisplay').textContent = '₹' + afterDiscount.toLocaleString('en-IN');
-        document.getElementById('dueAmountDisplay').textContent = '₹' + dueAmount.toLocaleString('en-IN');
+        document.getElementById('totalFeeDisplay').textContent = 'रु' + totalFee.toLocaleString('en-IN');
+        document.getElementById('afterDiscountDisplay').textContent = 'रु' + afterDiscount.toLocaleString('en-IN');
+        document.getElementById('dueAmountDisplay').textContent = 'रु' + dueAmount.toLocaleString('en-IN');
         
         // Update due amount color
         if (dueAmount > 0) {
@@ -371,8 +397,8 @@
     
     // Save as draft (placeholder function)
     function saveAsDraft() {
-        alert('Draft saved successfully! You can continue later.');
-        // In a real application, you would save the form data to localStorage or send to server
+        document.getElementById('submitAction').value = 'draft';
+        document.getElementById('studentForm').submit();
     }
     
     // Initialize form validation
@@ -416,6 +442,17 @@
     
     // Form submission handler
     document.getElementById('studentForm').addEventListener('submit', function(e) {
+        // Default action is submit unless explicitly set to draft
+        if (!document.getElementById('submitAction').value) {
+            document.getElementById('submitAction').value = 'submit';
+        }
+
+        // Keep selected student id in sync
+        const selected = document.getElementById('selectedStudent');
+        if (selected) {
+            document.getElementById('selectedStudentHidden').value = selected.value || '';
+        }
+
         // Validate required fields
         const requiredFields = this.querySelectorAll('[required]');
         let isValid = true;
@@ -436,6 +473,12 @@
             isValid = false;
         }
         
+        // For drafts, skip strict validation (allow partial saves)
+        const isDraft = document.getElementById('submitAction').value === 'draft';
+        if (isDraft) {
+            return true;
+        }
+
         if (!isValid) {
             e.preventDefault();
             alert('Please fill all required fields correctly.');

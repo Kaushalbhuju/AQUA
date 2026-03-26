@@ -1,310 +1,513 @@
-<!DOCTYPE html>
+{% comment %} {% comment %} <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Receipt - {{ receipt_no }}</title>
+    <title>Cash Receipt - B5</title>
     <style>
-        /* Simple table-based layout for WeasyPrint */
-        body {
-            font-family: "DejaVu Sans", "Arial", sans-serif;
-            font-size: 12px;
+        @page {
+            size: B5;
+            margin: 5mm;
+        }
+
+        * {
             margin: 0;
-            padding: 10mm;
-            line-height: 1.2;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        .receipt-container {
-            width: 190mm;
+
+        body {
+            font-family: "DejaVu Sans", "Segoe UI", Arial, sans-serif;
+            font-size: 11px;
+            margin: 0;
+            padding: 5mm;
+            background: #e8e8e8;
+            line-height: 1.3;
+        }
+
+        .page {
+            width: 176mm;
+            height: 250mm;
             margin: 0 auto;
+            background: white;
+            padding: 4mm 5mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 4mm;
         }
-        
+
         .receipt {
             width: 100%;
-            height: 128mm;
-            border: 2px solid #000;
-            border-radius: 8px;
-            padding: 8mm;
-            margin-bottom: 5mm;
-            page-break-inside: avoid;
+            height: 120mm;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 5mm 6mm 4mm 6mm;
             overflow: hidden;
+            position: relative;
         }
-        
-        /* Header */
+
+        /* ---- HEADER SECTION ---- */
         .header {
-            width: 100%;
-            margin-bottom: 5mm;
+            display: flex;
+            align-items: flex-start;
+            gap: 4mm;
+            margin-bottom: 1.5mm;
         }
-        
-        .gov-info {
-            width: 100%;
-            margin-bottom: 3mm;
+
+        .logo-area {
+            width: 22mm;
+            min-width: 22mm;
+            height: 22mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
-        
-        .gov-left {
-            float: left;
-            width: 50%;
-            font-weight: bold;
-            color: #c00;
+
+        .logo-area svg {
+            width: 22mm;
+            height: 22mm;
         }
-        
-        .gov-right {
-            float: right;
-            width: 50%;
-            text-align: right;
-            font-weight: bold;
-            color: #c00;
+
+        .header-text {
+            flex: 1;
         }
-        
-        .clear {
-            clear: both;
+
+        .gov-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5mm;
         }
-        
-        /* Company info */
+
+        .gov-row span {
+            font-weight: 800;
+            color: #cc0000;
+            font-size: 10px;
+            letter-spacing: 0.3px;
+        }
+
         .company-name {
+            font-size: 15px;
+            font-weight: 900;
+            color: #001a66;
             text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            color: #003366;
-            margin-bottom: 2mm;
+            margin-bottom: 0.5mm;
+            letter-spacing: 0.5px;
         }
-        
-        .company-details {
+
+        .company-address {
             text-align: center;
-            font-size: 11px;
-            margin-bottom: 3mm;
-            border-bottom: 2px solid #c00;
-            padding-bottom: 3mm;
+            font-size: 10px;
+            font-weight: 700;
+            color: #222;
+            line-height: 1.4;
         }
-        
-        /* Receipt number */
-        .receipt-number {
+
+        .receipt-no-row {
             text-align: right;
-            color: #c00;
-            font-weight: bold;
-            margin-bottom: 3mm;
+            margin-top: 0.5mm;
         }
-        
-        /* Title */
-        .title {
-            background: #5f6fb3;
+
+        .receipt-no-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .receipt-no-value {
+            font-size: 14px;
+            font-weight: 900;
+            color: #cc0000;
+        }
+
+        /* Red separator line */
+        .red-line {
+            width: 100%;
+            height: 2.5px;
+            background: #cc0000;
+            margin: 1.5mm 0;
+        }
+
+        /* CASH RECEIPT Banner */
+        .title-banner {
+            background: #5b6ab6;
             color: white;
             text-align: center;
-            font-weight: bold;
-            padding: 3mm;
-            margin-bottom: 5mm;
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 800;
+            padding: 2.5mm 0;
+            margin-bottom: 2.5mm;
+            letter-spacing: 2px;
         }
-        
-        /* Main table - using simple table layout */
-        .main-table {
+
+        /* ---- TABLE SECTION ---- */
+        .receipt-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 5mm;
+            margin-bottom: 2mm;
         }
-        
-        .main-table td {
-            border: 1px solid #000;
-            padding: 3mm;
-            vertical-align: top;
-        }
-        
-        .label-cell {
-            width: 30%;
-            font-weight: bold;
-            background-color: #f5f5f5;
-        }
-        
-        .value-cell {
-            width: 50%;
-        }
-        
-        .memo-cell {
-            width: 20%;
-            font-weight: bold;
-            text-align: center;
+
+        .receipt-table td {
+            border: 1px solid #444;
+            padding: 1.8mm 3mm;
             vertical-align: middle;
-        }
-        
-        /* Footer */
-        .footer {
-            width: 100%;
-            margin-top: 5mm;
-        }
-        
-        .footer-left {
-            float: left;
-            width: 50%;
-        }
-        
-        .footer-right {
-            float: right;
-            width: 40%;
-            text-align: right;
-        }
-        
-        .signature-line {
-            border-top: 1px solid #000;
-            margin-top: 10mm;
-            padding-top: 2mm;
-            text-align: center;
             font-size: 11px;
         }
-        
-        .copy-note {
-            text-align: center;
-            font-weight: bold;
-            color: #c00;
-            margin-top: 3mm;
-            padding-top: 2mm;
-            border-top: 1px dashed #999;
+
+        .receipt-table .label-left {
+            width: 28%;
+            font-weight: 700;
+            font-size: 11px;
+            text-align: left;
         }
-        
-        /* For logo - simple approach */
-        .logo-cell {
-            width: 70px;
-            height: 70px;
+
+        .receipt-table .value-mid {
+            width: 50%;
+            min-height: 6mm;
+        }
+
+        .receipt-table .memo-cell {
+            width: 22%;
+            font-weight: 800;
+            font-size: 16px;
             text-align: center;
             vertical-align: middle;
+            letter-spacing: 2px;
+        }
+
+        .receipt-table .label-right {
+            text-align: right;
+            font-weight: 700;
+            font-size: 11px;
+            padding-right: 3mm;
+        }
+
+        .receipt-table .empty-right {
+            border: 1px solid #444;
+        }
+
+        /* ---- FOOTER ---- */
+        .footer-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 2mm;
+        }
+
+        .footer-left {
+            flex: 0 0 45%;
+        }
+
+        .footer-left .received-by {
+            font-weight: 800;
+            font-size: 11px;
+            text-decoration: underline;
+            margin-bottom: 1mm;
+        }
+
+        .footer-left .dept-info {
             font-size: 10px;
-            color: #666;
+            line-height: 1.5;
+            padding-left: 4mm;
+        }
+
+        .footer-center {
+            flex: 0 0 25%;
+            text-align: center;
+        }
+
+        .footer-right {
+            flex: 0 0 25%;
+            text-align: center;
+        }
+
+        .sig-line {
+            margin-top: 0;
+            padding-top: 1.5mm;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .sig-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sig-value {
+            min-height: 8mm;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-size: 11px;
+            padding: 0 2mm;
+            min-width: 30mm;
+        }
+
+        .sig-underline {
+            width: 100%;
+            border-top: 1.5px solid #333;
+            margin-top: 0;
+            padding-top: 1.5mm;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Copy note */
+        .copy-note {
+            text-align: center;
+            font-weight: 700;
+            color: #cc0000;
+            font-size: 8px;
+            margin-top: 1.5mm;
+            padding-top: 1.5mm;
+            border-top: 1px dashed #999;
+            letter-spacing: 0.3px;
+        }
+
+        /* ---- DASHED CUT LINE ---- */
+        .cut-line {
+            border: none;
+            border-top: 1.5px dashed #999;
+            margin: 0;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .page {
+                box-shadow: none;
+                padding: 4mm 5mm;
+            }
+        }
+
+        @media screen {
+            .page {
+                box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="receipt-container">
-        
-        <!-- FIRST COPY - OFFICE -->
+    <div class="page">
+
+        <!-- ============ OFFICE COPY ============ -->
         <div class="receipt">
+            <!-- Header -->
             <div class="header">
-                <div class="gov-info">
-                    <div class="gov-left">GOVERNMENT REGISTER NO: 376328/82/83</div>
-                    <div class="gov-right">VAT NO: 622456452</div>
-                    <div class="clear"></div>
+                <div class="logo-area">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Book shape -->
+                        <path d="M60 95 C60 95 25 85 20 50 C18 35 25 20 40 18 C50 16 58 22 60 30 C62 22 70 16 80 18 C95 20 102 35 100 50 C95 85 60 95 60 95Z" fill="#cc0000" stroke="#8b0000" stroke-width="1"/>
+                        <!-- Inner book pages -->
+                        <path d="M60 88 C60 88 32 80 28 50 C26 38 32 26 43 24 C51 22 57 27 60 33 C63 27 69 22 77 24 C88 26 94 38 92 50 C88 80 60 88 60 88Z" fill="#ff3333"/>
+                        <!-- Book center line -->
+                        <line x1="60" y1="33" x2="60" y2="88" stroke="white" stroke-width="2"/>
+                        <!-- Page lines left -->
+                        <path d="M35 45 C35 45 45 42 55 45" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M35 52 C35 52 45 49 55 52" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M37 59 C37 59 46 56 55 59" stroke="white" stroke-width="1.5" fill="none"/>
+                        <!-- Page lines right -->
+                        <path d="M65 45 C65 45 75 42 85 45" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M65 52 C65 52 75 49 85 52" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M65 59 C65 59 74 56 83 59" stroke="white" stroke-width="1.5" fill="none"/>
+                        <!-- Top decorative arc -->
+                        <path d="M38 20 C38 10 55 2 60 8 C65 2 82 10 82 20" stroke="#001a66" stroke-width="3" fill="none"/>
+                        <circle cx="60" cy="8" r="3" fill="#001a66"/>
+                    </svg>
                 </div>
-                
-                <div class="company-name">AQUA EDUCATION AND TRAINING ACADEMY PVT LTD</div>
-                
-                <div class="company-details">
-                    Lazimpat, Kathmandu Metropolitan City-02, Kathmandu, Nepal<br>
-                    Web: www.aquagroupnp.com, E-mail: SSW.edu.academy@gmail.com
+                <div class="header-text">
+                    <div class="gov-row">
+                        <span>GOVERNMENT REGISTER NO: 376328/82/83</span>
+                        <span>VAT NO: 622456452</span>
+                    </div>
+                    <div class="company-name">AQUA EDUCATION AND TRAINING ACADEMY PVT LTD</div>
+                    <div class="company-address">
+                        Lazimpat, Kathmandu Metropolitan City-02, Kathmandu, Nepal<br>
+                        Web: www.aquagroupnp.com, E-mail: ssw.edu.academy@gmail.com
+                    </div>
+                    <div class="receipt-no-row">
+                        <span class="receipt-no-label">Receipt Number: </span>
+                        <span class="receipt-no-value">A-0001</span>
+                    </div>
                 </div>
-                
-                <div class="receipt-number">Receipt Number: {{ receipt_no }}</div>
             </div>
-            
-            <div class="title">CASH RECEIPT</div>
-            
-            <table class="main-table">
+
+            <div class="red-line"></div>
+
+            <!-- Title -->
+            <div class="title-banner">CASH &nbsp; RECEIPT</div>
+
+            <!-- Table -->
+            <table class="receipt-table">
                 <tr>
-                    <td class="label-cell">Received From</td>
-                    <td class="value-cell">{{ received_from }}</td>
-                    <td class="memo-cell" rowspan="4">MEMO</td>
+                    <td class="label-left">Received From</td>
+                    <td class="value-mid"></td>
+                    <td class="memo-cell" rowspan="2">MEMO</td>
                 </tr>
                 <tr>
-                    <td class="label-cell">Received Contents</td>
-                    <td class="value-cell">{{ received_contents }}</td>
+                    <td class="label-left">Received Contents</td>
+                    <td class="value-mid"></td>
                 </tr>
                 <tr>
-                    <td class="label-cell">Received Amount</td>
-                    <td class="value-cell">NRs. {{ amount }}</td>
+                    <td class="label-right" colspan="1" style="text-align:right;">Received Amount</td>
+                    <td class="value-mid"></td>
+                    <td class="empty-right"></td>
                 </tr>
                 <tr>
-                    <td class="label-cell">13% VAT</td>
-                    <td class="value-cell">NRs. 0.00</td>
+                    <td class="label-right" colspan="1" style="text-align:right;">Payment Method</td>
+                    <td class="value-mid"></td>
+                    <td class="empty-right"></td>
                 </tr>
                 <tr>
-                    <td class="label-cell"><strong>TOTAL RECEIVED AMOUNT IN NRP</strong></td>
-                    <td class="value-cell"><strong>NRs. {{ total }}</strong></td>
-                    <td class="memo-cell"></td>
+                    <td class="label-right" colspan="1" style="text-align:right; font-weight:800;">TOTAL RECEIVED AMOUNT IN NRP</td>
+                    <td class="value-mid" style="font-weight:800;"></td>
+                    <td class="empty-right"></td>
                 </tr>
             </table>
-            
-            <div class="footer">
+
+            <!-- Footer -->
+            <div class="footer-section">
                 <div class="footer-left">
-                    <strong>Received By</strong><br>
-                    Account Department<br>
-                    Aqua Education And Training Academy Pvt. Ltd<br>
-                    Telephone: +977-01-000000
+                    <div class="received-by">Received By</div>
+                    <div class="dept-info">
+                        Account Department<br>
+                        Aqua Education And Training Academy Pvt. Ltd<br>
+                        Telephone: +977-01-000000
+                    </div>
                 </div>
-                
+                <div class="footer-center">
+                    <div class="sig-block">
+                        <div class="sig-value" id="dateValue1"></div>
+                        <div class="sig-underline">Received Date</div>
+                    </div>
+                </div>
                 <div class="footer-right">
-                    Received Date: {{ date }}<br><br>
-                    <div class="signature-line">Received Sign & Stamp</div>
+                    <div class="sig-block">
+                        <div class="sig-value"></div>
+                        <div class="sig-underline">Received Sign & Stamp</div>
+                    </div>
                 </div>
-                <div class="clear"></div>
             </div>
-            
-            <div class="copy-note">
-                AQUA EDUCATION AND TRAINING ACADEMY PVT LTD - TO BE RETAINED FOR ACCOUNTING RECORDS
-            </div>
+
+            <div class="copy-note">AQUA EDUCATION AND TRAINING ACADEMY PVT LTD - OFFICE COPY (TO BE RETAINED FOR ACCOUNTING RECORDS)</div>
         </div>
-        
-        <!-- SECOND COPY - PAYER -->
+
+        <!-- ============ CUSTOMER COPY ============ -->
         <div class="receipt">
+            <!-- Header -->
             <div class="header">
-                <div class="gov-info">
-                    <div class="gov-left">GOVERNMENT REGISTER NO: 376328/82/83</div>
-                    <div class="gov-right">VAT NO: 622456452</div>
-                    <div class="clear"></div>
+                <div class="logo-area">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M60 95 C60 95 25 85 20 50 C18 35 25 20 40 18 C50 16 58 22 60 30 C62 22 70 16 80 18 C95 20 102 35 100 50 C95 85 60 95 60 95Z" fill="#cc0000" stroke="#8b0000" stroke-width="1"/>
+                        <path d="M60 88 C60 88 32 80 28 50 C26 38 32 26 43 24 C51 22 57 27 60 33 C63 27 69 22 77 24 C88 26 94 38 92 50 C88 80 60 88 60 88Z" fill="#ff3333"/>
+                        <line x1="60" y1="33" x2="60" y2="88" stroke="white" stroke-width="2"/>
+                        <path d="M35 45 C35 45 45 42 55 45" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M35 52 C35 52 45 49 55 52" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M37 59 C37 59 46 56 55 59" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M65 45 C65 45 75 42 85 45" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M65 52 C65 52 75 49 85 52" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M65 59 C65 59 74 56 83 59" stroke="white" stroke-width="1.5" fill="none"/>
+                        <path d="M38 20 C38 10 55 2 60 8 C65  82 10 82 20" stroke="#001a66" stroke-width="3" fill="none"/>
+                        <circle cx="60" cy="8" r="3" fill="#001a66"/>
+                    </svg>
                 </div>
-                
-                <div class="company-name">AQUA EDUCATION AND TRAINING ACADEMY PVT LTD</div>
-                
-                <div class="company-details">
-                    Lazimpat, Kathmandu Metropolitan City-02, Kathmandu, Nepal<br>
-                    Web: www.aquagroupnp.com, E-mail: SSW.edu.academy@gmail.com
+                <div class="header-text">
+                    <div class="gov-row">
+                        <span>GOVERNMENT REGISTER NO: 376328/82/83</span>
+                        <span>VAT NO: 622456452</span>
+                    </div>
+                    <div class="company-name">AQUA EDUCATION AND TRAINING ACADEMY PVT LTD</div>
+                    <div class="company-address">
+                        Lazimpat, Kathmandu Metropolitan City-02, Kathmandu, Nepal<br>
+                        Web: www.aquagroupnp.com, E-mail: ssw.edu.academy@gmail.com
+                    </div>
+                    <div class="receipt-no-row">
+                        <span class="receipt-no-label">Receipt Number: </span>
+                        <span class="receipt-no-value">A-0001</span>
+                    </div>
                 </div>
-                
-                <div class="receipt-number">Receipt Number: {{ receipt_no }}</div>
             </div>
-            
-            <div class="title">CASH RECEIPT</div>
-            
-            <table class="main-table">
+
+            <div class="red-line"></div>
+
+            <!-- Title -->
+            <div class="title-banner">CASH &nbsp; RECEIPT</div>
+
+            <!-- Table -->
+            <table class="receipt-table">
                 <tr>
-                    <td class="label-cell">Received From</td>
-                    <td class="value-cell">{{ received_from }}</td>
-                    <td class="memo-cell" rowspan="4">MEMO</td>
+                    <td class="label-left">Received From</td>
+                    <td class="value-mid"></td>
+                    <td class="memo-cell" rowspan="2">MEMO</td>
                 </tr>
                 <tr>
-                    <td class="label-cell">Received Contents</td>
-                    <td class="value-cell">{{ received_contents }}</td>
+                    <td class="label-left">Received Contents</td>
+                    <td class="value-mid"></td>
                 </tr>
                 <tr>
-                    <td class="label-cell">Received Amount</td>
-                    <td class="value-cell">NRs. {{ amount }}</td>
+                    <td class="label-right" colspan="1" style="text-align:right;">Received Amount</td>
+                    <td class="value-mid"></td>
+                    <td class="empty-right"></td>
                 </tr>
                 <tr>
-                    <td class="label-cell">13% VAT</td>
-                    <td class="value-cell">NRs. 0.00</td>
+                    <td class="label-right" colspan="1" style="text-align:right;">Payment Method</td>
+                    <td class="value-mid"></td>
+                    <td class="empty-right"></td>
                 </tr>
                 <tr>
-                    <td class="label-cell"><strong>TOTAL RECEIVED AMOUNT IN NRP</strong></td>
-                    <td class="value-cell"><strong>NRs. {{ total }}</strong></td>
-                    <td class="memo-cell"></td>
+                    <td class="label-right" colspan="1" style="text-align:right; font-weight:800;">TOTAL RECEIVED AMOUNT IN NRP</td>
+                    <td class="value-mid" style="font-weight:800;"></td>
+                    <td class="empty-right"></td>
                 </tr>
             </table>
-            
-            <div class="footer">
+
+            <!-- Footer -->
+            <div class="footer-section">
                 <div class="footer-left">
-                    <strong>Received By</strong><br>
-                    Account Department<br>
-                    Aqua Education And Training Academy Pvt. Ltd<br>
-                    Telephone: +977-01-000000
+                    <div class="received-by">Received By</div>
+                    <div class="dept-info">
+                        Account Department<br>
+                        Aqua Education And Training Academy Pvt. Ltd<br>
+                        Telephone: +977-9810000000
+                    </div>
                 </div>
-                
+                <div class="footer-center">
+                    <div class="sig-block">
+                        <div class="sig-value" id="dateValue2"></div>
+                        <div class="sig-underline">Received Date</div>
+                    </div>
+                </div>
                 <div class="footer-right">
-                    Received Date: {{ date }}<br><br>
-                    <div class="signature-line">Received Sign & Stamp</div>
+                    <div class="sig-block">
+                        <div class="sig-value"></div>
+                        <div class="sig-underline">Received Sign & Stamp</div>
+                    </div>
                 </div>
-                <div class="clear"></div>
             </div>
-            
-            <div class="copy-note">
-                AQUA EDUCATION AND TRAINING ACADEMY PVT LTD - RETAIN AS PROOF OF PAYMENT
-            </div>
+
+            <div class="copy-note">AQUA EDUCATION AND TRAINING ACADEMY PVT LTD - CUSTOMER COPY (RETAIN AS PROOF OF PAYMENT)</div>
         </div>
-        
+
     </div>
+
+    <script>
+        // Auto-fill today's date on the Received Date line
+        function setDates() {
+            const today = new Date();
+            const options = { year: 'numeric', month: 'short', day: '2-digit' };
+            const dateStr = today.toLocaleDateString('en-US', options);
+            const d1 = document.getElementById('dateValue1');
+            const d2 = document.getElementById('dateValue2');
+            if (d1) d1.textContent = dateStr;
+            if (d2) d2.textContent = dateStr;
+        }
+        setDates();
+    </script>
 </body>
-</html>
+</html> {% endcomment %} {% endcomment %}

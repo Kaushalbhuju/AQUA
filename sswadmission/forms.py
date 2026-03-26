@@ -268,7 +268,7 @@ class FeePaymentForm(forms.ModelForm):
             # Set max amount based on student's due amount
             max_amount = student.due_amount + Decimal('10000')  # Allow some advance
             self.fields['amount'].validators.append(
-                MaxValueValidator(max_amount, f'Maximum allowed amount is ₹{max_amount}')
+MaxValueValidator(max_amount, f'Maximum allowed amount is रु {max_amount}')
             )
     
     def clean_amount(self):
@@ -281,8 +281,8 @@ class FeePaymentForm(forms.ModelForm):
         if student:
             if amount > student.due_amount + Decimal('10000'):
                 raise forms.ValidationError(
-                    f"Payment amount exceeds due amount by more than ₹10,000. "
-                    f"Maximum allowed: ₹{student.due_amount + Decimal('10000')}"
+f"Payment amount exceeds due amount by more than रु 10,000. "
+                    f"Maximum allowed: रु{student.due_amount + Decimal('10000')}"
                 )
         
         return amount

@@ -103,7 +103,7 @@ class StudentAdmin(admin.ModelAdmin):
         
         percentage = (obj.paid_amount / effective_fee) * 100 if effective_fee > 0 else 0
         color = 'green' if percentage >= 100 else 'orange' if percentage > 0 else 'red'
-        return format_html('₹{} / ₹{} <small>({}%)</small>', 
+        return format_html('रु {} / रु {} <small>({}%)</small>', 
                           obj.paid_amount, effective_fee, int(percentage))
     fee_display.short_description = 'Fee Paid'
     
@@ -174,7 +174,7 @@ class FeePaymentAdmin(admin.ModelAdmin):
     student_link.short_description = 'Student'
     
     def amount_display(self, obj):
-        return format_html('<strong>₹{}</strong>', obj.amount)
+        return format_html('<strong>रु{}</strong>', obj.amount)
     amount_display.short_description = 'Amount'
     
     def payment_method_display(self, obj):
@@ -208,7 +208,7 @@ class FeeInstallmentAdmin(admin.ModelAdmin):
     student_link.short_description = 'Student'
     
     def amount_display(self, obj):
-        return format_html('₹{}', obj.amount)
+        return format_html('रु{}', obj.amount)
     amount_display.short_description = 'Amount'
     
     def status_display(self, obj):

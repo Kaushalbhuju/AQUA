@@ -52,9 +52,9 @@
                             </div>
                             <div class="col-md-4 text-center">
                                 <h6>Fee Status</h6>
-                                <p class="mb-1">Total: ₹{{ student.total_fee|default:0|intcomma }}</p>
-                                <p class="mb-1 text-success">Paid: ₹{{ student.paid_amount|default:0|intcomma }}</p>
-                                <p class="mb-0 text-danger">Due: ₹{{ student.due_amount|default:0|intcomma }}</p>
+                                <p class="mb-1">Total: रु{{ student.total_fee|default:0|intcomma }}</p>
+                                <p class="mb-1 text-success">Paid: रु{{ student.paid_amount|default:0|intcomma }}</p>
+                                <p class="mb-0 text-danger">Due: रु{{ student.due_amount|default:0|intcomma }}</p>
                             </div>
                         </div>
                     </div>
@@ -233,7 +233,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.total_fee.id_for_label }}" class="form-label">Total Fee *</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text">रु</span>
                                     {{ form.total_fee }}
                                 </div>
                                 {% if form.total_fee.errors %}
@@ -241,12 +241,12 @@
                                     {{ form.total_fee.errors }}
                                 </div>
                                 {% endif %}
-                                <small class="text-muted">Current: ₹{{ student.total_fee|default:0|intcomma }}</small>
+                                <small class="text-muted">Current: रु{{ student.total_fee|default:0|intcomma }}</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="{{ form.discount.id_for_label }}" class="form-label">Discount</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text">रु</span>
                                     {{ form.discount }}
                                 </div>
                                 {% if form.discount.errors %}
@@ -254,7 +254,7 @@
                                     {{ form.discount.errors }}
                                 </div>
                                 {% endif %}
-                                <small class="text-muted">Current: ₹{{ student.discount|default:0|intcomma }}</small>
+                                <small class="text-muted">Current: रु{{ student.discount|default:0|intcomma }}</small>
                             </div>
                         </div>
                         
@@ -265,19 +265,19 @@
                                         <div class="row text-center">
                                             <div class="col-md-3">
                                                 <h6>Total Fee</h6>
-                                                <h4 id="totalFeeDisplay">₹{{ student.total_fee|default:0|intcomma }}</h4>
+                                                <h4 id="totalFeeDisplay">रु{{ student.total_fee|default:0|intcomma }}</h4>
                                             </div>
                                             <div class="col-md-3">
                                                 <h6>Discount</h6>
-                                                <h4 id="discountDisplay" class="text-success">-₹{{ student.discount|default:0|intcomma }}</h4>
+                                                <h4 id="discountDisplay" class="text-success">-रु{{ student.discount|default:0|intcomma }}</h4>
                                             </div>
                                             <div class="col-md-3">
                                                 <h6>Net Fee</h6>
-                                                <h4 id="netFeeDisplay">₹{{ student.total_fee|default:0|add:student.discount|default:0|intcomma }}</h4>
+                                                <h4 id="netFeeDisplay">रु{{ student.total_fee|default:0|add:student.discount|default:0|intcomma }}</h4>
                                             </div>
                                             <div class="col-md-3">
                                                 <h6>Due Amount</h6>
-                                                <h4 id="dueAmountDisplay" class="text-danger">₹{{ student.due_amount|default:0|intcomma }}</h4>
+                                                <h4 id="dueAmountDisplay" class="text-danger">रु{{ student.due_amount|default:0|intcomma }}</h4>
                                             </div>
                                         </div>
                                     </div>
@@ -419,9 +419,9 @@
         const netFee = totalFee - discount;
         
         // Update displays
-        document.getElementById('totalFeeDisplay').textContent = '₹' + totalFee.toLocaleString('en-IN');
-        document.getElementById('discountDisplay').textContent = '-₹' + discount.toLocaleString('en-IN');
-        document.getElementById('netFeeDisplay').textContent = '₹' + (netFee > 0 ? netFee : 0).toLocaleString('en-IN');
+        document.getElementById('totalFeeDisplay').textContent = 'रु' + totalFee.toLocaleString('en-IN');
+        document.getElementById('discountDisplay').textContent = '-रु' + discount.toLocaleString('en-IN');
+        document.getElementById('netFeeDisplay').textContent = 'रु' + (netFee > 0 ? netFee : 0).toLocaleString('en-IN');
         
         // Validate discount
         if (discount > totalFee) {

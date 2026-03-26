@@ -238,7 +238,7 @@ class FeePayment(models.Model):
             self.student.update_payment_status()
     
     def __str__(self):
-        return f"{self.payment_id} - {self.student.student_id} - ₹{self.amount}"
+        return f"{self.payment_id} - {self.student.student_id} - रु {self.amount}"
 
 class FeeInstallment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='installments')

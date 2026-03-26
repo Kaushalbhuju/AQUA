@@ -62,7 +62,7 @@
                             <i class="bi bi-currency-dollar text-info"></i>
                         {% endif %}
                     </div>
-                    <h2 class="text-success">₹{{ payment.amount|intcomma }}</h2>
+                    <h2 class="text-success">रु{{ payment.amount|intcomma }}</h2>
                     <span class="badge {% if payment.status == 'completed' %}payment-status-completed{% elif payment.status == 'pending' %}payment-status-pending{% elif payment.status == 'failed' %}payment-status-failed{% else %}bg-secondary{% endif %} fs-6">
                         {{ payment.get_status_display }}
                     </span>
@@ -154,15 +154,15 @@
                     <div class="row text-center">
                         <div class="col">
                             <small>Total</small>
-                            <h6 class="mb-0">₹{{ payment.student.total_fee|intcomma }}</h6>
+                            <h6 class="mb-0">रु{{ payment.student.total_fee|intcomma }}</h6>
                         </div>
                         <div class="col">
                             <small>Paid</small>
-                            <h6 class="mb-0 text-success">₹{{ payment.student.paid_amount|intcomma }}</h6>
+                            <h6 class="mb-0 text-success">रु{{ payment.student.paid_amount|intcomma }}</h6>
                         </div>
                         <div class="col">
                             <small>Due</small>
-                            <h6 class="mb-0 text-danger">₹{{ payment.student.due_amount|intcomma }}</h6>
+                            <h6 class="mb-0 text-danger">रु{{ payment.student.due_amount|intcomma }}</h6>
                         </div>
                     </div>
                     <div class="progress mt-2" style="height: 10px;">
@@ -302,7 +302,7 @@
                                 </td>
                                 <td>
                                     <span class="{% if recent_payment.id == payment.id %}text-success fw-bold{% else %}text-success{% endif %}">
-                                        ₹{{ recent_payment.amount|intcomma }}
+                                        रु{{ recent_payment.amount|intcomma }}
                                     </span>
                                 </td>
                                 <td>{{ recent_payment.get_payment_method_display }}</td>
@@ -420,7 +420,7 @@
                     <div class="alert alert-info">
                         <strong>Payment Details:</strong><br>
                         ID: {{ payment.payment_id }}<br>
-                        Amount: ₹{{ payment.amount|intcomma }}<br>
+                        Amount: रु{{ payment.amount|intcomma }}<br>
                         Student: {{ payment.student.full_name }}<br>
                         Method: {{ payment.get_payment_method_display }}
                     </div>

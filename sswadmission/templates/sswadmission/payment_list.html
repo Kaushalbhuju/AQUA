@@ -29,7 +29,17 @@
         <div class="card stat-card">
             <div class="card-body text-center">
                 <h6 class="text-muted">Total Collection</h6>
-                <h3 class="text-success">₹{{ stats.total_amount|intcomma }}</h3>
+                <h3 class="text-success">रु {{ stats.total_amount|intcomma }}</h3>
+</xai:function_call.
+
+
+
+
+
+
+
+<xai:function_call name="edit_file">
+<parameter name="path">
                 <small class="text-muted">{{ stats.total_count }} payments</small>
             </div>
         </div>
@@ -58,11 +68,21 @@
                 <h6 class="text-muted">Average Payment</h6>
                 <h3 class="text-primary">
                     {% if stats.total_count > 0 %}
-                    ₹{{ stats.total_amount|floatformat:0|intcomma }}
+                    रु {{ stats.total_amount|floatformat:0|intcomma }}
                     {% else %}
-                    ₹0
+                    रु 0
                     {% endif %}
                 </h3>
+</xai:function_call.
+
+
+
+
+
+
+
+<xai:function_call name="edit_file">
+<parameter name="path">
                 <small class="text-muted">Per transaction</small>
             </div>
         </div>
@@ -166,7 +186,7 @@
                             <small class="text-muted">{{ payment.student.student_id }}</small>
                         </td>
                         <td>
-                            <strong class="text-success">₹{{ payment.amount|intcomma }}</strong>
+                            <strong class="text-success">रु{{ payment.amount|intcomma }}</strong>
                         </td>
                         <td>
                             <span class="badge bg-secondary">

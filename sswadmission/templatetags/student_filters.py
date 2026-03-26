@@ -15,6 +15,6 @@ def percentage(value, total):
 def format_currency(value):
     """Format as currency"""
     try:
-        return f"₹{float(value):,.2f}"
+        return f"रु {float(value):,.2f}"
     except (ValueError, TypeError):
-        return f"₹0.00"
+        return f"रु 0.00"

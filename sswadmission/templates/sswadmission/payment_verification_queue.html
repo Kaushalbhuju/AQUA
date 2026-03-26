@@ -119,7 +119,7 @@
                             <small class="text-muted">{{ payment.student.student_id }}</small>
                         </td>
                         <td>
-                            <strong class="text-primary">₹{{ payment.amount|intcomma }}</strong>
+                            <strong class="text-primary">रु{{ payment.amount|intcomma }}</strong>
                         </td>
                         <td>
                             <span class="badge bg-secondary">
@@ -179,7 +179,7 @@
                                         <div class="alert alert-info">
                                             <strong>Payment Details:</strong><br>
                                             ID: {{ payment.payment_id }}<br>
-                                            Amount: ₹{{ payment.amount }}<br>
+                                            Amount: रु{{ payment.amount }}<br>
                                             Student: {{ payment.student.full_name }}<br>
                                             Method: {{ payment.get_payment_method_display }}
                                         </div>

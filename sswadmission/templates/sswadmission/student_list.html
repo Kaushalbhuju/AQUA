@@ -161,7 +161,11 @@
                             {% endif %}
                         </td>
                         <td>
-                            ₹{{ student.paid_amount|intcomma }}<br>
+                            रु {{ student.paid_amount|intcomma }}<br>
+</xai:function_call />
+
+<xai:function_call name="edit_file">
+<parameter name="path">
                             <small class="text-muted">
                                 {% if student.total_fee > 0 %}
                                     {{ student.fee_paid_percentage|floatformat:0 }}%
@@ -170,9 +174,13 @@
                         </td>
                         <td>
                             {% if student.due_amount > 0 %}
-                                <span class="text-danger">₹{{ student.due_amount|intcomma }}</span>
+                                <span class="text-danger">रु {{ student.due_amount|intcomma }}</span>
+</xai:function_call />
+
+<xai:function_call name="edit_file">
+<parameter name="path">
                             {% else %}
-                                <span class="text-success">₹0</span>
+                                <span class="text-success">रु0</span>
                             {% endif %}
                         </td>
                         <td>
