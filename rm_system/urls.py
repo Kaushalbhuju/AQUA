@@ -292,14 +292,26 @@ urlpatterns = [
 
 ]
 
+# Media files - served via custom view (works in both DEBUG and production)
 urlpatterns += [
     path('media/<path:path>', serve_media, name='serve_media'),
 ]
 
+# Static files - served by Django in DEBUG, by WhiteNoise in production
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-urlpatterns += [
-    path('media/<path:path>', serve_media, name='serve_media'),
-]
+# Fallback static file serving for production (when WhiteNoise isn't working)
+if not settings.DEBUG:
+    def serve_static(request, path):
+        from django.http import FileResponse, Http404
+        import os
+        from django.conf import settings
+        full_path = os.path.join(settings.STATIC_ROOT, path)
+        if not os.path.exists(full_path) or not os.path.isfile(full_path):
+            raise Http404("Static file not found.")
+        return FileResponse(open(full_path, 'rb'))
+    
+    urlpatterns += [
+        path('static/<path:path>', serve_static, name='serve_static'),
+    ]

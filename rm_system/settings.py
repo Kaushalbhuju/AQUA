@@ -25,9 +25,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in {'1', 'true', 'yes'}
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in {'1', 'true', 'yes'}
 
 ALLOWED_HOSTS = ['tk2-233-26239.vs.sakura.ne.jp', '160.16.114.243', '127.0.0.1', 'localhost']
+
+# Production deployment URL
+PRODUCTION_URL = 'https://tk2-233-26239.vs.sakura.ne.jp'
+SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')
 
 
 # Application definition
@@ -87,6 +91,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Add WhiteNoise middleware ONLY in production (DEBUG=False)
+if not DEBUG:
+    MIDDLEWARE = [
+        'whitenoise.middleware.WhiteNoiseMiddleware',
+    ] + MIDDLEWARE
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
@@ -142,6 +152,19 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# CSRF and Cookie Settings for Production
+CSRF_TRUSTED_ORIGINS = [
+    'https://tk2-233-26239.vs.sakura.ne.jp',
+    'https://160.16.114.243',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
+
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = False
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -170,6 +193,17 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Use simple storage for development, manifest storage for production
+if not DEBUG:
+    try:
+        import whitenoise
+        STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    except ImportError:
+        STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+else:
+    # Use simple storage in development - no manifest needed
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
