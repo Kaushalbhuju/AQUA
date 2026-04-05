@@ -1,9 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import HttpResponseForbidden
 
 from books.models import Book, AssignmentTemplate, BookAssignment
-from books.forms import AssignBookForm, AssignmentTemplateForm
+from books.forms import AssignBookForm, AssignmentTemplateForm, BookForm
 from books.decorators import manager_or_staff_required, manager_required
 from books.utils import generate_qr, generate_sticker, generate_assignment_qr, merge_qr_into_pdf
 
@@ -242,3 +243,85 @@ def template_list(request):
         'page_title': 'PDF Templates',
     }
     return render(request, 'books/template_list.html', context)
+
+
+@manager_required
+def template_create(request):
+    if request.method == 'POST':
+        form = AssignmentTemplateForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Template created successfully.')
+            return redirect('books:template_list')
+    else:
+        form = AssignmentTemplateForm()
+    context = {'form': form, 'page_title': 'Create Template'}
+    return render(request, 'books/template_form.html', context)
+
+
+@manager_required
+def template_update(request, template_id):
+    template = get_object_or_404(AssignmentTemplate, pk=template_id)
+    if request.method == 'POST':
+        form = AssignmentTemplateForm(request.POST, request.FILES, instance=template)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Template updated successfully.')
+            return redirect('books:template_list')
+    else:
+        form = AssignmentTemplateForm(instance=template)
+    context = {'form': form, 'template': template, 'page_title': 'Edit Template'}
+    return render(request, 'books/template_form.html', context)
+
+
+@manager_required
+def template_delete(request, template_id):
+    template = get_object_or_404(AssignmentTemplate, pk=template_id)
+    if request.method == 'POST':
+        template.delete()
+        messages.success(request, 'Template deleted successfully.')
+        return redirect('books:template_list')
+    return render(request, 'books/template_confirm_delete.html', {'template': template})
+
+
+@manager_required
+def book_create(request):
+    if request.method == 'POST':
+        form = BookForm(request.POST)
+        if form.is_valid():
+            book = form.save(commit=False)
+            book.save()
+            generate_qr(book)
+            messages.success(request, f'Book "{book.name}" created successfully.')
+            return redirect('books:book_list')
+    else:
+        form = BookForm()
+    context = {'form': form, 'page_title': 'Add Book'}
+    return render(request, 'books/book_form.html', context)
+
+
+@manager_required
+def book_update(request, book_id):
+    book = get_object_or_404(Book, pk=book_id)
+    if request.method == 'POST':
+        form = BookForm(request.POST, instance=book)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Book "{book.name}" updated successfully.')
+            return redirect('books:book_list')
+    else:
+        form = BookForm(instance=book)
+    context = {'form': form, 'book': book, 'page_title': 'Edit Book'}
+    return render(request, 'books/book_form.html', context)
+
+
+@manager_required
+def book_delete(request, book_id):
+    book = get_object_or_404(Book, pk=book_id)
+    if request.method == 'POST':
+        book_name = book.name
+        book.delete()
+        messages.success(request, f'Book "{book_name}" deleted successfully.')
+        return redirect('books:book_list')
+    context = {'book': book, 'page_title': 'Delete Book'}
+    return render(request, 'books/book_confirm_delete.html', context)

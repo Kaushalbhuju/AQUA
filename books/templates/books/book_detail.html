@@ -80,8 +80,7 @@
                 <form method="post" action="{% url 'books:return_book' book.id %}"
                     onsubmit="return confirm('Confirm return of this book?');">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-warning w-100" {% if book.issued_count==0 %}disabled{% endif
-                        %}>
+                    <button type="submit" class="btn btn-warning w-100" {% if book.issued_count == 0 %}disabled{% endif %}>
                         <i class="fas fa-undo me-2"></i>Return Book
                         {% if book.issued_count == 0 %}<small>(None issued)</small>{% endif %}
                     </button>

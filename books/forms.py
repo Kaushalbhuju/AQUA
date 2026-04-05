@@ -1,5 +1,5 @@
 from django import forms
-from .models import AssignmentTemplate, BookAssignment
+from .models import AssignmentTemplate, BookAssignment, Book
 
 class AssignBookForm(forms.Form):
     recipient_name = forms.CharField(
@@ -46,3 +46,24 @@ class AssignmentTemplateForm(forms.ModelForm):
             'qr_y': forms.NumberInput(attrs={'class': 'form-control'}),
             'qr_page': forms.NumberInput(attrs={'class': 'form-control'}),
         }
+
+
+class BookForm(forms.ModelForm):
+    class Meta:
+        model = Book
+        fields = ['id', 'name', 'author', 'isbn', 'description', 'total_stock']
+        widgets = {
+            'id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. BK-ENG-001'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Book title'}),
+            'author': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Author name'}),
+            'isbn': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ISBN number'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Book description'}),
+            'total_stock': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+        }
+    
+    def clean_id(self):
+        book_id = self.cleaned_data.get('id', '').strip().upper()
+        if self.instance.pk is None:
+            if Book.objects.filter(pk=book_id).exists():
+                raise forms.ValidationError(f'Book ID "{book_id}" already exists.')
+        return book_id

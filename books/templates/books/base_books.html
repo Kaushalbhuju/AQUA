@@ -113,6 +113,8 @@
             <a class="nav-link" href="{% url 'books:assignment_list' %}"><i
                 class="fas fa-list-check me-1"></i>Assignments</a>
           </li>
+          {% endif %}
+          {% if request.user.role|default:'' in 'manager,operation_head' %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'books:template_list' %}"><i class="fas fa-file-pdf me-1"></i>Templates</a>
           </li>
