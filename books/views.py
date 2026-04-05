@@ -162,7 +162,6 @@ def generate_all_stickers(request):
     return redirect('books:book_list')
 
 
-@login_required
 def assignment_detail(request, assignment_id):
     """
     Public landing page for scanned QRs (or private detail page for staff).
