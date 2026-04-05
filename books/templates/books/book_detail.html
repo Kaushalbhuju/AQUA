@@ -70,7 +70,7 @@
                     <i class="fas fa-qrcode me-2"></i>View QR Code
                 </a>
 
-                {% if request.user.role in 'manager,staff,operation_head' %}
+                {% if request.user.role|default:'' in 'manager,staff,operation_head' %}
                 <a href="{% url 'books:assign_book' book.id %}"
                     class="btn btn-success {% if book.status == 'out_of_stock' %}disabled{% endif %}">
                     <i class="fas fa-hand-holding-heart me-2"></i>Assign Book
@@ -80,7 +80,8 @@
                 <form method="post" action="{% url 'books:return_book' book.id %}"
                     onsubmit="return confirm('Confirm return of this book?');">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-warning w-100" {% if book.issued_count == 0 %}disabled{% endif %}>
+                    <button type="submit" class="btn btn-warning w-100" {% if book.issued_count==0 %}disabled{% endif
+                        %}>
                         <i class="fas fa-undo me-2"></i>Return Book
                         {% if book.issued_count == 0 %}<small>(None issued)</small>{% endif %}
                     </button>

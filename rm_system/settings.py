@@ -21,13 +21,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or get_random_secret_key()
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in {'1', 'true', 'yes'}
 
-ALLOWED_HOSTS = ['tk2-233-26239.vs.sakura.ne.jp', '160.16.114.243', '127.0.0.1', 'localhost']
+# SECURITY WARNING: keep the secret key used in production secret!
+# IMPORTANT: Set DJANGO_SECRET_KEY environment variable in production!
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-dev-key-change-in-production'
+    else:
+        raise ValueError("DJANGO_SECRET_KEY environment variable must be set in production!")
+
+ALLOWED_HOSTS = [
+    'tk2-233-26239.vs.sakura.ne.jp',
+    '160.16.114.243',
+    '127.0.0.1',
+    'localhost',
+    '.vs.sakura.ne.jp',
+]
 
 # Production deployment URL
 PRODUCTION_URL = 'https://tk2-233-26239.vs.sakura.ne.jp'
@@ -165,15 +177,17 @@ CSRF_TRUSTED_ORIGINS = [
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = True
 
 # Session Configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'sessionid'
-SESSION_COOKIE_SECURE = False  # Set True only if using HTTPS
+SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 86400  # 24 hours
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_SAVE_EVERY_REQUEST = True  # Update session on every request
+SESSION_SAVE_EVERY_REQUEST = False  # Fixed DB lock session drop
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Internationalization

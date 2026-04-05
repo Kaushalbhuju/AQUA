@@ -108,7 +108,7 @@
             <a class="nav-link" href="{% url 'books:book_list' %}"><i class="fas fa-list me-1"></i>Inventory</a>
           </li>
 
-          {% if request.user.role in 'manager,operation_head,staff' %}
+          {% if request.user.role|default:'' in 'manager,operation_head,staff' %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'books:assignment_list' %}"><i
                 class="fas fa-list-check me-1"></i>Assignments</a>
