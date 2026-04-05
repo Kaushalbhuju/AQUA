@@ -1,111 +1,338 @@
-{% load static %}
+﻿{% load static %}
 {% load i18n %}
 <!doctype html>
-<html lang="en">
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Teacher Report - Aqua Group</title>
+    <title>{% trans "Teacher Report" %} - {% trans "Aqua Group" %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%); min-height: 100vh; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-        .navbar { padding: 1rem 2rem; background: linear-gradient(135deg, #004E89, #006ebc) !important; box-shadow: 0 4px 20px rgba(0, 78, 137, 0.3); }
-        .navbar h4 { margin: 0; font-weight: 700; color: white; letter-spacing: 0.5px; }
-        .logout-btn { background: rgba(255, 255, 255, 0.15); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 8px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.3s; }
-        .logout-btn:hover { background: rgba(255, 255, 255, 0.25); color: white; }
-        .content-area { padding: 2rem; max-width: 95%; margin: 0 auto; }
-        .btn-back { background: white; color: #64748b; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; transition: all 0.2s; margin-bottom: 1rem; }
-        .btn-back:hover { background: #f8fafc; color: #334155; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-        .page-header h2 { font-weight: 800; color: #1a365d; font-size: 1.6rem; margin: 0; }
-        .filter-panel { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
-        .table-wrapper { background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); border: 1px solid rgba(0, 0, 0, 0.05); overflow-x: auto; margin-bottom: 2rem; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        thead th { background: linear-gradient(135deg, #1e293b, #334155); color: #e2e8f0; padding: 12px 16px; font-size: 0.8rem; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #004E89; }
-        tbody td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        tbody tr:hover { background-color: #f8fafc; }
-        .student-info { display: flex; align-items: center; gap: 12px; }
-        .student-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .avatar-placeholder { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #cbd5e1, #e2e8f0); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #64748b; }
-        .student-name { font-weight: 600; color: #1e293b; font-size: 0.95rem; }
-        .jp-name { color: #64748b; font-size: 0.85rem; }
-        .pct-badge { padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; display: inline-block; min-width: 55px; text-align: center; }
-        .pct-excellent { background: #dcfce7; color: #166534; }
-        .pct-good { background: #fef9c3; color: #854d0e; }
-        .pct-poor { background: #fee2e2; color: #991b1b; }
-        .notes-list { list-style: none; padding: 0; margin: 0; font-size: 0.85rem; color: #475569; max-width: 300px; }
-        .notes-list li { margin-bottom: 4px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 4px; }
-        .notes-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .note-date { font-weight: 700; color: #004E89; margin-right: 4px; }
-        .export-btns { display: flex; gap: 10px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #004E89, #006ebc) !important;
+            box-shadow: 0 4px 20px rgba(0, 78, 137, 0.3);
+        }
+
+        .navbar h4 {
+            margin: 0;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        .content-area {
+            padding: 2rem;
+            max-width: 95%;
+            margin: 0 auto;
+        }
+
+        .btn-back {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .btn-back:hover {
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-header h2 {
+            font-weight: 800;
+            color: #1a365d;
+            font-size: 1.6rem;
+            margin: 0;
+        }
+
+        .filter-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        thead th {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: #e2e8f0;
+            padding: 12px 16px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #004E89;
+        }
+
+        tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #cbd5e1, #e2e8f0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+
+        .jp-name {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .pct-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: inline-block;
+            min-width: 55px;
+            text-align: center;
+        }
+
+        .pct-excellent {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .pct-good {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .pct-poor {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .notes-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.85rem;
+            color: #475569;
+            max-width: 300px;
+        }
+
+        .notes-list li {
+            margin-bottom: 4px;
+            border-bottom: 1px dashed #e2e8f0;
+            padding-bottom: 4px;
+        }
+
+        .notes-list li:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .note-date {
+            font-weight: 700;
+            color: #004E89;
+            margin-right: 4px;
+        }
+
+        .export-btns {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <ul class="navbar-nav">
-                <li class="nav-item"><a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a></li>
+                <li class="nav-item"><a class="logout-btn" href="{% url 'accounts:login_view' %}">{% trans "Logout" %}</a></li>
             </ul>
-            <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#"><h4>TEACHER REPORT</h4></a>
-            <div class="collapse navbar-collapse" id="navbarNav"></div>
+            <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
+                <h4>{% trans "TEACHER REPORT" %}</h4>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center mb-0 px-2" style="background: white; border-radius: 4px;">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                    <select name="language" onchange="this.form.submit()" class="form-select form-select-sm" style="border: none;">
+                    {% get_current_language as LANGUAGE_CODE %}
+                    {% get_available_languages as LANGUAGES %}
+                    {% get_language_info_list for LANGUAGES as languages %}
+                    {% for language in languages %}
+                        <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %}selected{% endif %}>
+                        {{ language.name_local }} ({{ language.code }})
+                        </option>
+                    {% endfor %}
+                    </select>
+                </form>
+                </li>
+            </ul>
+</div>
         </div>
     </nav>
     <div class="content-area">
-        <a href="{% url 'dashboard:teacher_dashboard' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        <a href="{% url 'dashboard:teacher_dashboard' %}" class="btn-back"><i class="fas fa-arrow-left"></i> {% trans "Back to Dashboard" %}</a>
         <div class="page-header">
-            <h2><i class="fas fa-chart-pie" style="color: #004E89;"></i> Monthly Report</h2>
+            <h2><i class="fas fa-chart-pie" style="color: #004E89;"></i> {% trans "Monthly Report" %}</h2>
             <div class="export-btns">
-                <a href="{% url 'dashboard:export_report_excel' %}?classroom_id={{ selected_classroom.id|default:'' }}&month={{ month|default:'' }}&year={{ year|default:'' }}" class="btn btn-success"><i class="fas fa-file-excel"></i> Export Excel</a>
-                <a href="{% url 'dashboard:export_report_pdf' %}?classroom_id={{ selected_classroom.id|default:'' }}&month={{ month|default:'' }}&year={{ year|default:'' }}" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Export PDF</a>
+                {% if selected_classroom %}
+                <a href="{% url 'dashboard:export_report_excel' %}?classroom_id={{ selected_classroom.id|default:'' }}&month={{ month|default:'' }}&year={{ year|default:'' }}"
+                    class="btn btn-success"><i class="fas fa-file-excel"></i> {% trans "Export Excel" %}</a>
+                <a href="{% url 'dashboard:export_report_pdf' %}?classroom_id={{ selected_classroom.id|default:'' }}&month={{ month|default:'' }}&year={{ year|default:'' }}"
+                    class="btn btn-danger"><i class="fas fa-file-pdf"></i> {% trans "Export PDF" %}</a>
+                {% else %}
+                <button class="btn btn-success" type="button" disabled><i class="fas fa-file-excel"></i> {% trans "Export Excel" %}</button>
+                <button class="btn btn-danger" type="button" disabled><i class="fas fa-file-pdf"></i> {% trans "Export PDF" %}</button>
+                {% endif %}
             </div>
         </div>
         <form method="GET" class="filter-panel">
             <div class="form-group">
-                <label class="form-label fw-bold">Classroom</label>
+                <label class="form-label fw-bold">{% trans "Classroom" %}</label>
                 <select name="classroom_id" class="form-select">
                     {% for c in classrooms %}
-                    <option value="{{ c.id }}" {% if selected_classroom and selected_classroom.id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                    <option value="{{ c.id }}" {% if selected_classroom and selected_classroom.id == c.id %}selected{% endif %}>{{ c.localized_name }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label fw-bold">Month</label>
+                <label class="form-label fw-bold">{% trans "Month" %}</label>
                 <select name="month" class="form-select">
-                    <option value="1" {% if month == 1 %}selected{% endif %}>January</option>
-                    <option value="2" {% if month == 2 %}selected{% endif %}>February</option>
-                    <option value="3" {% if month == 3 %}selected{% endif %}>March</option>
-                    <option value="4" {% if month == 4 %}selected{% endif %}>April</option>
-                    <option value="5" {% if month == 5 %}selected{% endif %}>May</option>
-                    <option value="6" {% if month == 6 %}selected{% endif %}>June</option>
-                    <option value="7" {% if month == 7 %}selected{% endif %}" >July</option>
-                    <option value="8" {% if month == 8 %}selected{% endif %}>August</option>
-                    <option value="9" {% if month == 9 %}selected{% endif %}>September</option>
-                    <option value="10" {% if month == 10 %}selected{% endif %}>October</option>
-                    <option value="11" {% if month == 11 %}selected{% endif %}>November</option>
-                    <option value="12" {% if month == 12 %}selected{% endif %}>December</option>
+                    <option value="1" {% if month == 1 %}selected{% endif %}>{% trans "January" %}</option>
+                    <option value="2" {% if month == 2 %}selected{% endif %}>{% trans "February" %}</option>
+                    <option value="3" {% if month == 3 %}selected{% endif %}>{% trans "March" %}</option>
+                    <option value="4" {% if month == 4 %}selected{% endif %}>{% trans "April" %}</option>
+                    <option value="5" {% if month == 5 %}selected{% endif %}>{% trans "May" %}</option>
+                    <option value="6" {% if month == 6 %}selected{% endif %}>{% trans "June" %}</option>
+                    <option value="7" {% if month == 7 %}selected{% endif %}>{% trans "July" %}</option>
+                    <option value="8" {% if month == 8 %}selected{% endif %}>{% trans "August" %}</option>
+                    <option value="9" {% if month == 9 %}selected{% endif %}>{% trans "September" %}</option>
+                    <option value="10" {% if month == 10 %}selected{% endif %}>{% trans "October" %}</option>
+                    <option value="11" {% if month == 11 %}selected{% endif %}>{% trans "November" %}</option>
+                    <option value="12" {% if month == 12 %}selected{% endif %}>{% trans "December" %}</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label fw-bold">Year</label>
-                <input type="number" name="year" class="form-control" value="{{ year|default:'' }}" min="2020" max="2100">
+                <label class="form-label fw-bold">{% trans "Year" %}</label>
+                <input type="number" name="year" class="form-control" value="{{ year|default:'' }}" min="2020"
+                    max="2100">
             </div>
-            <div class="form-group"><button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filter</button></div>
+            <div class="form-group"><button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> {% trans "Apply Filter" %}</button></div>
         </form>
         {% if not student_data %}
-        <div class="table-wrapper text-center p-5"><i class="fas fa-folder-open fa-3x text-muted mb-3"></i><h4 class="text-muted">No data available for this selection</h4></div>
+        <div class="table-wrapper text-center p-5"><i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">{% trans "No data available for this selection" %}</h4>
+        </div>
         {% else %}
         <div class="table-wrapper">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;">#</th>
-                        <th style="width: 250px;">Student</th>
-                        <th style="width: 80px; text-align: center;">Gender</th>
-                        <th style="width: 80px; text-align: center;">Age</th>
-                        <th style="width: 120px; text-align: center;">Attendance %</th>
-                        <th>Monthly Notes</th>
+                        <th style="width: 50px;">{% trans "#" %}</th>
+                        <th style="width: 250px;">{% trans "Student" %}</th>
+                        <th style="width: 80px; text-align: center;">{% trans "Gender" %}</th>
+                        <th style="width: 80px; text-align: center;">{% trans "Age" %}</th>
+                        <th style="width: 120px; text-align: center;">{% trans "Attendance %" %}</th>
+                        <th>{% trans "Monthly Notes" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,24 +341,31 @@
                         <td style="font-weight: 700; color: #64748b;">{{ forloop.counter }}</td>
                         <td>
                             <div class="student-info">
-                                {% if item.student.photo %}<img src="{{ item.student.photo.url }}" class="student-avatar" alt="">{% else %}<div class="avatar-placeholder">{{ item.student.full_name|slice:":2" }}</div>{% endif %}
-                                <div><div class="student-name">{{ item.student.full_name }}</div><div class="jp-name">{{ item.student.japanese_name|default:'—' }}</div></div>
+                                {% if item.student.photo_data_uri %}<img src="{{ item.student.photo_data_uri }}"
+                                    class="student-avatar" alt="">{% elif item.student.photo_display_url %}<img
+                                    src="{{ item.student.photo_display_url }}" class="student-avatar" alt="">{% else %}
+                                <div class="avatar-placeholder">{{ item.student.full_name|slice:":2" }}</div>{% endif %}
+                                <div>
+                                    <div class="student-name">{{ item.student.full_name }}</div>
+                                    <div class="jp-name">{{ item.student.japanese_name|default:'-' }}</div>
+                                </div>
                             </div>
                         </td>
-                        <td style="text-align: center; color: #475569;">{{ item.student.gender|default:'—' }}</td>
-                        <td style="text-align: center; color: #475569;">{{ item.student.calculated_age|default:item.student.age|default:'—' }}</td>
+                        <td style="text-align: center; color: #475569;">{{ item.student.gender|default:'-' }}</td>
+                        <td style="text-align: center; color: #475569;">{{ item.student.calculated_age|default_if_none:item.student.age|default:"-" }}</td>
                         <td style="text-align: center;">
-                            <span class="pct-badge {% if item.percentage >= 75 %}pct-excellent{% elif item.percentage >= 50 %}pct-good{% else %}pct-poor{% endif %}">{{ item.percentage }}%</span>
-                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{{ item.present_count }}/{{ item.effective_days }} days</div>
+                            <span class="pct-badge {% if item.percentage >= 75 %}pct-excellent{% elif item.percentage >= 50 %}pct-good{% else %}pct-poor{% endif %}">{{ item.percentage|default:0 }}%</span>
+                            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">{% blocktrans with present=item.present_count|default:0 total=item.effective_days|default:0 %}{{ present }}/{{ total }} days{% endblocktrans %}</div>
                         </td>
                         <td>
                             {% if item.notes %}
                             <ul class="notes-list">
                                 {% for note in item.notes %}
-                                <li><span class="note-date">{{ note.note_date|date:"d" }}日:</span> {{ note.content }}</li>
+                                <li><span class="note-date">{{ note.note_date|date:"d" }}æ—¥:</span> {{ note.content }}
+                                </li>
                                 {% endfor %}
                             </ul>
-                            {% else %}<span class="text-muted" style="font-size: 0.85rem;">No notes this month</span>{% endif %}
+                            {% else %}<span class="text-muted" style="font-size: 0.85rem;">{% trans "No notes this month" %}</span>{% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -141,4 +375,6 @@
         {% endif %}
     </div>
 </body>
+
 </html>
+

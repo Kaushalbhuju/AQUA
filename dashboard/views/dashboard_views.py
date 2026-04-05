@@ -10,8 +10,7 @@ from dashboard.decorators import check_role
 
 
 
-@login_required(login_url='login')
-@check_role('operation_head')
+@login_required(login_url='accounts:login')\n@check_role('operation_head')
 def operation_head_dashboard(request):
     context = {
         'user': request.user, 
@@ -20,8 +19,7 @@ def operation_head_dashboard(request):
     }
     return render(request, 'dashboards/operation_head_dashboard.html', context)
 
-@login_required(login_url='login')
-@check_role('manager')
+@login_required(login_url='accounts:login')\n@check_role('manager')
 def manager_dashboard(request):
     context = {
         'user': request.user, 
@@ -30,8 +28,7 @@ def manager_dashboard(request):
     }
     return render(request, 'dashboards/manager_dashboard.html', context)
 
-@login_required(login_url='login')
-@check_role('staff')
+@login_required(login_url='accounts:login')\n@check_role('staff')
 def staff_dashboard(request):
     context = {
         'user': request.user, 

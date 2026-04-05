@@ -2,12 +2,12 @@
 {% load i18n %}
 
 <!doctype html>
-<html lang="en">
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Daily Notes - {{ student.full_name }} - Aqua Group</title>
+    <title>{% trans "Daily Notes" %} - {{ student.full_name }} - {% trans "Aqua Group" %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -350,24 +350,45 @@
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
+                    <a class="logout-btn" href="{% url 'accounts:login_view' %}">{% trans "Logout" %}</a>
                 </li>
             </ul>
             <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
-                <h4>DAILY NOTES</h4>
+                <h4>{% trans "DAILY NOTES" %}</h4>
             </a>
-            <div class="collapse navbar-collapse" id="navbarNav"></div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center mb-0 px-2" style="background: white; border-radius: 4px;">
+                            {% csrf_token %}
+                            <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                            <select name="language" onchange="this.form.submit()" class="form-select form-select-sm" style="border: none;">
+                                {% get_current_language as LANGUAGE_CODE %}
+                                {% get_available_languages as LANGUAGES %}
+                                {% get_language_info_list for LANGUAGES as languages %}
+                                {% for language in languages %}
+                                <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %}selected{% endif %}>
+                                    {{ language.name_local }} ({{ language.code }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="content-area">
         <a href="{% url 'dashboard:student_records' %}" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Back to Student Records
+            <i class="fas fa-arrow-left"></i> {% trans "Back to Student Records" %}
         </a>
 
         <div class="student-header">
-            {% if student.photo %}
-            <img src="{{ student.photo.url }}" class="student-avatar" alt="">
+            {% if student.photo_data_uri %}
+            <img src="{{ student.photo_data_uri }}" class="student-avatar" alt="">
+            {% elif student.photo_display_url %}
+            <img src="{{ student.photo_display_url }}" class="student-avatar" alt="">
             {% else %}
             <div class="avatar-ph">{{ student.full_name|slice:":2" }}</div>
             {% endif %}
@@ -376,7 +397,7 @@
                 <p>
                     <i class="fas fa-id-card"></i> {{ student.student_id|default:"N/A" }} &nbsp;|&nbsp;
                     <i class="fas fa-venus-mars"></i> {{ student.gender|default:"—" }} &nbsp;|&nbsp;
-                    <i class="fas fa-calendar"></i> Age: {{ student.calculated_age|default:student.age|default:'—' }}
+                    <i class="fas fa-calendar"></i> {% trans "Age:" %} {{ student.calculated_age|default:student.age|default:'—' }}
                 </p>
             </div>
         </div>
@@ -386,7 +407,7 @@
         <div class="editor-card">
             <div class="editor-header">
                 <div class="section-title mb-0">
-                    <i class="fas fa-pen-square" style="color: #004E89;"></i> Today's Note
+                    <i class="fas fa-pen-square" style="color: #004E89;"></i> {% trans "Today's Note" %}
                 </div>
                 <div class="date-badge">
                     <i class="fas fa-calendar-day"></i> {{ today_date|date:"F j, Y" }}
@@ -395,17 +416,16 @@
 
             {% if today_note %}
             <div class="lock-warning">
-                <i class="fas fa-exclamation-circle"></i> This note is editable until 24 hours after it was first
-                created.
+                <i class="fas fa-exclamation-circle"></i> {% trans "This note is editable until 24 hours after it was first created." %}
             </div>
             {% endif %}
 
             <textarea id="todayNoteContent" class="note-input"
-                placeholder="Write your observations, progress, or any specific notes for today...">{{ today_note.content|default:"" }}</textarea>
+                placeholder="{% trans 'Write your observations, progress, or any specific notes for today...' %}">{{ today_note.content|default:"" }}</textarea>
 
             <div class="text-end">
                 <button id="saveNoteBtn" class="btn-save" onclick="saveTodayNote()">
-                    <i class="fas fa-save"></i> {% if today_note %}Update Note{% else %}Save Note{% endif %}
+                    <i class="fas fa-save"></i> {% if today_note %}{% trans "Update Note" %}{% else %}{% trans "Save Note" %}{% endif %}
                 </button>
             </div>
         </div>
@@ -414,7 +434,7 @@
         <!-- History -->
         <div class="history-card">
             <div class="section-title">
-                <i class="fas fa-history" style="color: #64748b;"></i> Note History
+                <i class="fas fa-history" style="color: #64748b;"></i> {% trans "Note History" %}
             </div>
 
             {% if notes %}
@@ -438,15 +458,15 @@
                             </div>
                             <div>
                                 {% if note.is_editable %}
-                                <span class="note-status-editable"><i class="fas fa-unlock"></i> Editable</span>
+                                <span class="note-status-editable"><i class="fas fa-unlock"></i> {% trans "Editable" %}</span>
                                 {% else %}
-                                <span class="note-status-locked"><i class="fas fa-lock"></i> Locked</span>
+                                <span class="note-status-locked"><i class="fas fa-lock"></i> {% trans "Locked" %}</span>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="note-content">{{ note.content }}</div>
                         <div class="text-muted" style="font-size: 0.75rem; margin-top: 8px;">
-                            Created at: {{ note.created_at|date:"M d, Y H:i" }}
+                            {% trans "Created at:" %} {{ note.created_at|date:"M d, Y H:i" }}
                         </div>
                     </div>
                 </div>
@@ -455,8 +475,8 @@
             {% else %}
             <div class="empty-history">
                 <i class="fas fa-clipboard"></i>
-                <h4>No notes yet</h4>
-                <p>Daily notes will appear here once saved.</p>
+                <h4>{% trans "No notes yet" %}</h4>
+                <p>{% trans "Daily notes will appear here once saved." %}</p>
             </div>
             {% endif %}
         </div>
@@ -472,12 +492,12 @@
             const content = document.getElementById('todayNoteContent').value.trim();
 
             if (!content) {
-                showToast('❌ Note cannot be empty', 'error');
+                showToast('❌ {% trans "Note cannot be empty" %}', 'error');
                 return;
             }
 
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> {% trans "Saving..." %}';
             btn.disabled = true;
 
             fetch(`{% url 'dashboard:save_daily_note' student.id %}`, {
@@ -503,7 +523,7 @@
                     }
                 })
                 .catch(err => {
-                    showToast('❌ Network error. Please try again.', 'error');
+                    showToast('❌ {% trans "Network error. Please try again." %}', 'error');
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 });

@@ -2,12 +2,12 @@
 {% load i18n %}
 
 <!doctype html>
-<html lang="en">
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Manage Students - {{ classroom.name }} - Aqua Group</title>
+    <title>{% trans "Manage Students" %} - {{ classroom_display_name }} - {% trans "Aqua Group" %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -268,19 +268,38 @@
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
+                    <a class="logout-btn" href="{% url 'accounts:login_view' %}">{% trans "Logout" %}</a>
                 </li>
             </ul>
             <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
-                <h4>MANAGE STUDENTS</h4>
+                <h4>{% trans "MANAGE STUDENTS" %}</h4>
             </a>
-            <div class="collapse navbar-collapse" id="navbarNav"></div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center mb-0 px-2" style="background: white; border-radius: 4px;">
+                            {% csrf_token %}
+                            <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                            <select name="language" onchange="this.form.submit()" class="form-select form-select-sm" style="border: none;">
+                                {% get_current_language as LANGUAGE_CODE %}
+                                {% get_available_languages as LANGUAGES %}
+                                {% get_language_info_list for LANGUAGES as languages %}
+                                {% for language in languages %}
+                                <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %}selected{% endif %}>
+                                    {{ language.name_local }} ({{ language.code }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="content-area">
         <a href="{% url 'dashboard:class_attendance' classroom.id %}" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Back to {{ classroom.name }}
+            <i class="fas fa-arrow-left"></i> {% trans "Back to" %} {{ classroom_display_name }}
         </a>
 
         {% for message in messages %}
@@ -290,15 +309,15 @@
         {% endfor %}
 
         <div class="page-header">
-            <h2><i class="fas fa-users-cog" style="color: #004E89;"></i> {{ classroom.name }} — Students</h2>
-            <p>Select students and use the arrows to add or remove them from this class.</p>
+            <h2><i class="fas fa-users-cog" style="color: #004E89;"></i> {{ classroom_display_name }} — {% trans "Students" %}</h2>
+            <p>{% trans "Select students and use the arrows to add or remove them from this class." %}</p>
         </div>
 
         <div class="students-grid">
             <!-- Available Students Panel -->
             <div class="panel panel-available">
                 <div class="panel-header">
-                    <span><i class="fas fa-user-clock"></i> Available Students</span>
+                    <span><i class="fas fa-user-clock"></i> {% trans "Available Students" %}</span>
                     <span class="badge bg-secondary">{{ available_students|length }}</span>
                 </div>
                 <div class="panel-body" id="availablePanel">
@@ -308,8 +327,10 @@
                         {% for student in available_students %}
                         <label class="student-item">
                             <input type="checkbox" name="student_ids" value="{{ student.id }}">
-                            {% if student.photo %}
-                            <img src="{{ student.photo.url }}" class="student-item-avatar" alt="">
+                            {% if student.photo_data_uri %}
+                            <img src="{{ student.photo_data_uri }}" class="student-item-avatar" alt="">
+                            {% elif student.photo_display_url %}
+                            <img src="{{ student.photo_display_url }}" class="student-item-avatar" alt="">
                             {% else %}
                             <div class="avatar-ph">{{ student.full_name|slice:":2" }}</div>
                             {% endif %}
@@ -321,7 +342,7 @@
                         {% empty %}
                         <div class="empty-state">
                             <i class="fas fa-user-check d-block"></i>
-                            <p>All students are already enrolled.</p>
+                            <p>{% trans "All students are already enrolled." %}</p>
                         </div>
                         {% endfor %}
                     </form>
@@ -330,10 +351,10 @@
 
             <!-- Arrow Buttons -->
             <div class="arrow-col">
-                <button type="submit" form="addForm" class="arrow-btn add-btn" title="Add selected to class">
+                <button type="submit" form="addForm" class="arrow-btn add-btn" title="{% trans 'Add selected to class' %}">
                     <i class="fas fa-chevron-right"></i>
                 </button>
-                <button type="submit" form="removeForm" class="arrow-btn remove-btn" title="Remove selected from class">
+                <button type="submit" form="removeForm" class="arrow-btn remove-btn" title="{% trans 'Remove selected from class' %}">
                     <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
@@ -341,7 +362,7 @@
             <!-- Enrolled Students Panel -->
             <div class="panel panel-enrolled">
                 <div class="panel-header">
-                    <span><i class="fas fa-user-graduate"></i> {{ classroom.name }} Students</span>
+                    <span><i class="fas fa-user-graduate"></i> {{ classroom_display_name }} {% trans "Students" %}</span>
                     <span class="badge bg-light text-dark">{{ enrolled_students|length }}</span>
                 </div>
                 <div class="panel-body" id="enrolledPanel">
@@ -351,8 +372,10 @@
                         {% for student in enrolled_students %}
                         <label class="student-item">
                             <input type="checkbox" name="student_ids" value="{{ student.id }}">
-                            {% if student.photo %}
-                            <img src="{{ student.photo.url }}" class="student-item-avatar" alt="">
+                            {% if student.photo_data_uri %}
+                            <img src="{{ student.photo_data_uri }}" class="student-item-avatar" alt="">
+                            {% elif student.photo_display_url %}
+                            <img src="{{ student.photo_display_url }}" class="student-item-avatar" alt="">
                             {% else %}
                             <div class="avatar-ph">{{ student.full_name|slice:":2" }}</div>
                             {% endif %}
@@ -364,7 +387,7 @@
                         {% empty %}
                         <div class="empty-state">
                             <i class="fas fa-inbox d-block"></i>
-                            <p>No students enrolled yet.</p>
+                            <p>{% trans "No students enrolled yet." %}</p>
                         </div>
                         {% endfor %}
                     </form>
@@ -374,7 +397,7 @@
     </div>
 
     <div class="footer">
-        &copy; {% now "Y" %} Aqua Group. All Rights Reserved.
+        &copy; {% now "Y" %} {% trans "Aqua Group" %}. {% trans "All Rights Reserved." %}
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>

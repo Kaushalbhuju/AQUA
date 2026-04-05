@@ -1,0 +1,62 @@
+{% extends "books/base_books.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h3 mb-1"><i class="fas fa-list-check me-2"></i>Book Assignments</h1>
+    <p class="mb-0 opacity-75">Track all active and past book assignments</p>
+</div>
+
+<div class="books-card card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Book</th>
+                    <th>Recipient</th>
+                    <th>Assigned By</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asgn in assignments %}
+                <tr>
+                    <td class="fw-bold">{{ asgn.id }}</td>
+                    <td>{{ asgn.book.name }}</td>
+                    <td>{{ asgn.recipient_name }}</td>
+                    <td>{{ asgn.assigned_by.username }}</td>
+                    <td>{{ asgn.created_at|date:"d M Y" }}</td>
+                    <td>
+                        {% if asgn.returned %}
+                        <span class="badge bg-secondary">Returned</span>
+                        {% else %}
+                        <span class="badge bg-success">Active</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'books:assignment_detail' asgn.id %}" class="btn btn-outline-primary"
+                                title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if asgn.final_pdf %}
+                            <a href="{% url 'books:download_assignment_pdf' asgn.id %}" class="btn btn-outline-success" target="_blank"
+                                title="Download PDF">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">No assignments found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

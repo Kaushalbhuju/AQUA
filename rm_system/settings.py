@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-&m_=x)p=#r8%0-b(zu$0pxq1(7(um=r@#+4-xuri(r5(640t^g')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in {'1', 'true', 'yes'}
 
 ALLOWED_HOSTS = ['tk2-233-26239.vs.sakura.ne.jp', '160.16.114.243', '127.0.0.1', 'localhost']
 
@@ -58,6 +59,7 @@ INSTALLED_APPS = [
     'guarantee_letter',
     'coe_visa',
     'other_documents',
+    'books',
     
 
 ]
@@ -185,6 +187,8 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'DEBUG',
+        'level': 'INFO',
     },
 }
+
+SITE_URL = 'http://127.0.0.1:8000'

@@ -1,6 +1,8 @@
 
 from django.db import models
 from django.core.validators import RegexValidator
+import base64
+import mimetypes
 
 class StaffRegistration(models.Model):
     GENDER_CHOICES = [
@@ -38,11 +40,11 @@ class StaffRegistration(models.Model):
     
     # ID/Passport Information
     id_passport_no = models.CharField(max_length=50)
-    date_of_issue = models.DateField()
+    date_of_issue = models.DateField(null=True, blank=True)
     issue_from = models.CharField(max_length=100)
     
     # Personal Information
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(null=True, blank=True)
     eye_lense_right = models.CharField(max_length=20)
     eye_lense_left = models.CharField(max_length=20)
     blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES)
@@ -64,10 +66,14 @@ class StaffRegistration(models.Model):
 
     staff_bio_data_pdf = models.FileField(
         upload_to='staff_documents/bio_data/', 
+        null=False, 
+        blank=True,
         help_text='Upload Staff Bio Data PDF'
     )
     staff_id_doc_pdf = models.FileField(
         upload_to='staff_documents/id_docs/', 
+        null=True, 
+        blank=True,
         help_text='Upload Staff ID Document PDF'
     )
     staff_login_report_pdf = models.FileField(
@@ -105,6 +111,54 @@ class StaffRegistration(models.Model):
 
     def __str__(self):
         return f"{self.staff_id} - {self.full_name}"
+
+    @property
+    def candidate_photo_display_url(self):
+        if not self.candidate_photo:
+            return None
+
+        try:
+            if self.candidate_photo.storage.exists(self.candidate_photo.name):
+                return self.candidate_photo.url
+        except Exception:
+            return None
+
+        return None
+
+    @property
+    def candidate_photo_data_uri(self):
+        if not self.candidate_photo:
+            return None
+
+        try:
+            with self.candidate_photo.open('rb') as image_file:
+                encoded = base64.b64encode(image_file.read()).decode('ascii')
+            mime_type = mimetypes.guess_type(self.candidate_photo.name)[0] or 'image/jpeg'
+            return f'data:{mime_type};base64,{encoded}'
+        except Exception:
+            return None
+
+    def pdf_url(self, field_name):
+        f = getattr(self, field_name, None)
+        if not f or not f.name:
+            return None
+        return f'/media/{f.name}'
+
+    @property
+    def staff_bio_data_pdf_url(self):
+        return self.pdf_url('staff_bio_data_pdf')
+
+    @property
+    def staff_id_doc_pdf_url(self):
+        return self.pdf_url('staff_id_doc_pdf')
+
+    @property
+    def staff_login_report_pdf_url(self):
+        return self.pdf_url('staff_login_report_pdf')
+
+    @property
+    def staff_login_id_pdf_url(self):
+        return self.pdf_url('staff_login_id_pdf')
     
 
 class BankInformation(models.Model):

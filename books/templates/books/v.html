@@ -1,0 +1,109 @@
+{% extends "books/base_books.html" %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'books:book_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i>Back to List
+    </a>
+</div>
+
+<div class="page-header">
+    <h1 class="h3 mb-1"><i class="fas fa-book me-2"></i>{{ book.name }}</h1>
+    <small class="opacity-75">{{ book.id }}</small>
+</div>
+
+<div class="row g-4">
+    <!-- Stock Info Card -->
+    <div class="col-md-6">
+        <div class="books-card card h-100">
+            <div class="card-header bg-transparent fw-semibold">
+                <i class="fas fa-chart-bar me-2 text-success"></i>Stock Information
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-6 text-muted">Total Stock</dt>
+                    <dd class="col-6">{{ book.total_stock }}</dd>
+
+                    <dt class="col-6 text-muted">Issued</dt>
+                    <dd class="col-6 text-warning fw-semibold">{{ book.issued_count }}</dd>
+
+                    <dt class="col-6 text-muted">Remaining</dt>
+                    <dd class="col-6 text-success fw-semibold">{{ book.remaining_stock }}</dd>
+
+                    <dt class="col-6 text-muted">Status</dt>
+                    <dd class="col-6">
+                        {% if book.status == 'available' %}
+                        <span class="badge badge-available">Available</span>
+                        {% else %}
+                        <span class="badge badge-out">Out of Stock</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-6 text-muted">Current Holder</dt>
+                    <dd class="col-6">{{ book.current_holder|default:"—" }}</dd>
+
+                    <dt class="col-6 text-muted">Added On</dt>
+                    <dd class="col-6">{{ book.created_at|date:"d M Y" }}</dd>
+                </dl>
+
+                <!-- Progress bar -->
+                <div class="mt-3">
+                    <div class="progress" style="height:10px;border-radius:5px;">
+                        <div class="progress-bar {% if book.status == 'available' %}bg-success{% else %}bg-danger{% endif %}"
+                            id="stockBar" data-remaining="{{ book.remaining_stock }}"
+                            data-total="{{ book.total_stock }}" style="width:0%"></div>
+                    </div>
+                    <small class="text-muted">{{ book.remaining_stock }}/{{ book.total_stock }} available</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Card -->
+    <div class="col-md-6">
+        <div class="books-card card h-100">
+            <div class="card-header bg-transparent fw-semibold">
+                <i class="fas fa-cogs me-2 text-success"></i>Actions
+            </div>
+            <div class="card-body d-flex flex-column gap-3">
+                <a href="{% url 'books:qr_page' book.id %}" class="btn btn-outline-dark">
+                    <i class="fas fa-qrcode me-2"></i>View QR Code
+                </a>
+
+                {% if request.user.role in 'manager,staff,operation_head' %}
+                <a href="{% url 'books:assign_book' book.id %}"
+                    class="btn btn-success {% if book.status == 'out_of_stock' %}disabled{% endif %}">
+                    <i class="fas fa-hand-holding-heart me-2"></i>Assign Book
+                    {% if book.status == 'out_of_stock' %}<small>(No stock)</small>{% endif %}
+                </a>
+
+                <form method="post" action="{% url 'books:return_book' book.id %}"
+                    onsubmit="return confirm('Confirm return of this book?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning w-100" {% if book.issued_count==0 %}disabled{% endif
+                        %}>
+                        <i class="fas fa-undo me-2"></i>Return Book
+                        {% if book.issued_count == 0 %}<small>(None issued)</small>{% endif %}
+                    </button>
+                </form>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-lock me-2"></i>Only managers and staff can assign or return books.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var bar = document.getElementById('stockBar');
+    if (bar) {
+        var r = parseInt(bar.dataset.remaining);
+        var t = parseInt(bar.dataset.total);
+        bar.style.width = (t > 0 ? (r / t * 100) : 0) + '%';
+    }
+</script>
+{% endblock %}

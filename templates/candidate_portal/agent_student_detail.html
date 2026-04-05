@@ -307,8 +307,10 @@
 
                 <!-- Student Photo -->
                 <div class="photo-container">
-                    {% if student.photo %}
-                    <img src="{{ student.photo.url }}" alt="{{ student.full_name }}" class="student-photo">
+                    {% if student.photo_data_uri %}
+                    <img src="{{ student.photo_data_uri }}" alt="{{ student.full_name }}" class="student-photo">
+                    {% elif student.photo_display_url %}
+                    <img src="{{ student.photo_display_url }}" alt="{{ student.full_name }}" class="student-photo">
                     {% else %}
                     <div class="photo-placeholder">📷</div>
                     {% endif %}

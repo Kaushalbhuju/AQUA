@@ -1,6 +1,8 @@
 # models.py
 from django.db import models
 from candidate_portal.models import Agent, Candidate
+import base64
+import mimetypes
 
 class Student(models.Model):
     GENDER_CHOICES = [
@@ -141,7 +143,35 @@ class Student(models.Model):
     
     def __str__(self):
         return f"{self.student_id} - {self.full_name}"
-    
+
+    @property
+    def photo_display_url(self):
+        """Return a usable photo URL only if the file still exists."""
+        if not self.photo:
+            return None
+
+        try:
+            if self.photo.storage.exists(self.photo.name):
+                return self.photo.url
+        except Exception:
+            return None
+
+        return None
+
+    @property
+    def photo_data_uri(self):
+        """Return the photo as a data URI so templates don't depend on media serving."""
+        if not self.photo:
+            return None
+
+        try:
+            with self.photo.open('rb') as image_file:
+                encoded = base64.b64encode(image_file.read()).decode('ascii')
+            mime_type = mimetypes.guess_type(self.photo.name)[0] or 'image/jpeg'
+            return f'data:{mime_type};base64,{encoded}'
+        except Exception:
+            return None
+
     @property
     def calculated_age(self):
         """Calculate age from date_of_birth"""
@@ -310,8 +340,16 @@ class StudentDocument(models.Model):
     
     def __str__(self):
         return f"{self.student.full_name} - {self.get_document_type_display()}"
-    
- # Add get_display methods
+
+    def document_file_url(self):
+        if self.document_file and self.document_file.name:
+            from django.conf import settings
+            if settings.DEBUG:
+                return self.document_file.url
+            return f"/media/{self.document_file.name}"
+        return None
+
+  # Add get_display methods
     def get_gender_display(self):
         return dict(self._meta.get_field('gender').choices).get(self.gender, self.gender)
     

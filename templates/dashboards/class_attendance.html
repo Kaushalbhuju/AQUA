@@ -2,12 +2,12 @@
 {% load i18n %}
 
 <!doctype html>
-<html lang="en">
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ classroom.name }} Attendance - Aqua Group</title>
+    <title>{{ classroom_display_name }} {% trans "Attendance" %} - {% trans "Aqua Group" %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -370,31 +370,50 @@
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
+                    <a class="logout-btn" href="{% url 'accounts:login_view' %}">{% trans "Logout" %}</a>
                 </li>
             </ul>
             <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
-                <h4>{{ classroom.name }} — ATTENDANCE</h4>
+                <h4>{{ classroom_display_name }} — {% trans "Attendance" %}</h4>
             </a>
-            <div class="collapse navbar-collapse" id="navbarNav"></div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center mb-0 px-2" style="background: white; border-radius: 4px;">
+                            {% csrf_token %}
+                            <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                            <select name="language" onchange="this.form.submit()" class="form-select form-select-sm" style="border: none;">
+                                {% get_current_language as LANGUAGE_CODE %}
+                                {% get_available_languages as LANGUAGES %}
+                                {% get_language_info_list for LANGUAGES as languages %}
+                                {% for language in languages %}
+                                <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %}selected{% endif %}>
+                                    {{ language.name_local }} ({{ language.code }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="content-area">
         <a href="{% url 'dashboard:class_list' %}" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Back to Classes
+            <i class="fas fa-arrow-left"></i> {% trans "Back to Classes" %}
         </a>
 
         <div class="page-header">
-            <h2><i class="fas fa-clipboard-check" style="color: #004E89;"></i> {{ classroom.name }}</h2>
+            <h2><i class="fas fa-clipboard-check" style="color: #004E89;"></i> {{ classroom_display_name }}</h2>
             <div class="month-nav">
-                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="month-nav-btn" title="Previous Month">
+                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="month-nav-btn" title="{% trans 'Previous Month' %}">
                     <i class="fas fa-chevron-left"></i>
                 </a>
                 <span class="badge-month">
                     <i class="fas fa-calendar-alt"></i> {{ month_name }} {{ year }}
                 </span>
-                <a href="?month={{ next_month }}&year={{ next_year }}" class="month-nav-btn" title="Next Month">
+                <a href="?month={{ next_month }}&year={{ next_year }}" class="month-nav-btn" title="{% trans 'Next Month' %}">
                     <i class="fas fa-chevron-right"></i>
                 </a>
             </div>
@@ -403,10 +422,10 @@
         {% if not student_data %}
         <div class="table-wrapper text-center p-5">
             <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
-            <h4 class="text-muted">No students in this class yet</h4>
-            <p class="text-muted">Add students to this class first.</p>
+            <h4 class="text-muted">{% trans "No students in this class yet" %}</h4>
+            <p class="text-muted">{% trans "Add students to this class first." %}</p>
             <a href="{% url 'dashboard:manage_class_students' classroom.id %}" class="btn btn-primary mt-2">
-                <i class="fas fa-user-plus"></i> Add Students
+                <i class="fas fa-user-plus"></i> {% trans "Add Students" %}
             </a>
         </div>
         {% else %}
@@ -415,10 +434,10 @@
                 <thead>
                     <tr>
                         <th class="sticky-col" style="min-width: 40px;">#</th>
-                        <th class="sticky-col" style="min-width: 180px; left: 40px; text-align: left;">Student</th>
-                        <th style="min-width: 120px;">Japanese Name</th>
-                        <th style="min-width: 60px;">Gender</th>
-                        <th style="min-width: 45px;">Age</th>
+                        <th class="sticky-col" style="min-width: 180px; left: 40px; text-align: left;">{% trans "Student" %}</th>
+                        <th style="min-width: 120px;">{% trans "Japanese Name" %}</th>
+                        <th style="min-width: 60px;">{% trans "Gender" %}</th>
+                        <th style="min-width: 45px;">{% trans "Age" %}</th>
                         {% for day in days %}
                         <th class="day-header">{{ day }}</th>
                         {% endfor %}
@@ -431,8 +450,10 @@
                         <td style="font-weight: 700; color: #64748b;">{{ forloop.counter }}</td>
                         <td style="text-align: left;">
                             <div class="student-info">
-                                {% if item.student.photo %}
-                                <img src="{{ item.student.photo.url }}" alt="" class="student-avatar">
+                                {% if item.student.photo_data_uri %}
+                                <img src="{{ item.student.photo_data_uri }}" alt="" class="student-avatar">
+                                {% elif item.student.photo_display_url %}
+                                <img src="{{ item.student.photo_display_url }}" alt="" class="student-avatar">
                                 {% else %}
                                 <div class="avatar-placeholder">{{ item.student.full_name|slice:":2" }}</div>
                                 {% endif %}
@@ -441,7 +462,7 @@
                         </td>
                         <td>
                             <input type="text" class="jp-name-input" data-student-id="{{ item.student.id }}"
-                                value="{{ item.student.japanese_name|default:'' }}" placeholder="カタカナ">
+                                value="{{ item.student.japanese_name|default:'' }}" placeholder="{% trans 'Katakana' %}">
                         </td>
                         <td class="info-cell">{{ item.student.gender|default:'—' }}</td>
                         <td class="info-cell">{{ item.student.calculated_age|default:item.student.age|default:'—' }}
@@ -471,17 +492,17 @@
 
         <div class="action-bar">
             <button class="btn btn-success btn-lg" onclick="saveAttendance()" id="saveBtn">
-                <i class="fas fa-save"></i> Save Attendance
+                <i class="fas fa-save"></i> {% trans "Save Attendance" %}
             </button>
             <a href="{% url 'dashboard:manage_class_students' classroom.id %}" class="btn btn-outline-primary btn-lg">
-                <i class="fas fa-user-plus"></i> Manage Students
+                <i class="fas fa-user-plus"></i> {% trans "Manage Students" %}
             </a>
         </div>
         {% endif %}
     </div>
 
     <div class="footer">
-        &copy; {% now "Y" %} Aqua Group. All Rights Reserved.
+        &copy; {% now "Y" %} {% trans "Aqua Group" %}. {% trans "All Rights Reserved." %}
     </div>
 
     <!-- Toast notification -->
@@ -538,7 +559,7 @@
         function saveAttendance() {
             const saveBtn = document.getElementById('saveBtn');
             const originalText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> {% trans "Saving..." %}';
             saveBtn.disabled = true;
 
             const records = [];
@@ -580,7 +601,7 @@
                 }
             })
             .catch(err => {
-                showToast('❌ Network error. Please try again.', 'error');
+                    showToast('❌ {% trans "Network error. Please try again." %}', 'error');
             })
             .finally(() => {
                 saveBtn.innerHTML = originalText;

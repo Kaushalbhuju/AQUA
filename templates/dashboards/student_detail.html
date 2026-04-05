@@ -1,3 +1,21 @@
+<!-- Student Overview -->
+{% if student %}
+<div class="info-section" style="margin-bottom: 24px;">
+    <h3>Student Photo</h3>
+    <div style="text-align: center;">
+        {% if student.photo_data_uri %}
+        <img src="{{ student.photo_data_uri }}" alt="{{ student.full_name }}" style="width: 180px; height: 180px; object-fit: cover; border-radius: 12px; border: 1px solid #ddd;">
+        {% elif student.photo_display_url %}
+        <img src="{{ student.photo_display_url }}" alt="{{ student.full_name }}" style="width: 180px; height: 180px; object-fit: cover; border-radius: 12px; border: 1px solid #ddd;">
+        {% else %}
+        <div style="width: 180px; height: 180px; border-radius: 12px; border: 1px solid #ddd; display: inline-flex; align-items: center; justify-content: center; background: #f3f4f6; color: #6b7280; font-size: 3rem; font-weight: 700;">
+            {{ student.full_name|first|upper }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
 <!-- Documents -->
 {% if documents %}
 <div class="info-section">
@@ -6,7 +24,7 @@
         {% for document in documents %}
         <div class="info-item">
             <span class="info-label">{{ document.get_document_type_display }}:</span>
-            <a href="{{ document.document_file.url }}" target="_blank" style="color: #3498db; text-decoration: none;">
+            <a href="{{ document.document_file_url }}" target="_blank" style="color: #3498db; text-decoration: none;">
                 📄 View Document
             </a>
             <small style="color: #666; display: block;">Uploaded: {{ document.uploaded_at|date:"M d, Y" }}</small>

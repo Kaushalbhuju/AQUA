@@ -3,16 +3,15 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: AQUA\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-21 13:49+0545\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"POT-Creation-Date: 2026-04-02 00:00+0000\n"
+"PO-Revision-Date: 2026-04-02 00:00+0000\n"
+"Last-Translator: Team AQUA\n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -36,3 +35,555 @@ msgstr "ログイン"
 #: .\templates\base.html:6 .\templates\base.html:12
 msgid "Recruitment Management System"
 msgstr "採用管理システム ログイン"
+
+#: .\templates\dashboards\teacher_dashboard.html
+msgid "TEACHER PORTAL"
+msgstr "教師ポータル"
+
+#: .\templates\dashboards\teacher_dashboard.html
+msgid "Welcome, %(username)s!"
+msgstr "ようこそ、%(username)s！"
+
+#: .\templates\dashboards\teacher_dashboard.html
+msgid "Manage student attendance and view student records."
+msgstr "生徒の出欠を管理し、生徒記録を表示します。"
+
+#: .\templates\dashboards\teacher_dashboard.html
+msgid "Student Attendance"
+msgstr "生徒の出欠"
+
+#: .\templates\dashboards\teacher_dashboard.html
+msgid "Student Records"
+msgstr "生徒記録"
+
+#: .\templates\dashboards\teacher_dashboard.html
+msgid "Report"
+msgstr "レポート"
+
+#: .\templates\dashboards\teacher_dashboard.html
+msgid "Book Records"
+msgstr "書籍記録"
+
+#: .\templates\dashboards\teacher_dashboard.html
+msgid "Aqua Group"
+msgstr "アクアグループ"
+
+#: .\templates\dashboards\teacher_dashboard.html
+msgid "All Rights Reserved."
+msgstr "無断転載を禁じます。"
+
+#: .\templates\dashboards\*
+msgid "Back to Dashboard"
+msgstr "ダッシュボードに戻る"
+
+#: .\templates\dashboards\teacher_report.html
+msgid "TEACHER REPORT"
+msgstr "教師レポート"
+
+msgid "Logout"
+msgstr "ログアウト"
+
+
+msgid "Photo"
+msgstr "写真"
+
+
+msgid "Name"
+msgstr "名前"
+
+
+msgid "Japanese Name"
+msgstr "日本語の名前"
+
+
+msgid "Gender"
+msgstr "性別"
+
+
+msgid "Age"
+msgstr "年齢"
+
+
+msgid "Actions"
+msgstr "アクション"
+
+
+msgid "Action"
+msgstr "アクション"
+
+
+msgid "Export PDF"
+msgstr "PDFをエクスポート"
+
+
+msgid "Classes - Aqua Group"
+msgstr "クラス - Aqua Group"
+
+
+msgid "Select a class to view and mark attendance, or manage the class students."
+msgstr "クラスを選択して出欠を確認・記録するか、生徒を管理します。"
+
+
+msgid "Student(s)"
+msgstr "生徒"
+
+
+msgid "Attendance"
+msgstr "出席"
+
+
+msgid "Students"
+msgstr "生徒"
+
+
+msgid "No classes found. They will be created automatically."
+msgstr "クラスが見つかりません。自動的に作成されます。"
+
+
+msgid "Classes"
+msgstr "クラス"
+
+
+msgid "Instructions: Enter Japanese names for each student and check the dates they attended."
+msgstr "指示：各生徒の日本語名を入力し、出席した日付をチェックしてください。"
+
+
+msgid "Attendance Dates"
+msgstr "出席日"
+
+
+msgid "Attendance %"
+msgstr "出席率"
+
+
+msgid "No students found"
+msgstr "生徒が見つかりません"
+
+
+msgid "Attendance Actions"
+msgstr "出席管理"
+
+
+msgid "Enable Edit Mode for All"
+msgstr "すべての編集モードを有効にする"
+
+
+msgid "Save All Records"
+msgstr "すべての記録を保存"
+
+
+msgid "Reset All"
+msgstr "すべてリセット"
+
+
+msgid "Click 'Enable Edit Mode' to unlock all fields, then click 'Save All Records' when done"
+msgstr "「編集モードを有効にする」をクリックしてすべてのフィールドのロックを解除し、終了したら「すべての記録を保存」をクリックしてください。"
+
+
+msgid "Student Profile"
+msgstr "生徒プロフィール"
+
+
+msgid "Age:"
+msgstr "年齢："
+
+
+msgid "Gender:"
+msgstr "性別："
+
+
+msgid "Total Present:"
+msgstr "出席合計："
+
+
+msgid "Total Classes:"
+msgstr "合計クラス数："
+
+
+msgid "Attendance Rate:"
+msgstr "出席率："
+
+
+msgid "Detailed Daily Records"
+msgstr "詳細な日次記録"
+
+
+msgid "Filter by Month"
+msgstr "月で絞り込み"
+
+
+msgid "(All Months)"
+msgstr "（すべての月）"
+
+
+msgid "View Note History"
+msgstr "履歴を見る"
+
+
+msgid "Locked (> 24hrs)"
+msgstr "ロック済（>24時間）"
+
+
+msgid "Date"
+msgstr "日付"
+
+
+msgid "Status"
+msgstr "ステータス"
+
+
+msgid "Daily Note"
+msgstr "日次ノート"
+
+
+msgid "Note Added By"
+msgstr "追加した人"
+
+
+msgid "No records found for this selection."
+msgstr "この条件に対する記録はありません。"
+
+
+msgid "Edit row"
+msgstr "編集"
+
+
+msgid "Save changes"
+msgstr "保存"
+
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+
+msgid "Monthly Report"
+msgstr "月次レポート"
+
+
+msgid "Export Excel"
+msgstr "Excelをエクスポート"
+
+
+msgid "Classroom"
+msgstr "教室"
+
+
+msgid "Month"
+msgstr "月"
+
+
+msgid "Year"
+msgstr "年"
+
+
+msgid "Apply Filter"
+msgstr "フィルターを適用"
+
+
+msgid "No data available for this selection"
+msgstr "データがありません"
+
+
+msgid "#"
+msgstr "#"
+
+
+msgid "Student"
+msgstr "生徒"
+
+
+msgid "Monthly Notes"
+msgstr "月次ノート"
+
+
+msgid "No notes this month"
+msgstr "今月のノートはありません"
+
+
+msgid "January"
+msgstr "1月"
+
+
+msgid "February"
+msgstr "2月"
+
+
+msgid "March"
+msgstr "3月"
+
+
+msgid "April"
+msgstr "4月"
+
+
+msgid "May"
+msgstr "5月"
+
+
+msgid "June"
+msgstr "6月"
+
+
+msgid "July"
+msgstr "7月"
+
+
+msgid "August"
+msgstr "8月"
+
+
+msgid "September"
+msgstr "9月"
+
+
+msgid "October"
+msgstr "10月"
+
+
+msgid "November"
+msgstr "11月"
+
+
+msgid "December"
+msgstr "12月"
+
+
+msgid "Student Attendance List - %(my)s"
+msgstr "生徒出欠リスト - %(my)s"
+
+
+msgid "Teacher Report"
+msgstr "教師レポート"
+
+
+msgid "Full Name"
+msgstr "氏名"
+
+
+msgid "Today's Notes"
+msgstr "本日のノート"
+
+
+msgid "No students found."
+msgstr "生徒が見つかりません。"
+
+
+msgid "Saved successfully"
+msgstr "保存しました"
+
+
+msgid "Network error"
+msgstr "ネットワークエラー"
+
+
+msgid "Back to Classes"
+msgstr "クラスに戻る"
+
+
+msgid "Previous Month"
+msgstr "前の月"
+
+
+msgid "Next Month"
+msgstr "次の月"
+
+
+msgid "No students in this class yet"
+msgstr "このクラスにはまだ生徒がいません"
+
+
+msgid "Add students to this class first."
+msgstr "先にこのクラスへ生徒を追加してください。"
+
+
+msgid "Add Students"
+msgstr "生徒を追加"
+
+
+msgid "Katakana"
+msgstr "カタカナ"
+
+
+msgid "Save Attendance"
+msgstr "出席を保存"
+
+
+msgid "Manage Students"
+msgstr "生徒を管理"
+
+
+msgid "Available Students"
+msgstr "追加可能な生徒"
+
+
+msgid "MANAGE STUDENTS"
+msgstr "生徒管理"
+
+
+msgid "Saving..."
+msgstr "保存中..."
+
+
+msgid "Network error. Please try again."
+msgstr "ネットワークエラーです。再試行してください。"
+
+
+msgid "days"
+msgstr "日"
+
+
+msgid "Daily Notes"
+msgstr "日次ノート"
+
+
+msgid "DAILY NOTES"
+msgstr "日次ノート"
+
+
+msgid "Back to Student Records"
+msgstr "生徒記録に戻る"
+
+
+msgid "Today's Note"
+msgstr "本日のノート"
+
+
+msgid "This note is editable until 24 hours after it was first created."
+msgstr "このノートは初回作成から24時間以内であれば編集できます。"
+
+
+msgid "Write your observations, progress, or any specific notes for today..."
+msgstr "今日の所見、進捗、特記事項を入力してください..."
+
+
+msgid "Update Note"
+msgstr "ノートを更新"
+
+
+msgid "Save Note"
+msgstr "ノートを保存"
+
+
+msgid "Note History"
+msgstr "ノート履歴"
+
+
+msgid "Editable"
+msgstr "編集可"
+
+
+msgid "Locked"
+msgstr "ロック済み"
+
+
+msgid "Created at:"
+msgstr "作成日時:"
+
+
+msgid "No notes yet"
+msgstr "まだノートはありません"
+
+
+msgid "Daily notes will appear here once saved."
+msgstr "日次ノートは保存後にここへ表示されます。"
+
+
+msgid "Note cannot be empty"
+msgstr "ノートは空にできません"
+
+
+msgid "Method not allowed"
+msgstr "許可されていないメソッドです"
+
+
+msgid "Saved %(count)s attendance records"
+msgstr "%(count)s 件の出席記録を保存しました"
+
+
+msgid "Successfully saved %(count)s attendance records"
+msgstr "%(count)s 件の出席記録を正常に保存しました"
+
+
+msgid "Japanese name updated successfully."
+msgstr "日本語名を更新しました。"
+
+
+msgid "Note content cannot be empty if saving a note"
+msgstr "ノートを保存する場合、内容は空にできません"
+
+
+msgid "This note is older than 24 hours and can no longer be edited."
+msgstr "このノートは24時間を超えているため、編集できません。"
+
+
+msgid "Note %(action)s successfully."
+msgstr "ノートを%(action)sしました。"
+
+
+msgid "Unknown"
+msgstr "不明"
+
+
+msgid "Invalid date format"
+msgstr "日付形式が無効です"
+
+
+msgid "No attendance data provided"
+msgstr "出席データが提供されていません"
+
+
+msgid "Class A"
+msgstr "クラスA"
+
+
+msgid "Class B"
+msgstr "クラスB"
+
+
+msgid "Class C"
+msgstr "クラスC"
+
+
+msgid "Class D"
+msgstr "クラスD"
+
+
+msgid "Added %(count)s student(s) to %(classroom)s"
+msgstr "%(classroom)s に %(count)s 名の生徒を追加しました"
+
+
+msgid "Removed %(count)s student(s) from %(classroom)s"
+msgstr "%(classroom)s から %(count)s 名の生徒を削除しました"
+
+
+msgid "Attendance - %(classroom)s"
+msgstr "出席 - %(classroom)s"
+
+
+msgid "Manage Students - %(classroom)s"
+msgstr "生徒管理 - %(classroom)s"
+
+
+msgid "Please select a classroom before exporting."
+msgstr "エクスポートする前に教室を選択してください。"
+
+
+msgid "Selected classroom was not found."
+msgstr "選択された教室が見つかりませんでした。"
+
+
+msgid "No student data available."
+msgstr "利用可能な生徒データがありません。"
+
+
+msgid "S.N"
+msgstr "番号"
+
+
+msgid "Student Name"
+msgstr "生徒名"
+
+
+msgid "Class Report"
+msgstr "クラスレポート"
+

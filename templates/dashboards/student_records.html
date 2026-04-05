@@ -2,12 +2,12 @@
 {% load i18n %}
 
 <!doctype html>
-<html lang="en">
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Student Records - Aqua Group</title>
+  <title>{% trans "Student Records" %} - {% trans "Aqua Group" %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -296,26 +296,47 @@
     <div class="container-fluid d-flex justify-content-between align-items-center">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="logout-btn" href="{% url 'accounts:login_view' %}">Logout</a>
+          <a class="logout-btn" href="{% url 'accounts:login_view' %}">{% trans "Logout" %}</a>
         </li>
       </ul>
       <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
         <h4>{{ page_title }}</h4>
       </a>
-      <div class="collapse navbar-collapse" id="navbarNav"></div>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center mb-0 px-2"
+              style="background: white; border-radius: 4px;">
+              {% csrf_token %}
+              <input name="next" type="hidden" value="{{ request.get_full_path }}">
+              <select name="language" onchange="this.form.submit()" class="form-select form-select-sm"
+                style="border: none;">
+                {% get_current_language as LANGUAGE_CODE %}
+                {% get_available_languages as LANGUAGES %}
+                {% get_language_info_list for LANGUAGES as languages %}
+                {% for language in languages %}
+                <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %}selected{% endif %}>
+                  {{ language.name_local }} ({{ language.code }})
+                </option>
+                {% endfor %}
+              </select>
+            </form>
+          </li>
+        </ul>
+      </div>
     </div>
   </nav>
 
   <div class="content-area">
     <a href="{% url 'dashboard:teacher_dashboard' %}" class="btn-back">
-      <i class="fas fa-arrow-left"></i> Back to Dashboard
+      <i class="fas fa-arrow-left"></i> {% trans "Back to Dashboard" %}
     </a>
 
     <div class="table-container">
       <div class="page-header">
-        <h2><i class="fas fa-user-graduate" style="color: #004E89;"></i> Student Records</h2>
+        <h2><i class="fas fa-user-graduate" style="color: #004E89;"></i> {% trans "Student Records" %}</h2>
         <div class="search-box">
-          <input type="text" id="search-input" placeholder="Search by name...">
+          <input type="text" id="search-input" placeholder="{% trans 'Search by name...' %}">
         </div>
       </div>
 
@@ -323,13 +344,13 @@
         <table class="table table-hover" id="students-table">
           <thead>
             <tr>
-              <th style="width: 5%;">#</th>
-              <th style="width: 8%;">Photo</th>
-              <th style="width: 18%;">Full Name</th>
-              <th style="width: 20%;">Japanese Name</th>
-              <th style="width: 10%;">Gender</th>
-              <th style="width: 27%;">Today's Notes</th>
-              <th style="width: 12%; text-align: center;">Actions</th>
+              <th style="width: 5%;">{% trans "#" %}</th>
+              <th style="width: 8%;">{% trans "Photo" %}</th>
+              <th style="width: 18%;">{% trans "Full Name" %}</th>
+              <th style="width: 20%;">{% trans "Japanese Name" %}</th>
+              <th style="width: 10%;">{% trans "Gender" %}</th>
+              <th style="width: 27%;">{% trans "Today's Notes" %}</th>
+              <th style="width: 12%; text-align: center;">{% trans "Actions" %}</th>
             </tr>
           </thead>
           <tbody>
@@ -338,8 +359,10 @@
               <td><span class="text-muted fw-bold">{{ forloop.counter }}</span></td>
 
               <td>
-                {% if item.student.photo %}
-                <img src="{{ item.student.photo.url }}" alt="Photo" class="student-avatar">
+                {% if item.student.photo_data_uri %}
+                <img src="{{ item.student.photo_data_uri }}" alt="Photo" class="student-avatar">
+                {% elif item.student.photo_display_url %}
+                <img src="{{ item.student.photo_display_url }}" alt="Photo" class="student-avatar">
                 {% else %}
                 <div class="avatar-ph">{{ item.student.full_name|slice:":2" }}</div>
                 {% endif %}
@@ -360,40 +383,40 @@
               </td>
 
               <td>
-                <textarea class="input-note" placeholder="No notes for today." disabled
+                <textarea class="input-note" placeholder="{% trans 'No notes for today.' %}" disabled
                   data-original="{{ item.today_note.content|default:'' }}">{% if item.today_note %}{{ item.today_note.content }}{% endif %}</textarea>
 
                 {% if item.today_note and item.today_note.teacher %}
                 <div class="text-muted" style="font-size: 0.75rem; margin-top: 4px;">
-                  <i class="fas fa-user-edit"></i> 
+                  <i class="fas fa-user-edit"></i>
                   {% with teacher_name=item.today_note.teacher.get_full_name %}
-                    {% if teacher_name %}
-                      {{ teacher_name }}
-                    {% else %}
-                      {{ item.today_note.teacher.username }}
-                    {% endif %}
+                  {% if teacher_name %}
+                  {{ teacher_name }}
+                  {% else %}
+                  {{ item.today_note.teacher.username }}
+                  {% endif %}
                   {% endwith %}
                 </div>
                 {% endif %}
 
                 {% if item.today_note and not item.today_note.is_editable %}
-                <div class="note-locked-msg"><i class="fas fa-lock"></i> Locked (> 24hrs)</div>
+                <div class="note-locked-msg"><i class="fas fa-lock"></i> {% trans "Locked (> 24hrs)" %}</div>
                 {% endif %}
               </td>
 
               <td style="text-align: center;">
-                <button type="button" class="action-btn btn-edit" title="Edit row" onclick="toggleEdit(this, true)" {% if item.today_note and not item.today_note.is_editable %}disabled{% endif %}>
+                <button type="button" class="action-btn btn-edit" title="{% trans 'Edit row' %}" onclick="toggleEdit(this, true)" {% if item.today_note and not item.today_note.is_editable %}disabled{% endif %}>
                   <i class="fas fa-pen"></i>
                 </button>
-                <button type="button" class="action-btn btn-save" title="Save changes" onclick="saveRow(this)">
+                <button type="button" class="action-btn btn-save" title="{% trans 'Save changes' %}" onclick="saveRow(this)">
                   <i class="fas fa-check"></i>
                 </button>
-                <button type="button" class="action-btn btn-cancel" title="Cancel" onclick="cancelEdit(this)">
+                <button type="button" class="action-btn btn-cancel" title="{% trans 'Cancel' %}" onclick="cancelEdit(this)">
                   <i class="fas fa-times"></i>
                 </button>
 
                 <a href="{% url 'dashboard:student_daily_notes' item.student.id %}" class="action-btn btn-edit ms-1"
-                  title="View Note History" style="background:#e0f2fe; color:#0369a1;">
+                  title="{% trans 'View Note History' %}" style="background:#e0f2fe; color:#0369a1;">
                   <i class="fas fa-history"></i>
                 </a>
               </td>
@@ -401,7 +424,7 @@
             {% empty %}
             <tr>
               <td colspan="7" class="text-center text-muted py-5">
-                <i class="fas fa-users fa-3x mb-3 text-light"></i><br>No students found.
+                <i class="fas fa-users fa-3x mb-3 text-light"></i><br>{% trans "No students found." %}
               </td>
             </tr>
             {% endfor %}
@@ -493,7 +516,7 @@
         .then(r => r.json())
         .then(data => {
           if (data.success) {
-            showToast('✅ Saved successfully', 'success');
+            showToast('✅ {% trans "Saved successfully" %}', 'success');
             // Update originals
             inputJp.dataset.original = newJp;
             inputNote.dataset.original = newNote;
@@ -503,7 +526,7 @@
           }
         })
         .catch(err => {
-          showToast('❌ Network error', 'error');
+          showToast('❌ {% trans "Network error" %}', 'error');
         })
         .finally(() => {
           btn.innerHTML = originalHtml;

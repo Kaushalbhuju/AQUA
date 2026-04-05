@@ -660,7 +660,7 @@ def generate_receipt(request, payment_id):
                 <p class="received-by-title"><u>Received By</u></p>
                 <p class="rb-line">&nbsp;&nbsp;&nbsp;&nbsp;Account Department</p>
                 <p class="rb-line">&nbsp;&nbsp;&nbsp;&nbsp;Aqua Education And Training Academy Pvt. Ltd</p>
-                <p class="rb-line">&nbsp;&nbsp;&nbsp;&nbsp;Telephone: +977-01-000000</p>
+                <p class="rb-line">&nbsp;&nbsp;&nbsp;&nbsp;Telephone:  01-4519666</p>
             </div>
             <div class="signature-section">
                 <div class="signature-box">

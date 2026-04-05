@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title|default:"AQUA Book Tracking" }}</title>
+    <!-- Use a premium font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #198754;
+            --secondary: #0d6efd;
+            --dark: #212529;
+            --light: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .scan-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            width: 80px;
+            margin-bottom: 25px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .status-assigned {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-available {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin: 0 0 10px;
+            color: var(--dark);
+        }
+
+        .book-id {
+            color: #627d98;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .info-grid {
+            text-align: left;
+            background: var(--light);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #627d98;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-top: 4px;
+        }
+
+        .footer {
+            font-size: 14px;
+            color: #9fb3c8;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="scan-card">
+        <!-- Minimal Logo Placeholder -->
+        <div class="logo">
+            <i class="fas fa-book-open fa-3x" style="color: var(--primary);"></i>
+        </div>
+
+        {% if assignment and not assignment.returned %}
+        <div class="status-badge status-assigned">
+            <i class="fas fa-hand-holding-heart me-2"></i>Currently Assigned
+        </div>
+        {% else %}
+        <div class="status-badge status-available">
+            <i class="fas fa-check-circle me-2"></i>Available in Stock
+        </div>
+        {% endif %}
+
+        <h1>{{ book.name|default:assignment.book.name }}</h1>
+        <div class="book-id">#{{ book.id|default:assignment.book.id }}</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="label">Book Name</div>
+                <div class="value">{{ book.name|default:assignment.book.name }}</div>
+            </div>
+
+            {% if assignment and not assignment.returned %}
+            <div class="info-item">
+                <div class="label">Assigned To</div>
+                <div class="value">{{ assignment.recipient_name }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            &copy; 2026 AQUA Education Academy<br>
+            Tracking Service
+        </div>
+    </div>
+</body>
+
+</html>

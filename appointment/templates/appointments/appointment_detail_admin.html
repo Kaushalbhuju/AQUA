@@ -299,11 +299,12 @@
                     <div class="d-grid gap-2">
                         <!-- Confirm Button -->
                         {% if not appointment.is_confirmed %}
-                        <a href="{% url 'confirm_appointment' appointment.id %}" 
-                           class="btn btn-success btn-lg action-btn"
-                           onclick="return confirm('Confirm appointment #{{ appointment.id }}?')">
-                            <i class="fas fa-check-circle me-2"></i>Confirm Appointment
-                        </a>
+                        <form method="post" action="{% url 'confirm_appointment' appointment.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-lg action-btn" onclick="return confirm('Confirm appointment #{{ appointment.id }}?')">
+                                <i class="fas fa-check-circle me-2"></i>Confirm Appointment
+                            </button>
+                        </form>
                         {% else %}
                         <button class="btn btn-secondary btn-lg action-btn" disabled>
                             <i class="fas fa-check-circle me-2"></i>Already Confirmed
@@ -311,11 +312,12 @@
                         {% endif %}
                         
                         <!-- Cancel Button -->
-                        <a href="{% url 'cancel_appointment' appointment.id %}" 
-                           class="btn btn-danger btn-lg action-btn"
-                           onclick="return confirm('Are you sure you want to cancel appointment #{{ appointment.id }}? This action cannot be undone.')">
-                            <i class="fas fa-times-circle me-2"></i>Cancel Appointment
-                        </a>
+                        <form method="post" action="{% url 'cancel_appointment' appointment.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-lg action-btn" onclick="return confirm('Are you sure you want to cancel appointment #{{ appointment.id }}? This action cannot be undone.')">
+                                <i class="fas fa-times-circle me-2"></i>Cancel Appointment
+                            </button>
+                        </form>
                         
                         <!-- Edit in Admin -->
                         <a href="/admin/appointment/appointment/{{ appointment.id }}/change/" 

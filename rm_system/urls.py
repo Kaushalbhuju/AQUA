@@ -3,6 +3,26 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts.admin_site import custom_admin_site
+from django.http import FileResponse, Http404
+import os
+
+
+def serve_media(request, path):
+    full_path = os.path.join(settings.MEDIA_ROOT, path)
+    if not os.path.exists(full_path) or not os.path.isfile(full_path):
+        raise Http404("File not found.")
+    response = FileResponse(open(full_path, 'rb'))
+    ext = os.path.splitext(path)[1].lower()
+    if ext in ('.pdf',):
+        response['Content-Type'] = 'application/pdf'
+    elif ext in ('.png',):
+        response['Content-Type'] = 'image/png'
+    elif ext in ('.jpg', '.jpeg'):
+        response['Content-Type'] = 'image/jpeg'
+    elif ext in ('.docx',):
+        response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    return response
+
 
 # Register all models with the custom admin site
 from accounts.admin import UserAdmin
@@ -102,6 +122,13 @@ try:
     jobd_letter_available = True
 except ImportError:
     jobd_letter_available = False
+
+try:
+    from books.admin import BookAdmin
+    from books.models import Book
+    books_available = True
+except ImportError:
+    books_available = False
 
 # Unregister from default admin if registered
 try:
@@ -230,6 +257,12 @@ if jobd_letter_available:
     except admin.sites.AlreadyRegistered:
         pass
 
+if books_available:
+    try:
+        custom_admin_site.register(Book, BookAdmin)
+    except admin.sites.AlreadyRegistered:
+        pass
+
 urlpatterns = [
     path('admin/', custom_admin_site.urls),
     path('i18n/', include('django.conf.urls.i18n')),
@@ -255,10 +288,18 @@ urlpatterns = [
     path('documents/', include('guarantee_letter.urls')),
     path('coe-visa/', include('coe_visa.urls')),
     path('other-documents/', include('other_documents.urls')),
+    path('books/', include('books.urls', namespace='books')),
 
+]
+
+urlpatterns += [
+    path('media/<path:path>', serve_media, name='serve_media'),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    
+
+urlpatterns += [
+    path('media/<path:path>', serve_media, name='serve_media'),
+]

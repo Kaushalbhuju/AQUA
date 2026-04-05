@@ -1,0 +1,8 @@
+--- Rendering dashboards/class_list.html ---
+SUCCESS: dashboards/class_list.html
+--- Rendering dashboards/student_records.html ---
+SUCCESS: dashboards/student_records.html
+--- Rendering dashboards/student_attendance.html ---
+SUCCESS: dashboards/student_attendance.html
+--- Rendering dashboards/teacher_report.html ---
+SUCCESS: dashboards/teacher_report.html

@@ -49,7 +49,37 @@ class Company(models.Model):
     
     def __str__(self):
         return f"{self.company_id} - {self.company_name_english}"
-    
+
+    def pdf_url(self, field_name):
+        file = getattr(self, field_name, None)
+        if file and file.name:
+            from django.conf import settings
+            if settings.DEBUG:
+                return file.url
+            return f"/media/{file.name}"
+        return None
+
+    def agreement_doc_url(self):
+        return self.pdf_url('agreement_doc')
+
+    def interview_pass_doc_url(self):
+        return self.pdf_url('interview_pass_doc')
+
+    def visa_apply_doc_url(self):
+        return self.pdf_url('visa_apply_doc')
+
+    def ceo_visa_doc_url(self):
+        return self.pdf_url('ceo_visa_doc')
+
+    def other_doc_url(self):
+        return self.pdf_url('other_doc')
+
+    def pdf_doc_1_url(self):
+        return self.pdf_url('pdf_doc_1')
+
+    def pdf_doc_2_url(self):
+        return self.pdf_url('pdf_doc_2')
+
     class Meta:
         verbose_name = "Company"
         verbose_name_plural = "Companies"

@@ -2,8 +2,20 @@ import calendar
 from datetime import date
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils.translation import gettext as _
 from dashboard.decorators import check_role
 from django.http import HttpResponse
+
+
+def localized_classroom_name(name):
+    mapping = {
+        'Class A': _('Class A'),
+        'Class B': _('Class B'),
+        'Class C': _('Class C'),
+        'Class D': _('Class D'),
+    }
+    return mapping.get(name, name)
 
 @login_required(login_url='login')
 @check_role('teacher')
@@ -79,6 +91,9 @@ def teacher_report(request):
                     'present_count': present_count,
                     'effective_days': effective_days
                 })
+
+    for classroom in classrooms:
+        classroom.localized_name = localized_classroom_name(classroom.name)
             
     month_name = calendar.month_name[month]
     
@@ -96,6 +111,7 @@ def teacher_report(request):
     context = {
         'classrooms': classrooms,
         'selected_classroom': selected_classroom,
+        'selected_classroom_display': localized_classroom_name(selected_classroom.name) if selected_classroom else None,
         'student_data': student_data,
         'month': month,
         'year': year,
@@ -104,7 +120,7 @@ def teacher_report(request):
         'prev_year': prev_year,
         'next_month': next_month,
         'next_year': next_year,
-        'page_title': 'Class Report'
+        'page_title': _('Class Report')
     }
     
     return render(request, 'dashboards/teacher_report.html', context)
@@ -126,7 +142,14 @@ def export_report_excel(request):
         year = today.year
         month = today.month
 
-    selected_classroom = get_object_or_404(Classroom, id=classroom_id, teacher=request.user)
+    if not classroom_id:
+        messages.error(request, _('Please select a classroom before exporting.'))
+        return redirect('dashboard:teacher_report')
+
+    selected_classroom = Classroom.objects.filter(id=classroom_id, teacher=request.user).first()
+    if not selected_classroom:
+        messages.error(request, _('Selected classroom was not found.'))
+        return redirect('dashboard:teacher_report')
     class_students = ClassStudent.objects.filter(classroom=selected_classroom).select_related('student')
     students = [cs.student for cs in class_students]
     
@@ -214,7 +237,14 @@ def export_report_pdf(request):
         year = today.year
         month = today.month
 
-    selected_classroom = get_object_or_404(Classroom, id=classroom_id, teacher=request.user)
+    if not classroom_id:
+        messages.error(request, _('Please select a classroom before exporting.'))
+        return redirect('dashboard:teacher_report')
+
+    selected_classroom = Classroom.objects.filter(id=classroom_id, teacher=request.user).first()
+    if not selected_classroom:
+        messages.error(request, _('Selected classroom was not found.'))
+        return redirect('dashboard:teacher_report')
     class_students = ClassStudent.objects.filter(classroom=selected_classroom).select_related('student')
     students = [cs.student for cs in class_students]
     
@@ -246,10 +276,13 @@ def export_report_pdf(request):
             'student': student,
             'percentage': percentage,
             'notes': notes,
+            'present_count': present_count,
+            'effective_days': effective_days,
         })
         
     context = {
         'classroom': selected_classroom,
+        'classroom_display_name': localized_classroom_name(selected_classroom.name),
         'student_data': student_data,
         'month_name': calendar.month_name[month],
         'year': year

@@ -1,0 +1,42 @@
+{% extends "books/base_books.html" %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'books:book_detail' book.id %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i>Back to Book
+    </a>
+</div>
+
+<div class="page-header" style="background: linear-gradient(135deg, #c0392b, #e74c3c);">
+    <h1 class="h3 mb-1"><i class="fas fa-undo me-2"></i>Confirm Return</h1>
+    <p class="mb-0 opacity-75">{{ book.id }} – {{ book.name }}</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="books-card card">
+            <div class="card-body p-4 text-center">
+                <i class="fas fa-book fa-4x text-warning mb-3"></i>
+                <h5 class="mb-1">{{ book.name }}</h5>
+                <p class="text-muted mb-1"><small>{{ book.id }}</small></p>
+                <p class="mb-4">
+                    Currently <strong>{{ book.issued_count }}</strong> copy(ies) issued.
+                    After return: <strong>{{ book.remaining_stock|add:1 }}</strong> will be available.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-3 justify-content-center">
+                        <button type="submit" class="btn btn-danger px-4">
+                            <i class="fas fa-undo me-2"></i>Yes, Mark as Returned
+                        </button>
+                        <a href="{% url 'books:book_detail' book.id %}" class="btn btn-outline-secondary px-4">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

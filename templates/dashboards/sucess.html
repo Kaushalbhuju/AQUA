@@ -135,8 +135,10 @@
                             {% for staff in staff_list %}
                                 <tr>
                                     <td>
-                                        {% if staff.candidate_photo %}
-                                            <img src="{{ staff.candidate_photo.url }}" alt="{{ staff.full_name }}" class="staff-photo">
+                                        {% if staff.candidate_photo_data_uri %}
+                                            <img src="{{ staff.candidate_photo_data_uri }}" alt="{{ staff.full_name }}" class="staff-photo">
+                                        {% elif staff.candidate_photo_display_url %}
+                                            <img src="{{ staff.candidate_photo_display_url }}" alt="{{ staff.full_name }}" class="staff-photo">
                                         {% else %}
                                             <div class="staff-photo bg-secondary d-flex align-items-center justify-content-center text-white">
                                                 {{ staff.full_name|first|upper }}

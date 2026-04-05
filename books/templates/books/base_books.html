@@ -1,0 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ page_title|default:"Books" }} | AQUA{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --books-primary: #1a6e5a;
+      --books-primary-dark: #134f41;
+      --books-accent: #f4a261;
+      --books-bg: #f3f8f6;
+      --books-card-shadow: 0 4px 18px rgba(26, 110, 90, .12);
+    }
+
+    body {
+      background: var(--books-bg);
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .books-navbar {
+      background: linear-gradient(135deg, var(--books-primary-dark), var(--books-primary));
+      box-shadow: 0 2px 12px rgba(26, 110, 90, .25);
+    }
+
+    .books-navbar .navbar-brand {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: .5px;
+    }
+
+    .books-navbar .nav-link {
+      color: rgba(255, 255, 255, .85) !important;
+      transition: color .2s;
+    }
+
+    .books-navbar .nav-link:hover {
+      color: #fff !important;
+    }
+
+    .books-card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: var(--books-card-shadow);
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .books-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(26, 110, 90, .18);
+    }
+
+    .badge-available {
+      background: #28a745;
+      color: #fff;
+    }
+
+    .badge-out {
+      background: #dc3545;
+      color: #fff;
+    }
+
+    .btn-books-primary {
+      background: var(--books-primary);
+      border-color: var(--books-primary);
+      color: #fff;
+    }
+
+    .btn-books-primary:hover {
+      background: var(--books-primary-dark);
+      border-color: var(--books-primary-dark);
+      color: #fff;
+    }
+
+    .page-header {
+      background: linear-gradient(135deg, var(--books-primary), #2ea880);
+      color: #fff;
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .stock-bar {
+      height: 8px;
+      border-radius: 4px;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg books-navbar mb-4">
+    <div class="container">
+      <a class="navbar-brand text-white" href="{% url 'books:book_list' %}">
+        <i class="fas fa-book-open me-2"></i>Book Inventory
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#booksNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="booksNav">
+        <ul class="navbar-nav ms-auto align-items-center gap-2">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'books:book_list' %}"><i class="fas fa-list me-1"></i>Inventory</a>
+          </li>
+
+          {% if request.user.role in 'manager,operation_head,staff' %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'books:assignment_list' %}"><i
+                class="fas fa-list-check me-1"></i>Assignments</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'books:template_list' %}"><i class="fas fa-file-pdf me-1"></i>Templates</a>
+          </li>
+          {% endif %}
+
+          <li class="nav-item">
+            {% if request.user.role == 'manager' or request.user.role == 'operation_head' %}
+            <a class="nav-link text-warning fw-semibold" href="{% url 'dashboard:manager_dashboard' %}">
+              <i class="fas fa-arrow-left me-1"></i>Dashboard
+            </a>
+            {% elif request.user.role == 'staff' %}
+            <a class="nav-link text-warning fw-semibold" href="{% url 'dashboard:staff_dashboard' %}">
+              <i class="fas fa-arrow-left me-1"></i>Dashboard
+            </a>
+            {% elif request.user.role == 'teacher' %}
+            <a class="nav-link text-warning fw-semibold" href="{% url 'dashboard:teacher_dashboard' %}">
+              <i class="fas fa-arrow-left me-1"></i>Dashboard
+            </a>
+            {% else %}
+            <a class="nav-link text-warning fw-semibold" href="/dashboard/">
+              <i class="fas fa-arrow-left me-1"></i>Dashboard
+            </a>
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container pb-5">
+    <!-- Flash messages -->
+    {% if messages %}
+    <div class="mb-4">
+      {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+        <i
+          class="fas {% if msg.tags == 'success' %}fa-check-circle{% elif msg.tags == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} me-2"></i>
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+
+</html>

@@ -1,9 +1,10 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
-    <title>Report</title>
+    <title>{% trans "Report" %}</title>
     <style>
         @page {
             size: A4 landscape;
@@ -73,19 +74,19 @@
 
 <body>
     <div class="header">
-        <h2>{{ classroom.name }} - Monthly Report</h2>
+        <h2>{{ classroom_display_name }} - {% trans "Monthly Report" %}</h2>
         <p>{{ month_name }} {{ year }}</p>
     </div>
 
     <table>
         <thead>
             <tr>
-                <th style="width: 5%;">S.N</th>
-                <th style="width: 25%;">Student Name</th>
-                <th style="width: 8%; text-align: center;">Gender</th>
-                <th style="width: 8%; text-align: center;">Age</th>
-                <th style="width: 12%; text-align: center;">Attendance %</th>
-                <th style="width: 42%;">Monthly Notes</th>
+                <th style="width: 5%;">{% trans "S.N" %}</th>
+                <th style="width: 25%;">{% trans "Student Name" %}</th>
+                <th style="width: 8%; text-align: center;">{% trans "Gender" %}</th>
+                <th style="width: 8%; text-align: center;">{% trans "Age" %}</th>
+                <th style="width: 12%; text-align: center;">{% trans "Attendance %" %}</th>
+                <th style="width: 42%;">{% trans "Monthly Notes" %}</th>
             </tr>
         </thead>
         <tbody>
@@ -98,13 +99,12 @@
                 </td>
                 <td class="text-center">{{ item.student.gender|default:'-' }}</td>
                 <td class="text-center">{{ item.student.calculated_age|default:item.student.age|default:'-' }}</td>
-                <td class="text-center"><b>{{ item.percentage }}%</b><br><small>{{ item.present_count }}/{{
-                        item.effective_days }} d</small></td>
+                <td class="text-center"><b>{{ item.percentage }}%</b><br><small>{{ item.present_count }}/{{ item.effective_days }} {% trans "days" %}</small></td>
                 <td>
                     {% if item.notes %}
                     <ul class="notes-list">
                         {% for note in item.notes %}
-                        <li><b>{{ note.note_date|date:"d" }}日:</b> {{ note.content }}</li>
+                        <li><b>{{ note.note_date|date:"d" }}:</b> {{ note.content }}</li>
                         {% endfor %}
                     </ul>
                     {% else %}
@@ -114,7 +114,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="text-center">No student data available.</td>
+                <td colspan="6" class="text-center">{% trans "No student data available." %}</td>
             </tr>
             {% endfor %}
         </tbody>

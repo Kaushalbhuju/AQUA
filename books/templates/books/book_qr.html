@@ -1,0 +1,86 @@
+{% extends "books/base_books.html" %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'books:book_detail' book.id %}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i>Back to Book
+    </a>
+</div>
+
+<div class="page-header">
+    <h1 class="h3 mb-1"><i class="fas fa-qrcode me-2"></i>QR Code</h1>
+    <p class="mb-0 opacity-75">{{ book.id }} – {{ book.name }}</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="books-card card text-center">
+            <div class="card-body p-4">
+                {% if book.qr_code_data_uri %}
+                <img src="{{ book.qr_code_data_uri }}" alt="QR Code for {{ book.name }}" class="img-fluid mb-4"
+                    style="max-width:260px; border:6px solid #f0f0f0; border-radius:12px;" />
+                {% else %}
+                <div class="text-muted py-4">
+                    <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                    <p>QR code not yet generated.</p>
+                </div>
+                {% endif %}
+
+                <h5 class="fw-bold mb-1">{{ book.name }}</h5>
+                <span class="badge bg-secondary mb-3">{{ book.id }}</span>
+
+                <div class="row text-start mb-4">
+                    <div class="col-6">
+                        <small class="text-muted d-block">Total Stock</small>
+                        <strong>{{ book.total_stock }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Remaining</small>
+                        <strong class="{% if book.status == 'available' %}text-success{% else %}text-danger{% endif %}">
+                            {{ book.remaining_stock }}
+                        </strong>
+                    </div>
+                </div>
+
+                {% if book.qr_code %}
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <a href="{{ book.qr_code_data_uri|default:book.qr_code_url }}" download="{{ book.id }}_qr.png" class="btn btn-books-primary">
+                        <i class="fas fa-download me-2"></i>Download QR
+                    </a>
+                    <button onclick="printQR()" class="btn btn-outline-secondary">
+                        <i class="fas fa-print me-2"></i>Print
+                    </button>
+                    <a href="{{ book.qr_code_url }}" target="_blank" class="btn btn-outline-dark">
+                        <i class="fas fa-external-link-alt me-2"></i>Full Size
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Scan note -->
+        <div class="text-center mt-3 text-muted small">
+            <i class="fas fa-info-circle me-1"></i>
+            Scanning this QR code will open the book detail page.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function printQR() {
+        var img = document.querySelector('img[alt^="QR Code"]');
+        if (!img) return;
+        var win = window.open('', '_blank');
+        win.document.write('<html><head><title>Print QR – {{ book.id }}</title></head><body style="text-align:center;padding:40px;">');
+        win.document.write('<h2>{{ book.name }}</h2>');
+        win.document.write('<p style="color:#888">{{ book.id }}</p>');
+        win.document.write('<img src="' + img.src + '" style="width:280px;height:280px;" />');
+        win.document.write('</body></html>');
+        win.document.close();
+        win.focus();
+        win.print();
+    }
+</script>
+{% endblock %}

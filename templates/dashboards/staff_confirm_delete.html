@@ -144,8 +144,10 @@
             </p>
 
             <div class="staff-info">
-                {% if staff.candidate_photo %}
-                    <img src="{{ staff.candidate_photo.url }}" alt="{{ staff.full_name }}" class="staff-photo-delete">
+                {% if staff.candidate_photo_data_uri %}
+                    <img src="{{ staff.candidate_photo_data_uri }}" alt="{{ staff.full_name }}" class="staff-photo-delete">
+                {% elif staff.candidate_photo_display_url %}
+                    <img src="{{ staff.candidate_photo_display_url }}" alt="{{ staff.full_name }}" class="staff-photo-delete">
                 {% else %}
                     <div class="staff-photo-delete bg-secondary d-flex align-items-center justify-content-center text-white mx-auto" style="font-size: 2rem;">
                         {{ staff.full_name|first|upper }}

@@ -176,8 +176,10 @@
             <!-- Profile Section -->
             <div class="profile-section">
                 <div>
-                    {% if staff.candidate_photo %}
-                        <img src="{{ staff.candidate_photo.url }}" alt="{{ staff.full_name }}" class="profile-photo">
+                    {% if staff.candidate_photo_data_uri %}
+                        <img src="{{ staff.candidate_photo_data_uri }}" alt="{{ staff.full_name }}" class="profile-photo">
+                    {% elif staff.candidate_photo_display_url %}
+                        <img src="{{ staff.candidate_photo_display_url }}" alt="{{ staff.full_name }}" class="profile-photo">
                     {% else %}
                         <div class="profile-photo bg-secondary d-flex align-items-center justify-content-center text-white" style="font-size: 4rem;">
                             {{ staff.full_name|first|upper }}
@@ -471,8 +473,8 @@
                     <div class="doc-card-view {% if staff.staff_bio_data_pdf %}has-file{% endif %}">
                         <i class="fas fa-file-pdf"></i>
                         <div class="doc-title">STAFF BIO DATA</div>
-                        {% if staff.staff_bio_data_pdf %}
-                            <a href="{{ staff.staff_bio_data_pdf.url }}" target="_blank" class="btn btn-sm btn-success mt-2">
+                        {% if staff.staff_bio_data_pdf_url %}
+                            <a href="{{ staff.staff_bio_data_pdf_url }}" target="_blank" class="btn btn-sm btn-success mt-2">
                                 <i class="fas fa-download"></i> Download
                             </a>
                         {% else %}
@@ -484,8 +486,8 @@
                     <div class="doc-card-view {% if staff.staff_id_doc_pdf %}has-file{% endif %}">
                         <i class="fas fa-id-card"></i>
                         <div class="doc-title">STAFF ID DOC</div>
-                        {% if staff.staff_id_doc_pdf %}
-                            <a href="{{ staff.staff_id_doc_pdf.url }}" target="_blank" class="btn btn-sm btn-success mt-2">
+                        {% if staff.staff_id_doc_pdf_url %}
+                            <a href="{{ staff.staff_id_doc_pdf_url }}" target="_blank" class="btn btn-sm btn-success mt-2">
                                 <i class="fas fa-download"></i> Download
                             </a>
                         {% else %}
@@ -497,8 +499,8 @@
                     <div class="doc-card-view {% if staff.staff_login_report_pdf %}has-file{% endif %}">
                         <i class="fas fa-chart-line"></i>
                         <div class="doc-title">LOGIN REPORT</div>
-                        {% if staff.staff_login_report_pdf %}
-                            <a href="{{ staff.staff_login_report_pdf.url }}" target="_blank" class="btn btn-sm btn-success mt-2">
+                        {% if staff.staff_login_report_pdf_url %}
+                            <a href="{{ staff.staff_login_report_pdf_url }}" target="_blank" class="btn btn-sm btn-success mt-2">
                                 <i class="fas fa-download"></i> Download
                             </a>
                         {% else %}
@@ -510,8 +512,8 @@
                     <div class="doc-card-view {% if staff.staff_login_id_pdf %}has-file{% endif %}">
                         <i class="fas fa-user-lock"></i>
                         <div class="doc-title">STAFF LOGIN ID</div>
-                        {% if staff.staff_login_id_pdf %}
-                            <a href="{{ staff.staff_login_id_pdf.url }}" target="_blank" class="btn btn-sm btn-success mt-2">
+                        {% if staff.staff_login_id_pdf_url %}
+                            <a href="{{ staff.staff_login_id_pdf_url }}" target="_blank" class="btn btn-sm btn-success mt-2">
                                 <i class="fas fa-download"></i> Download
                             </a>
                         {% else %}

@@ -1,47 +1,24 @@
-# SSWAdmission रु to रु Replacement Task
+# Server Bug Fixes - Progress Tracker
 Current Working Directory: e:/down/AQUA
 
-## Overview
-Replace all "रु" currency symbols with "रु " (Devanagari Rupee) throughout sswadmission app.
-- Python files: 5 files (views.py, templatetags/student_filters.py, models.py, forms.py, admin.py)
-- Templates: 12+ HTML files + receipt HTML string in views.py
-- Total changes: ~50-60 replacements
+## Approved Plan Steps
 
-## Steps (Complete Sequentially)
+### 1. ✅ Create TODO.md 
 
-### 1. ✅ [DONE] Analysis Complete
-- Searched रु locations with search_files
-- Read core files (apps.py, models.py, views.py, urls.py, admin.py)
-- Confirmed all files/occurrences
+### 2. ✅ Fix login reverse issues
+- ✅ Updated dashboard/decorators.py redirect to 'accounts:login'
+- ✅ Updated dashboard/views/dashboard_views.py login_url to 'accounts:login' for operation_head, manager (others pending due to multiple matches)
+- ✅ Fixed indentation in decorators.py
 
-### 2. ✅ [DONE] Planning Complete
-- Detailed edit plan created and user approved
-- TODO.md created
+### 3. TemplateSyntaxError (line 373 endif bug)
+- [ ] Still searching for exact template (suspect missing approval_page.html etc.)
+- [ ] No obvious endif mismatches in searched templates
 
-### 3. ✅ Python Files Complete (रु → रु in views, templatetags, models, forms, admin)
-
-### 4. [IN PROGRESS] Edit Templates (Frontend Displays)
-- ✅ student_list.html (paid/due)
-- ✅ student_detail.html (total_fee)
-- [ ] student_registration.html, student_update.html, payment_*.html, dashboard.html, reports.html
-- [ ] receipt HTML in views.py generate_receipt (Rs. stays)
-
-- [ ] payment_list.html, payment_detail.html, payment_add.html, payment_verification_queue.html
-
-- [ ] student_list.html, student_detail.html, student_registration.html, student_update.html
-- [ ] payment_list.html, payment_detail.html, payment_add.html, payment_verification_queue.html
-- [ ] dashboard.html, financial_reports.html, admission_statistics.html
-- [ ] receipt/receipt_pdf.html string in views.py generate_receipt()
-
-### 5. [PENDING] Testing & Verification
+### 4. General server stability
+- [ ] python manage.py check (pending cmd syntax fix)
 - [ ] python manage.py runserver
-- [ ] Test dashboard stats, student create/edit/list, payment add/verify/list, admin panels
-- [ ] Verify Devanagari रु renders correctly in all browsers
-- [ ] Generate receipt PDF - check both copies
-- [ ] Check JS fee calculators (student forms)
 
-### 6. [PENDING] Finalization
-- [ ] Update TODO.md with completion status
-- [ ] attempt_completion with demo command
+### 5. [PENDING] Final testing & completion
 
-**Next Step:** Edit Python files first (step 3). Progress will be tracked here.
+**Next Step:** Update remaining login_url in dashboard_views.py (staff, college, teacher) and student_views.py, then test server.
+

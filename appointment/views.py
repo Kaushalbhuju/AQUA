@@ -7,6 +7,7 @@ from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.decorators.http import require_POST
 from django.db.models import Count, Q, Sum, F
 from django.db import models
 from django.core.paginator import Paginator
@@ -446,6 +447,8 @@ def appointment_detail_api(request, appointment_id):
     return JsonResponse(data)
 
 @login_required
+@user_passes_test(is_admin)
+@require_POST
 def confirm_appointment(request, appointment_id):
     """Confirm an appointment and redirect back to dashboard"""
     try:
@@ -467,6 +470,8 @@ def confirm_appointment(request, appointment_id):
     return redirect('dashboard')
 
 @login_required
+@user_passes_test(is_admin)
+@require_POST
 def cancel_appointment(request, appointment_id):
     """Cancel an appointment and redirect back to dashboard"""
     try:
@@ -773,9 +778,8 @@ def appointment_report(request):
 
 # ================ FORM HANDLING VIEWS ================
 
-from django.views.decorators.http import require_POST
-
 @login_required
+@user_passes_test(is_admin)
 @require_POST
 def confirm_appointment_form(request):
     """Handle appointment confirmation via POST form"""
@@ -803,6 +807,7 @@ def confirm_appointment_form(request):
     return redirect('dashboard')
 
 @login_required
+@user_passes_test(is_admin)
 @require_POST
 def cancel_appointment_form(request):
     """Handle appointment cancellation via POST form"""
