@@ -208,6 +208,25 @@ def assignment_list(request):
     return render(request, 'books/assignment_list.html', context)
 
 
+@manager_or_staff_required
+def update_assignment(request, assignment_id):
+    assignment = get_object_or_404(BookAssignment, pk=assignment_id)
+    
+    if request.method == 'POST':
+        # Update paid status
+        is_paid = request.POST.get('is_paid') == 'on'
+        assignment.is_paid = is_paid
+        
+        # Update notes
+        notes = request.POST.get('notes', '').strip()
+        assignment.notes = notes if notes else None
+        
+        assignment.save()
+        messages.success(request, f'Assignment updated successfully.')
+    
+    return redirect('books:assignment_list')
+
+
 @login_required
 def download_assignment_pdf(request, assignment_id):
     assignment = get_object_or_404(BookAssignment, pk=assignment_id)

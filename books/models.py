@@ -105,7 +105,10 @@ class BookAssignment(models.Model):
     final_pdf = models.FileField(upload_to='assigned_books_pdfs/', blank=True, null=True)
     assigned_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True)
     returned = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=False, help_text='Mark as paid if book deposit/fee is collected')
+    notes = models.TextField(blank=True, null=True, help_text='Additional notes about this assignment')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']
