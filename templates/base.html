@@ -15,11 +15,12 @@
 <body class="d-flex flex-column min-vh-100">
   <header class="header-nav shadow-sm">
     <nav class="container d-flex justify-content-between align-items-center py-3">
-      <h2 class="m-0 fs-5 fw-bold text-white">
-        {% trans "Recruitment Management System" %}
-        
-      </h2>
-      
+      <div class="d-flex align-items-center">
+        <img src="{% static 'images/logo.png' %}" alt="Aqua Logo" style="height: 40px; margin-right: 15px;">
+        <h2 class="m-0 fs-5 fw-bold text-white">
+          {% trans "Recruitment Management System" %}
+        </h2>
+      </div>
       
       <div class="language-selector">
         <form action="{% url 'set_language' %}" method="post" class="m-0">
@@ -44,6 +45,9 @@
 
   <footer class="footer mt-auto py-3">
     <div class="container text-center">
+      <div class="mb-2">
+        <img src="{% static 'images/logo.png' %}" alt="Aqua Logo" style="height: 30px;">
+      </div>
       <small class="text-muted">
         &copy; {{ now|date:"Y" }} {% trans "Aqua Group" %}. {% trans "All Rights Reserved." %}
       </small>
