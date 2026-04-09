@@ -39,7 +39,9 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     '.vs.sakura.ne.jp',
-]
+    'sswacademynepal.com',
+    'www.sswacademynepal.com',
+    ]
 
 # Production deployment URL
 PRODUCTION_URL = 'https://tk2-233-26239.vs.sakura.ne.jp'
@@ -76,6 +78,8 @@ INSTALLED_APPS = [
     'coe_visa',
     'other_documents',
     'books',
+    'api',
+    'rest_framework',
     
 
 ]

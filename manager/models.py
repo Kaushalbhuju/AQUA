@@ -67,7 +67,8 @@ class StaffRegistration(models.Model):
     staff_bio_data_pdf = models.FileField(
         upload_to='staff_documents/bio_data/', 
         null=False, 
-        blank=True,
+        blank=False,
+        default='',
         help_text='Upload Staff Bio Data PDF'
     )
     staff_id_doc_pdf = models.FileField(

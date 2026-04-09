@@ -9,6 +9,7 @@ __pycache__/
 # Django
 db.sqlite3
 media/
+api/
 
 # OS files
 .DS_Store
