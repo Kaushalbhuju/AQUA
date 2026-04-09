@@ -78,7 +78,6 @@ INSTALLED_APPS = [
     'coe_visa',
     'other_documents',
     'books',
-    'rest_framework',
     
 
 ]
