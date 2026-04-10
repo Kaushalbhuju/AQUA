@@ -174,6 +174,9 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://tk2-233-26239.vs.sakura.ne.jp',
     'http://160.16.114.243',
+    'https://sswacademynepal.com',
+    'https://www.sswacademynepal.com',
+
 ]
 
 CSRF_COOKIE_SAMESITE = 'Lax'
