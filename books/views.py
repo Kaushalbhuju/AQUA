@@ -4,9 +4,10 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden
 
 from books.models import Book, AssignmentTemplate, BookAssignment
+from books.models import Book, AssignmentTemplate, BookAssignment
 from books.forms import AssignBookForm, AssignmentTemplateForm, BookForm
 from books.decorators import manager_or_staff_required, manager_required
-from books.utils import generate_qr, generate_sticker, generate_assignment_qr, merge_qr_into_pdf
+from books.utils import generate_qr, generate_sticker, generate_assignment_qr, merge_qr_into_pdf, generate_assignment_image
 
 
 @login_required
@@ -224,7 +225,24 @@ def update_assignment(request, assignment_id):
         assignment.save()
         messages.success(request, f'Assignment updated successfully.')
     
-    return redirect('books:assignment_list')
+@manager_required
+def delete_assignment(request, assignment_id):
+    assignment = get_object_or_404(BookAssignment, pk=assignment_id)
+    if request.method == 'POST':
+        asgn_id = assignment.id
+        # If the book was issued and not returned, we might want to adjust stock?
+        # Usually deletion is for errors. If it was an active assignment, maybe decrement issued_count.
+        if not assignment.returned:
+            book = assignment.book
+            if book.issued_count > 0:
+                book.issued_count -= 1
+                book.save(update_fields=['issued_count'])
+        
+        assignment.delete()
+        messages.success(request, f'Assignment {asgn_id} deleted successfully.')
+        return redirect('books:assignment_list')
+    return redirect('books:assignment_detail', assignment_id=assignment_id)
+
 
 
 @login_required
@@ -256,6 +274,38 @@ def download_assignment_pdf(request, assignment_id):
 
     response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{assignment.id}_document.pdf"'
+    return response
+
+
+@login_required
+def download_assignment_png(request, assignment_id):
+    assignment = get_object_or_404(BookAssignment, pk=assignment_id)
+    from django.http import FileResponse
+    import os
+
+    # Regenerate PNG if it's missing or the file no longer exists on disk
+    needs_regen = (
+        not assignment.final_image or
+        not os.path.exists(assignment.final_image.path)
+    )
+    if needs_regen:
+        final_path = generate_assignment_image(assignment)
+        if not final_path:
+            messages.error(request, 'Could not generate PNG for this assignment.')
+            return redirect('books:assignment_detail', assignment_id=assignment_id)
+        assignment.refresh_from_db()
+
+    if not assignment.final_image:
+        messages.error(request, 'No PNG file found for this assignment.')
+        return redirect('books:assignment_detail', assignment_id=assignment_id)
+
+    file_path = assignment.final_image.path
+    if not os.path.exists(file_path):
+        messages.error(request, 'PNG file not found on server.')
+        return redirect('books:assignment_detail', assignment_id=assignment_id)
+
+    response = FileResponse(open(file_path, 'rb'), content_type='image/png')
+    response['Content-Disposition'] = f'attachment; filename="{assignment.id}_document.png"'
     return response
 
 

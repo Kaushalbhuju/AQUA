@@ -238,3 +238,71 @@ def merge_qr_into_pdf(assignment):
     except Exception as e:
         print(f"Error merging PDF: {e}")
         return None
+
+def generate_assignment_image(assignment):
+    """
+    Generates a PNG image of the assignment with the QR overlaid.
+    """
+    if not PILLOW_AVAILABLE:
+        print("Pillow not available")
+        return None
+
+    from PIL import Image, ImageDraw, ImageFont
+    import tempfile
+
+    qr_path = assignment.assignment_qr.path if assignment.assignment_qr else generate_assignment_qr(assignment)
+    if not qr_path or not os.path.exists(qr_path):
+        return None
+
+    has_template = bool(assignment.template and assignment.template.pdf_file)
+    template_path = assignment.template.pdf_file.path if has_template else None
+    
+    base_img = None
+    if has_template and template_path and template_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+        base_img = Image.open(template_path).convert('RGBA')
+    
+    if not base_img:
+        # Fallback card
+        base_img = Image.new('RGBA', (800, 1000), (255, 255, 255, 255))
+        draw = ImageDraw.Draw(base_img)
+        draw.rectangle([(10, 10), (790, 990)], outline=(200, 200, 200), width=5)
+
+    qr_img = Image.open(qr_path).convert('RGBA')
+    
+    try:
+        font_large = ImageFont.truetype('arial.ttf', 24)
+        font_medium = ImageFont.truetype('arial.ttf', 18)
+    except Exception:
+        font_large = ImageFont.load_default()
+        font_medium = font_large
+
+    draw = ImageDraw.Draw(base_img)
+
+    if has_template:
+        qr_size = getattr(assignment.template, 'qr_size', 150)
+        qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
+        base_img.paste(qr_img, (int(assignment.template.qr_x), int(assignment.template.qr_y)), mask=qr_img)
+
+        if assignment.template.name_x > 0:
+            draw.text((int(assignment.template.name_x), int(assignment.template.name_y)), 
+                      assignment.book.name, fill=(20, 50, 100), font=font_large)
+        if assignment.template.id_x > 0:
+            draw.text((int(assignment.template.id_x), int(assignment.template.id_y)), 
+                      assignment.book.id, fill=(20, 50, 100), font=font_medium)
+    else:
+        qr_img = qr_img.resize((300, 300), Image.LANCZOS)
+        base_img.paste(qr_img, (250, 100), mask=qr_img)
+        draw.text((250, 450), f"Book: {assignment.book.name}", fill=(0, 0, 0), font=font_large)
+        draw.text((250, 500), f"ID: {assignment.book.id}", fill=(0, 0, 0), font=font_medium)
+        draw.text((250, 550), f"Assigned to: {assignment.recipient_name}", fill=(50, 50, 50), font=font_medium)
+
+    filename = f"asgn_img_{assignment.id}.png"
+    img_dir = os.path.join(settings.MEDIA_ROOT, 'assigned_books_images')
+    os.makedirs(img_dir, exist_ok=True)
+    final_path = os.path.join(img_dir, filename)
+
+    base_img.save(final_path, format='PNG')
+    assignment.final_image = f'assigned_books_images/{filename}'
+    assignment.save(update_fields=['final_image'])
+    
+    return final_path

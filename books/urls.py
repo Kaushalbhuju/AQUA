@@ -21,9 +21,12 @@ urlpatterns = [
     # Assignments
     path('assignments/', views.assignment_list, name='assignment_list'),
     path('assignment/<str:assignment_id>/update/', views.update_assignment, name='update_assignment'),
+    path('assignment/<str:assignment_id>/delete/', views.delete_assignment, name='delete_assignment'),
+
     path('scan/<str:assignment_id>/', views.assignment_detail, name='assignment_detail'),
     path('scan/book/<str:book_id>/', views.scan_book, name='scan_book'),
     path('assignment/<str:assignment_id>/download/', views.download_assignment_pdf, name='download_assignment_pdf'),
+    path('assignment/<str:assignment_id>/download-png/', views.download_assignment_png, name='download_assignment_png'),
     
     # Books - generic route (MUST be LAST)
     path('<str:book_id>/', views.book_detail, name='book_detail'),

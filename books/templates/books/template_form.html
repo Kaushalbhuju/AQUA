@@ -31,20 +31,25 @@
             </div>
 
             <div class="row g-3 mb-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="{{ form.qr_x.id_for_label }}" class="form-label fw-semibold">QR X Position</label>
                     {{ form.qr_x }}
-                    <small class="text-muted">X coordinate (in points)</small>
+                    <small class="text-muted">X coordinate (in pts)</small>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="{{ form.qr_y.id_for_label }}" class="form-label fw-semibold">QR Y Position</label>
                     {{ form.qr_y }}
-                    <small class="text-muted">Y coordinate (in points)</small>
+                    <small class="text-muted">Y coordinate (in pts)</small>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="{{ form.qr_size.id_for_label }}" class="form-label fw-semibold">QR Size</label>
+                    {{ form.qr_size }}
+                    <small class="text-muted">Size (in pts)</small>
+                </div>
+                <div class="col-md-3">
                     <label for="{{ form.qr_page.id_for_label }}" class="form-label fw-semibold">QR Page</label>
                     {{ form.qr_page }}
-                    <small class="text-muted">Page number (1-indexed)</small>
+                    <small class="text-muted">Page (1-indexed)</small>
                 </div>
             </div>
 

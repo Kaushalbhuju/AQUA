@@ -38,12 +38,13 @@ class AssignBookForm(forms.Form):
 class AssignmentTemplateForm(forms.ModelForm):
     class Meta:
         model = AssignmentTemplate
-        fields = ['name', 'pdf_file', 'qr_x', 'qr_y', 'qr_page']
+        fields = ['name', 'pdf_file', 'qr_x', 'qr_y', 'qr_size', 'qr_page']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'pdf_file': forms.FileInput(attrs={'class': 'form-control'}),
             'qr_x': forms.NumberInput(attrs={'class': 'form-control'}),
             'qr_y': forms.NumberInput(attrs={'class': 'form-control'}),
+            'qr_size': forms.NumberInput(attrs={'class': 'form-control'}),
             'qr_page': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 

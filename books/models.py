@@ -103,6 +103,7 @@ class BookAssignment(models.Model):
     template = models.ForeignKey(AssignmentTemplate, on_delete=models.SET_NULL, null=True, blank=True)
     assignment_qr = models.ImageField(upload_to='assignment_qrs/', blank=True, null=True)
     final_pdf = models.FileField(upload_to='assigned_books_pdfs/', blank=True, null=True)
+    final_image = models.ImageField(upload_to='assigned_books_images/', blank=True, null=True)
     assigned_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True)
     returned = models.BooleanField(default=False)
     is_paid = models.BooleanField(default=False, help_text='Mark as paid if book deposit/fee is collected')
