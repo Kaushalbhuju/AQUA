@@ -217,6 +217,11 @@ def update_assignment(request, assignment_id):
         # Update paid status
         is_paid = request.POST.get('is_paid') == 'on'
         assignment.is_paid = is_paid
+
+        # Update recipient name
+        recipient_name = request.POST.get('recipient_name')
+        if recipient_name:
+            assignment.recipient_name = recipient_name.strip()
         
         # Update notes
         notes = request.POST.get('notes', '').strip()
@@ -224,6 +229,8 @@ def update_assignment(request, assignment_id):
         
         assignment.save()
         messages.success(request, f'Assignment updated successfully.')
+        
+    return redirect('books:assignment_list')
     
 @manager_required
 def delete_assignment(request, assignment_id):
@@ -308,6 +315,44 @@ def download_assignment_png(request, assignment_id):
     response['Content-Disposition'] = f'attachment; filename="{assignment.id}_document.png"'
     return response
 
+
+@manager_or_staff_required
+def bulk_download_pngs(request):
+    import zipfile
+    import os
+    from django.http import FileResponse
+    from io import BytesIO
+
+    # Get all active assignments
+    assignments = BookAssignment.objects.filter(returned=False)
+    if not assignments.exists():
+        messages.warning(request, 'There are no active assignments to download.')
+        return redirect('books:assignment_list')
+
+    # Create an in-memory zip file
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for assignment in assignments:
+            # Ensure PNG is generated
+            needs_regen = (
+                not assignment.final_image or
+                not os.path.exists(assignment.final_image.path)
+            )
+            if needs_regen:
+                final_path = generate_assignment_image(assignment)
+                if final_path:
+                    assignment.refresh_from_db()
+            
+            if assignment.final_image and os.path.exists(assignment.final_image.path):
+                file_path = assignment.final_image.path
+                filename = f"{assignment.id}_{assignment.recipient_name}.png"
+                # Add to zip
+                zip_file.write(file_path, arcname=filename)
+    
+    zip_buffer.seek(0)
+    response = FileResponse(zip_buffer, content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="bulk_assignment_pngs.zip"'
+    return response
 
 @manager_required
 def template_list(request):

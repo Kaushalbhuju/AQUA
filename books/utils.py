@@ -6,7 +6,8 @@ from django.conf import settings
 try:
     import qrcode
     QRCODE_AVAILABLE = True
-except ImportError:
+except Exception as e:
+    print(f"ERROR IMPORTING QRCODE: {e}")
     qrcode = None
     QRCODE_AVAILABLE = False
 
@@ -16,11 +17,17 @@ try:
 except ImportError:
     PILLOW_AVAILABLE = False
 
+try:
+    import fitz  # PyMuPDF
+    PYMUPDF_AVAILABLE = True
+except ImportError:
+    PYMUPDF_AVAILABLE = False
+
 
 def generate_qr(book):
     """
     Generate a QR code PNG for the given book pointing to /books/scan/book/<book.id>/
-    This is for public/visitor tracking.
+    This is used for public/visitor tracking.
     """
     if not QRCODE_AVAILABLE:
         raise RuntimeError('qrcode is not installed. Run: pip install qrcode[pil]')
@@ -242,7 +249,32 @@ def merge_qr_into_pdf(assignment):
 def generate_assignment_image(assignment):
     """
     Generates a PNG image of the assignment with the QR overlaid.
+    If PyMuPDF is available, directly renders the generated final PDF for a perfect pixel-to-pixel match.
+    Runs fallback Pillow logic otherwise.
     """
+    filename = f"asgn_img_{assignment.id}.png"
+    img_dir = os.path.join(settings.MEDIA_ROOT, 'assigned_books_images')
+    os.makedirs(img_dir, exist_ok=True)
+    final_path = os.path.join(img_dir, filename)
+
+    # 1. Preferred logic: exact PDF conversion via PyMuPDF
+    if PYMUPDF_AVAILABLE and assignment.final_pdf and os.path.exists(assignment.final_pdf.path):
+        import fitz
+        try:
+            doc = fitz.open(assignment.final_pdf.path)
+            page = doc.load_page(0) # first page
+            # Scale slightly to ensure high quality (matrix 2 or 3)
+            pix = page.get_pixmap(matrix=fitz.Matrix(3.0, 3.0))
+            pix.save(final_path)
+            
+            assignment.final_image = f'assigned_books_images/{filename}'
+            assignment.save(update_fields=['final_image'])
+            return final_path
+        except Exception as e:
+            print(f"PyMuPDF rendering failed: {e}")
+            # Fallthrough to Pillow manual composition
+
+    # 2. Fallback logic: Manual Pillow composite
     if not PILLOW_AVAILABLE:
         print("Pillow not available")
         return None
@@ -281,13 +313,17 @@ def generate_assignment_image(assignment):
     if has_template:
         qr_size = getattr(assignment.template, 'qr_size', 150)
         qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
-        base_img.paste(qr_img, (int(assignment.template.qr_x), int(assignment.template.qr_y)), mask=qr_img)
+        paste_x = int(assignment.template.qr_x)
+        paste_y = int(base_img.height - assignment.template.qr_y - qr_size)
+        base_img.paste(qr_img, (paste_x, paste_y), mask=qr_img)
 
         if assignment.template.name_x > 0:
-            draw.text((int(assignment.template.name_x), int(assignment.template.name_y)), 
+            name_y_pillow = int(base_img.height - assignment.template.name_y - font_large.size)
+            draw.text((int(assignment.template.name_x), name_y_pillow), 
                       assignment.book.name, fill=(20, 50, 100), font=font_large)
         if assignment.template.id_x > 0:
-            draw.text((int(assignment.template.id_x), int(assignment.template.id_y)), 
+            id_y_pillow = int(base_img.height - assignment.template.id_y - font_medium.size)
+            draw.text((int(assignment.template.id_x), id_y_pillow), 
                       assignment.book.id, fill=(20, 50, 100), font=font_medium)
     else:
         qr_img = qr_img.resize((300, 300), Image.LANCZOS)

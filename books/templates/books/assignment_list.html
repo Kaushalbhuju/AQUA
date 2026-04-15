@@ -1,9 +1,16 @@
 {% extends "books/base_books.html" %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="h3 mb-1"><i class="fas fa-list-check me-2"></i>Book Assignments</h1>
-    <p class="mb-0 opacity-75">Track all active and past book assignments</p>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h1 class="h3 mb-1"><i class="fas fa-list-check me-2"></i>Book Assignments</h1>
+        <p class="mb-0 opacity-75">Track all active and past book assignments</p>
+    </div>
+    <div>
+        <a href="{% url 'books:bulk_download_pngs' %}" class="btn btn-outline-light">
+            <i class="fas fa-file-archive me-2"></i>Bulk Download PNGs (ZIP)
+        </a>
+    </div>
 </div>
 
 <div class="books-card card">
@@ -104,7 +111,8 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Recipient</label>
-                        <input type="text" class="form-control" value="{{ asgn.recipient_name }}" disabled>
+                        <input type="text" class="form-control" name="recipient_name" value="{{ asgn.recipient_name }}"
+                            required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Book</label>

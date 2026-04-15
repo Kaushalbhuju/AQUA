@@ -27,6 +27,7 @@ urlpatterns = [
     path('scan/book/<str:book_id>/', views.scan_book, name='scan_book'),
     path('assignment/<str:assignment_id>/download/', views.download_assignment_pdf, name='download_assignment_pdf'),
     path('assignment/<str:assignment_id>/download-png/', views.download_assignment_png, name='download_assignment_png'),
+    path('assignments/bulk-download-png/', views.bulk_download_pngs, name='bulk_download_pngs'),
     
     # Books - generic route (MUST be LAST)
     path('<str:book_id>/', views.book_detail, name='book_detail'),
