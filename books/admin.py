@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from books.models import Book
+from books.models import Book, BookAssignment, AssignmentTemplate
 from books.utils import generate_qr, generate_sticker
 
 
@@ -63,3 +63,22 @@ class BookAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" style="width:80px;height:80px;" />', obj.qr_code.url)
         return '—'
     qr_preview.short_description = 'QR Code'
+
+
+class BookAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'book', 'recipient_name', 'recipient_id', 'created_at', 'returned', 'is_paid')
+    list_filter = ('returned', 'is_paid', 'created_at')
+    search_fields = ('id', 'recipient_name', 'recipient_id', 'book__name', 'book__id')
+    readonly_fields = ('created_at', 'updated_at')
+    raw_id_fields = ('book', 'assigned_by')
+
+
+class AssignmentTemplateAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'qr_x', 'qr_y', 'qr_size', 'qr_page', 'created_at')
+    search_fields = ('name',)
+    readonly_fields = ('created_at',)
+
+
+admin.site.register(Book, BookAdmin)
+admin.site.register(BookAssignment, BookAssignmentAdmin)
+admin.site.register(AssignmentTemplate, AssignmentTemplateAdmin)

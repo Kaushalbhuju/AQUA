@@ -230,15 +230,30 @@ def update_assignment(request, assignment_id):
 @login_required
 def download_assignment_pdf(request, assignment_id):
     assignment = get_object_or_404(BookAssignment, pk=assignment_id)
+    from django.http import FileResponse
+    import os
+
+    # Regenerate PDF if it's missing or the file no longer exists on disk
+    needs_regen = (
+        not assignment.final_pdf or
+        not os.path.exists(assignment.final_pdf.path)
+    )
+    if needs_regen and assignment.template:
+        final_path = merge_qr_into_pdf(assignment)
+        if not final_path:
+            messages.error(request, 'Could not generate PDF for this assignment.')
+            return redirect('books:assignment_detail', assignment_id=assignment_id)
+        assignment.refresh_from_db()
+
     if not assignment.final_pdf:
         messages.error(request, 'No PDF file found for this assignment.')
         return redirect('books:assignment_detail', assignment_id=assignment_id)
-    from django.http import FileResponse, Http404
-    import os
+
     file_path = assignment.final_pdf.path
     if not os.path.exists(file_path):
         messages.error(request, 'PDF file not found on server.')
         return redirect('books:assignment_detail', assignment_id=assignment_id)
+
     response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{assignment.id}_document.pdf"'
     return response
@@ -285,7 +300,30 @@ def template_update(request, template_id):
         form = AssignmentTemplateForm(request.POST, request.FILES, instance=template)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Template updated successfully.')
+            
+            # Regenerate PDFs for all existing assignments using this template
+            assignments = BookAssignment.objects.filter(template=template)
+            regen_count = 0
+            regen_errors = 0
+            for assignment in assignments:
+                try:
+                    if assignment.assignment_qr:
+                        merge_qr_into_pdf(assignment)
+                        regen_count += 1
+                except Exception:
+                    regen_errors += 1
+            
+            if regen_count > 0:
+                messages.success(
+                    request,
+                    f'Template updated successfully. {regen_count} existing PDF(s) regenerated.'
+                )
+            else:
+                messages.success(request, 'Template updated successfully.')
+            
+            if regen_errors > 0:
+                messages.warning(request, f'{regen_errors} PDF(s) could not be regenerated.')
+            
             return redirect('books:template_list')
     else:
         form = AssignmentTemplateForm(instance=template)

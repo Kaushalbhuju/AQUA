@@ -72,7 +72,7 @@ class AssignmentTemplate(models.Model):
     pdf_file = models.FileField(upload_to='assignment_templates/')
     qr_x = models.FloatField(default=100, help_text="X coordinate for QR placement (points)")
     qr_y = models.FloatField(default=100, help_text="Y coordinate for QR placement (points)")
-    qr_size = models.PositiveIntegerField(default=300, help_text="Size of QR code (points)")
+    qr_size = models.PositiveIntegerField(default=150, help_text="Size of QR code (points)")
     qr_page = models.PositiveIntegerField(default=1, help_text="Page number for QR placement (1-indexed)")
     
     # Text placement for "Book Name" and "ID"
