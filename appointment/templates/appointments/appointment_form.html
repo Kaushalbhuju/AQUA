@@ -4,156 +4,157 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-edit me-2"></i>{{ title }}
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <!-- Personal Information -->
-                            <div class="col-md-6 mb-3">
-                                <h5 class="border-bottom pb-2 mb-3">
-                                    <i class="fas fa-user me-2"></i>Personal Information
-                                </h5>
-                                
-                                <div class="mb-3">
-                                    <label for="{{ form.name.id_for_label }}" class="form-label">Full Name *</label>
-                                    {{ form.name }}
-                                    {% if form.name.errors %}
-                                    <div class="text-danger small">{{ form.name.errors }}</div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="{{ form.email.id_for_label }}" class="form-label">Email *</label>
-                                    {{ form.email }}
-                                    {% if form.email.errors %}
-                                    <div class="text-danger small">{{ form.email.errors }}</div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="{{ form.phone.id_for_label }}" class="form-label">Phone *</label>
-                                    {{ form.phone }}
-                                    {% if form.phone.errors %}
-                                    <div class="text-danger small">{{ form.phone.errors }}</div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="{{ form.address.id_for_label }}" class="form-label">Address *</label>
-                                    {{ form.address }}
-                                    {% if form.address.errors %}
-                                    <div class="text-danger small">{{ form.address.errors }}</div>
-                                    {% endif %}
-                                </div>
+<div class="page-header">
+    <h1 class="display-5 fw-bold">
+        <i class="fas fa-edit me-3"></i>{{ title }}
+    </h1>
+    <p class="lead">{{ subtitle|default:"Manage appointment details" }}</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header py-3">
+                <h5 class="mb-0">Appointment Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="section-header">
+                                <h4><i class="fas fa-user me-2"></i>Personal Information</h4>
                             </div>
                             
-                            <!-- Professional Information -->
-                            <div class="col-md-6 mb-3">
-                                <h5 class="border-bottom pb-2 mb-3">
-                                    <i class="fas fa-briefcase me-2"></i>Professional Information
-                                </h5>
-                                
-                                <div class="mb-3">
-                                    <label for="{{ form.company_name.id_for_label }}" class="form-label">Company Name *</label>
-                                    {{ form.company_name }}
-                                    {% if form.company_name.errors %}
-                                    <div class="text-danger small">{{ form.company_name.errors }}</div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="{{ form.position.id_for_label }}" class="form-label">Position *</label>
-                                    {{ form.position }}
-                                    {% if form.position.errors %}
-                                    <div class="text-danger small">{{ form.position.errors }}</div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="{{ form.appointment_aim.id_for_label }}" class="form-label">Purpose *</label>
-                                    {{ form.appointment_aim }}
-                                    {% if form.appointment_aim.errors %}
-                                    <div class="text-danger small">{{ form.appointment_aim.errors }}</div>
-                                    {% endif %}
-                                </div>
+                            <div class="mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label fw-medium">Full Name *</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="text-danger small">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label fw-medium">Email *</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="text-danger small">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label fw-medium">Phone *</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                <div class="text-danger small">{{ form.phone.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.address.id_for_label }}" class="form-label fw-medium">Address *</label>
+                                {{ form.address }}
+                                {% if form.address.errors %}
+                                <div class="text-danger small">{{ form.address.errors }}</div>
+                                {% endif %}
                             </div>
                         </div>
                         
-                        <!-- Appointment Details -->
-                        <div class="row mt-3">
-                            <div class="col-md-6 mb-3">
-                                <h5 class="border-bottom pb-2 mb-3">
-                                    <i class="fas fa-calendar-alt me-2"></i>Appointment Details
-                                </h5>
-                                
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="{{ form.date.id_for_label }}" class="form-label">Date *</label>
-                                        {{ form.date }}
-                                        {% if form.date.errors %}
-                                        <div class="text-danger small">{{ form.date.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <div class="col-md-6 mb-3">
-                                        <label for="{{ form.time.id_for_label }}" class="form-label">Time *</label>
-                                        {{ form.time }}
-                                        {% if form.time.errors %}
-                                        <div class="text-danger small">{{ form.time.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <div class="form-check form-switch">
-                                        {{ form.is_confirmed }}
-                                        <label class="form-check-label" for="{{ form.is_confirmed.id_for_label }}">
-                                            Confirm Appointment
-                                        </label>
-                                    </div>
-                                    {% if form.is_confirmed.errors %}
-                                    <div class="text-danger small">{{ form.is_confirmed.errors }}</div>
-                                    {% endif %}
-                                </div>
+                        <div class="col-md-6">
+                            <div class="section-header">
+                                <h4><i class="fas fa-briefcase me-2"></i>Professional Information</h4>
                             </div>
                             
-                            <!-- Additional Message -->
-                            <div class="col-md-6 mb-3">
-                                <h5 class="border-bottom pb-2 mb-3">
-                                    <i class="fas fa-comment-dots me-2"></i>Additional Message
-                                </h5>
-                                
-                                <div class="mb-3">
-                                    {{ form.message }}
-                                    {% if form.message.errors %}
-                                    <div class="text-danger small">{{ form.message.errors }}</div>
-                                    {% endif %}
-                                    <div class="form-text">Optional: Any additional information or special requirements</div>
-                                </div>
+                            <div class="mb-3">
+                                <label for="{{ form.company_name.id_for_label }}" class="form-label fw-medium">Company Name *</label>
+                                {{ form.company_name }}
+                                {% if form.company_name.errors %}
+                                <div class="text-danger small">{{ form.company_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.position.id_for_label }}" class="form-label fw-medium">Position *</label>
+                                {{ form.position }}
+                                {% if form.position.errors %}
+                                <div class="text-danger small">{{ form.position.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.appointment_aim.id_for_label }}" class="form-label fw-medium">Purpose *</label>
+                                {{ form.appointment_aim }}
+                                {% if form.appointment_aim.errors %}
+                                <div class="text-danger small">{{ form.appointment_aim.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-6">
+                            <div class="section-header">
+                                <h4><i class="fas fa-calendar-alt me-2"></i>Appointment Details</h4>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.date.id_for_label }}" class="form-label fw-medium">Date *</label>
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                <div class="text-danger small">{{ form.date.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.time.id_for_label }}" class="form-label fw-medium">Time *</label>
+                                {{ form.time }}
+                                {% if form.time.errors %}
+                                <div class="text-danger small">{{ form.time.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-check form-switch">
+                                {{ form.is_confirmed }}
+                                <label class="form-check-label" for="{{ form.is_confirmed.id_for_label }}">
+                                    Confirm Appointment
+                                </label>
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <div class="col-md-6">
+                            <div class="section-header">
+                                <h4><i class="fas fa-comment-dots me-2"></i>Additional Message</h4>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.message }}
+                                {% if form.message.errors %}
+                                <div class="text-danger small">{{ form.message.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">Optional: Any additional information or special requirements</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-top pt-4 mt-4">
+                        <div class="d-flex flex-column flex-md-row gap-2 justify-content-end">
+                            {% if appointment %}
                             <a href="{% url 'appointment_detail_admin' appointment.id %}" 
-                               class="btn btn-outline-secondary me-2">
+                               class="btn btn-outline-secondary btn-lg">
                                 <i class="fas fa-times me-2"></i>Cancel
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            {% else %}
+                            <a href="{% url 'appointment_list' %}" 
+                               class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-save me-2"></i>Save Changes
                             </button>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -161,7 +162,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Set min date to today
     const today = new Date().toISOString().split('T')[0];
     const dateInput = document.getElementById('id_date');
     if (dateInput) {

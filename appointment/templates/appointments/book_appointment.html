@@ -1,44 +1,58 @@
 {% extends "base_public_appointment.html" %}
 {% load static %}
 
-{% block title %}Book Appointment{% endblock %}
+{% block title %}Book Appointment - Aqua Education{% endblock %}
 
 {% block extra_css %}
 <style>
-    .required-label:after {
+    .required-label::after {
         content: " *";
-        color: #dc3545;
+        color: #ef4444;
+        font-weight: 600;
+    }
+    
+    .alert-slots {
+        background: linear-gradient(135deg, #fef2f4 0%, #fce7e9 100%);
+        border: 1px solid #fecdd3;
+        border-radius: 12px;
+    }
+    
+    .slot-card-info {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 12px;
+    }
+    
+    .help-card-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header mb-5">
+<div class="page-header">
     <h1 class="display-5 fw-bold">
-        <i class="fas fa-calendar-plus text-primary me-3"></i>Book Appointment
+        <i class="fas fa-calendar-plus me-3" style="color: #e9394b;"></i>Book Your Appointment
     </h1>
-    <p class="lead text-muted">Complete the form below to schedule your appointment</p>
-    <p style="color: #FF8C00;">
-        Please begin by selecting a preferred date and time for your appointment, and then proceed to fill out the required details.
-      </p>
+    <p class="lead">Complete the form below to schedule your appointment</p>
+    <p class="text-secondary">Select your preferred date and time, then fill in your details.</p>
 </div>
 
-<div class="row">
-    <!-- Main Form Column -->
-    <div class="col-lg-8 mb-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Appointment Details</h5>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header py-3">
+                <h5 class="mb-0"><i class="fas fa-user-edit me-2" style="color: #e9394b;"></i>Appointment Details</h5>
             </div>
             <div class="card-body">
                 {% if selected_slot %}
-                <div class="alert alert-info d-flex align-items-center mb-4">
-                    <i class="fas fa-info-circle fa-2x me-3"></i>
+                <div class="alert alert-slots d-flex align-items-center mb-4">
+                    <i class="fas fa-calendar-check fa-lg me-3" style="color: #e9394b;"></i>
                     <div>
-                        <h5 class="alert-heading mb-1">Selected Time Slot</h5>
-                        <p class="mb-0">
+                        <h6 class="mb-1 fw-semibold" style="color: #1a1a2e;">Selected Time Slot</h6>
+                        <p class="mb-0" style="color: #374151;">
                             <strong>{{ selected_slot.start_time|date:"l, F j, Y" }}</strong> 
-                            at <strong>{{ selected_slot.start_time|time:"g:i A" }}</strong> 
+                            &nbsp;•&nbsp; 
+                            <strong>{{ selected_slot.start_time|time:"g:i A" }}</strong> 
                             to {{ selected_slot.end_time|time:"g:i A" }}
                         </p>
                     </div>
@@ -52,128 +66,118 @@
                     <input type="hidden" name="appointment_slot" value="{{ selected_slot.id }}">
                     {% endif %}
                     
-                    <!-- Personal Information Section -->
                     <div class="section-header mb-4">
-                        <h4 class="text-primary border-bottom pb-2">
-                            <i class="fas fa-user-circle me-2"></i>Personal Information
-                        </h4>
+                        <h4><i class="fas fa-user-circle me-2" style="color: #e9394b;"></i>Personal Information</h4>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_name" class="form-label required-label fw-bold">Full Name</label>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="id_name" class="form-label required-label fw-medium">Full Name</label>
                             <input type="text" class="form-control form-control-lg" id="id_name" name="name" 
                                    placeholder="Enter your full name" required>
-                            <div class="form-text">Your complete name </div>
+                            <div class="form-text">Your complete name</div>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
-                            <label for="id_email" class="form-label required-label fw-bold">Email Address</label>
+                        <div class="col-md-6">
+                            <label for="id_email" class="form-label required-label fw-medium">Email Address</label>
                             <input type="email" class="form-control form-control-lg" id="id_email" name="email" 
                                    placeholder="example@gmail.com" required>
                             <div class="form-text">Confirmation will be sent to this email</div>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_phone" class="form-label required-label fw-bold">Phone Number</label>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label for="id_phone" class="form-label required-label fw-medium">Phone Number</label>
                             <input type="tel" class="form-control form-control-lg" id="id_phone" name="phone" 
-                                   placeholder="+977" required pattern="^\+?[1-9]\d{1,14}$">
-                            <div class="form-text">Format: +977 9876543210 (international format)</div>
+                                   placeholder="+977 9876543210" required pattern="^\+?[1-9]\d{1,14}$">
+                            <div class="form-text">International format: +977</div>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
-                            <label for="id_address" class="form-label required-label fw-bold">Address</label>
+                        <div class="col-md-6">
+                            <label for="id_address" class="form-label required-label fw-medium">Address</label>
                             <textarea class="form-control form-control-lg" id="id_address" name="address" 
                                       rows="2" placeholder="Enter your complete address" required></textarea>
                         </div>
                     </div>
                     
-                    <!-- Professional Information Section -->
                     <div class="section-header mb-4 mt-4">
-                        <h4 class="text-primary border-bottom pb-2">
-                            <i class="fas fa-briefcase me-2"></i>Professional Information
-                        </h4>
+                        <h4><i class="fas fa-briefcase me-2" style="color: #e9394b;"></i>Professional Information</h4>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_company_name" class="form-label required-label fw-bold">Company Name</label>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="id_company_name" class="form-label required-label fw-medium">Company Name</label>
                             <input type="text" class="form-control form-control-lg" id="id_company_name" 
                                    name="company_name" placeholder="Enter company name" required>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
-                            <label for="id_position" class="form-label required-label fw-bold">Position</label>
+                        <div class="col-md-6">
+                            <label for="id_position" class="form-label required-label fw-medium">Position</label>
                             <input type="text" class="form-control form-control-lg" id="id_position" 
                                    name="position" placeholder="Your position in company" required>
                         </div>
                     </div>
                     
-                    <!-- Appointment Details Section -->
                     <div class="section-header mb-4 mt-4">
-                        <h4 class="text-primary border-bottom pb-2">
-                            <i class="fas fa-calendar-check me-2"></i>Appointment Details
-                        </h4>
+                        <h4><i class="fas fa-calendar-check me-2" style="color: #e9394b;"></i>Appointment Details</h4>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_appointment_aim" class="form-label required-label fw-bold">Appointment Purpose</label>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="id_appointment_aim" class="form-label required-label fw-medium">Appointment Purpose</label>
                             <select class="form-select form-select-lg" id="id_appointment_aim" name="appointment_aim" required>
                                 <option value="" selected disabled>Select appointment purpose</option>
                                 <option value="consultation">Consultation</option>
                                 <option value="meeting">Business Meeting</option>
                                 <option value="interview">Interview</option>
-                                <option value="demo">Study</option>
+                                <option value="demo">Study Tour</option>
                                 <option value="support">Technical Support</option>
                                 <option value="other">Other</option>
                             </select>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Selected Date & Time</label>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Selected Date & Time</label>
                             <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light">
-                                    <i class="fas fa-calendar-alt text-primary"></i>
+                                <span class="input-group-text" style="background: #f8fafc;">
+                                    <i class="fas fa-calendar-alt" style="color: #e9394b;"></i>
                                 </span>
                                 <input type="text" class="form-control" 
                                        value="{% if selected_slot %}{{ selected_slot.start_time|date:'M j, Y' }} at {{ selected_slot.start_time|time:'g:i A' }}{% else %}No slot selected{% endif %}" 
                                        disabled>
                             </div>
                             <small class="form-text">
-                                <a href="{% url 'available_slots' %}" class="text-decoration-none">
+                                <a href="{% url 'available_slots' %}" class="text-decoration-none" style="color: #e9394b;">
                                     <i class="fas fa-exchange-alt me-1"></i>Change time slot
                                 </a>
                             </small>
                         </div>
                     </div>
                     
-                    <div class="mb-4">
-                        <label for="id_message" class="form-label fw-bold">
-                            <i class="fas fa-comment-dots me-1"></i>Additional Message
+                    <div class="mb-4 mt-3">
+                        <label for="id_message" class="form-label fw-medium">
+                            <i class="fas fa-comment-dots me-2" style="color: #e9394b;"></i>Additional Message
                         </label>
                         <textarea class="form-control form-control-lg" id="id_message" name="message" 
                                   rows="4" placeholder="Any additional information, special requirements, or questions..."></textarea>
                         <div class="form-text">Optional: Please provide any details that will help us prepare for your appointment</div>
                     </div>
                     
-                    <!-- Terms and Submit -->
                     <div class="border-top pt-4 mt-4">
                         <div class="form-check mb-4">
                             <input class="form-check-input" type="checkbox" id="terms" required>
                             <label class="form-check-label" for="terms">
-                                I agree to the <a href="#" class="text-decoration-none">terms and conditions</a> 
+                                I agree to the <a href="#" class="text-decoration-none" style="color: #e9394b;">terms and conditions</a> 
                                 and confirm that all information provided is accurate.
                             </label>
                         </div>
                         
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{% url 'available_slots' %}" class="btn btn-outline-secondary btn-lg me-2">
+                        <div class="d-flex flex-column flex-md-row gap-2">
+                            <a href="{% url 'available_slots' %}" class="btn btn-outline-secondary btn-lg order-2 order-md-1">
                                 <i class="fas fa-arrow-left me-2"></i>Back to Slots
                             </a>
-                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <button type="submit" class="btn btn-primary btn-lg order-1 order-md-2">
                                 <i class="fas fa-calendar-check me-2"></i>Confirm Booking
                             </button>
                         </div>
@@ -183,35 +187,33 @@
         </div>
     </div>
     
-    <!-- Sidebar Column -->
     <div class="col-lg-4">
-        <!-- Selected Slot Card -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Selected Time Slot</h5>
+        <div class="card mb-4">
+            <div class="card-header py-3" style="background: linear-gradient(135deg, #fef2f4 0%, #fce7e9 100%); border-color: #fecdd3;">
+                <h5 class="mb-0"><i class="fas fa-clock me-2" style="color: #e9394b;"></i>Selected Time Slot</h5>
             </div>
-            <div class="card-body text-center">
+            <div class="card-body text-center py-4">
                 {% if selected_slot %}
-                <div class="display-4 text-primary mb-2">
-                    <i class="fas fa-calendar-day"></i>
+                <div class="mb-3">
+                    <i class="fas fa-calendar-day fa-3x" style="color: #e9394b;"></i>
                 </div>
-                <h4 class="text-success">{{ selected_slot.start_time|date:"M j, Y" }}</h4>
-                <h3 class="fw-bold">{{ selected_slot.start_time|time:"g:i A" }}</h3>
-                <p class="text-muted">to {{ selected_slot.end_time|time:"g:i A" }}</p>
+                <h4>{{ selected_slot.start_time|date:"M j, Y" }}</h4>
+                <h3 class="fw-bold" style="color: #1a1a2e;">{{ selected_slot.start_time|time:"g:i A" }}</h3>
+                <p class="text-secondary mb-3">to {{ selected_slot.end_time|time:"g:i A" }}</p>
                 
-                <div class="alert alert-light border mt-3">
+                <div class="slot-card-info mt-4 p-3">
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Duration:</span>
+                        <span class="text-secondary">Duration:</span>
                         <strong>{{ slot_duration }} minutes</strong>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Available Spots:</span>
+                        <span class="text-secondary">Available:</span>
                         <strong class="{% if selected_slot.available_spots <= 2 %}text-danger{% else %}text-success{% endif %}">
                             {{ selected_slot.available_spots }} remaining
                         </strong>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span class="text-muted">Status:</span>
+                        <span class="text-secondary">Status:</span>
                         {% if selected_slot.is_full %}
                         <span class="badge bg-danger">Fully Booked</span>
                         {% else %}
@@ -220,38 +222,40 @@
                     </div>
                 </div>
                 {% else %}
-                <div class="text-center py-4">
-                    <div class="display-4 text-muted mb-3">
-                        <i class="fas fa-calendar-times"></i>
-                    </div>
-                    <h5 class="text-muted">No Slot Selected</h5>
-                    <p class="text-muted mb-3">Please select a time slot first</p>
+                <div class="py-3">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h5 class="text-secondary">No Slot Selected</h5>
+                    <p class="text-secondary mb-3">Please select a time slot first</p>
                     <a href="{% url 'available_slots' %}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-calendar-alt me-2"></i>View Slots
+                        <i class="fas fa-calendar-alt me-2"></i>View Available Slots
                     </a>
                 </div>
                 {% endif %}
             </div>
         </div>
         
-        <!-- Help Card -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-light">
-                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
+        <div class="card">
+            <div class="card-header py-3" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <h5 class="mb-0 text-white"><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
             </div>
             <div class="card-body">
                 <div class="mb-3">
-                    <h6><i class="fas fa-phone-alt me-2 text-primary"></i>Phone Support</h6>
-                    <p class="text-muted mb-0">01-4519666</p>
+                    <h6 class="d-flex align-items-center">
+                        <i class="fas fa-phone-alt me-2" style="color: #e9394b;"></i>Phone Support
+                    </h6>
+                    <p class="text-secondary mb-0">01-4519666</p>
                 </div>
                 <div class="mb-3">
-                    <h6><i class="fas fa-envelope me-2 text-primary"></i>Email Support</h6>
-                    <p class="text-muted mb-0">ssw.edu.academy@gmail.com</p>
+                    <h6 class="d-flex align-items-center">
+                        <i class="fas fa-envelope me-2" style="color: #e9394b;"></i>Email Support
+                    </h6>
+                    <p class="text-secondary mb-0">ssw.edu.academy@gmail.com</p>
                 </div>
                 <div>
-                    <h6><i class="fas fa-clock me-2 text-primary"></i>Business Hours</h6>
-                    <p class="text-muted mb-0">Mon-Fri: 9:00 AM - 6:00 PM</p>
-                    {% comment %} <p class="text-muted">Sat: 10:00 AM - 2:00 PM</p> {% endcomment %}
+                    <h6 class="d-flex align-items-center">
+                        <i class="fas fa-clock me-2" style="color: #e9394b;"></i>Business Hours
+                    </h6>
+                    <p class="text-secondary mb-0">Mon-Fri: 9:00 AM - 6:00 PM</p>
                 </div>
             </div>
         </div>
@@ -264,7 +268,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('appointmentForm');
     const phoneInput = document.getElementById('id_phone');
     
-    // Phone validation
     phoneInput.addEventListener('input', function() {
         const phoneRegex = /^\+?[1-9]\d{1,14}$/;
         const isValid = phoneRegex.test(this.value);
@@ -280,7 +283,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Email validation
     const emailInput = document.getElementById('id_email');
     emailInput.addEventListener('input', function() {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -297,11 +299,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Form submission validation
     form.addEventListener('submit', function(e) {
         let isValid = true;
         
-        // Check required fields
         const requiredFields = form.querySelectorAll('[required]');
         requiredFields.forEach(field => {
             if (!field.value.trim()) {
@@ -312,7 +312,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Check terms
         const termsCheckbox = document.getElementById('terms');
         if (!termsCheckbox.checked) {
             termsCheckbox.classList.add('is-invalid');
@@ -323,19 +322,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!isValid) {
             e.preventDefault();
-            // Scroll to first error
             const firstError = form.querySelector('.is-invalid');
             if (firstError) {
                 firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 firstError.focus();
             }
-            
-            // Show alert
             alert('Please fill in all required fields and accept the terms.');
         }
     });
     
-    // Real-time validation for all inputs
     const inputs = form.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
         input.addEventListener('blur', function() {

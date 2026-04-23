@@ -525,8 +525,7 @@
                                 class="att-cell {% if status == 'present' %}present{% elif status == 'absent' %}absent{% elif status == 'holiday' %}holiday{% endif %}"
                                 data-student-id="{{ item.student.id }}" data-day="{{ forloop.counter }}"
                                 data-status="{{ status }}" onclick="toggleAttendance(this)">
-                                {% if status == 'present' %}O{% elif status == 'absent' %}X{% elif status == 'holiday'
-                                %}H{% else %}—{% endif %}
+                                {% if status == 'present' %}O{% elif status == 'absent' %}X{% elif status == 'holiday' %}H{% else %}—{% endif %}
                             </button>
                         </td>
                         {% endfor %}
