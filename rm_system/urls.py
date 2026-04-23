@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts.admin_site import custom_admin_site
@@ -265,6 +265,7 @@ if books_available:
 
 urlpatterns = [
     path('admin/', custom_admin_site.urls),
+    path('favicon.ico', serve_media, {'path': '../static/images/logo.png'}),
     path('i18n/', include('django.conf.urls.i18n')),
     
     # Account URLs - ONLY ONCE

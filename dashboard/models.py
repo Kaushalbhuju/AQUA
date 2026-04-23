@@ -275,6 +275,20 @@ class AttendanceRecord(models.Model):
         return f"{self.student.full_name} - {self.attendance_date} ({self.status})"
 
 
+class TeacherStudentRecord(models.Model):
+    """List of students that a teacher has added to their records view"""
+    teacher = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='record_students')
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='teacher_records')
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['teacher', 'student']
+        ordering = ['student__full_name']
+
+    def __str__(self):
+        return f"{self.teacher.username} - {self.student.full_name}"
+
+
 class StudentDailyNote(models.Model):
     """Daily notes written by teachers for individual students"""
     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='daily_notes')

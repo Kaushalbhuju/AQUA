@@ -1,8 +1,11 @@
+{% load static %}
 <!-- templates/dashboards/student_list.html -->
 <!DOCTYPE html>
 <html>
 
 <head>
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Candidates List</title>
@@ -650,7 +653,8 @@
                             class="btn btn-pdf">
                             📄 PDF
                         </a>
-                        {% if request.user.is_authenticated and request.user.role == 'manager' and student.status == 'approved' %}
+                        {% if request.user.is_authenticated and request.user.role == 'manager' and student.status == 'approved' %}
+
                         <a href="{% url 'guarantee_letter:issue_for_student' student.id %}" target="_blank"
                             class="btn btn-view">
                             Issue Job Guarantee Letter

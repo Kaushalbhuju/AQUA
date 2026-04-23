@@ -463,10 +463,14 @@ def save_attendance_data(request):
 @check_role('teacher')
 def student_records(request):
     """View for viewing student records with inline editable today's note and Japanese name"""
-    from dashboard.models import Student, StudentDailyNote
+    from dashboard.models import Student, StudentDailyNote, TeacherStudentRecord
     from datetime import date
     
-    students = Student.objects.all().order_by('full_name')
+    # Get students explicitly added to this teacher's list
+    enrolled_ids = TeacherStudentRecord.objects.filter(teacher=request.user).values_list('student_id', flat=True)
+    students = Student.objects.filter(id__in=enrolled_ids).order_by('full_name')
+    available_students = Student.objects.exclude(id__in=enrolled_ids).order_by('full_name')
+    
     today = date.today()
     
     # Pre-fetch today's notes for efficient rendering
@@ -484,10 +488,41 @@ def student_records(request):
         'user': request.user,
         'role_name': 'Teacher',
         'student_data': student_data,
+        'enrolled_students': students,
+        'available_students': available_students,
         'today_date': today,
         'page_title': 'Student Records'
     }
     return render(request, 'dashboards/student_records.html', context)
+
+@login_required(login_url='login')
+@check_role('teacher')
+def manage_teacher_records(request):
+    """AJAX endpoint for managing students in the Teacher Records list"""
+    from django.http import JsonResponse
+    from dashboard.models import Student, TeacherStudentRecord
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        student_ids = request.POST.getlist('student_ids')
+        
+        if action == 'add':
+            for sid in student_ids:
+                try:
+                    student = Student.objects.get(id=sid)
+                    TeacherStudentRecord.objects.get_or_create(
+                        teacher=request.user, student=student
+                    )
+                except Student.DoesNotExist:
+                    continue
+        elif action == 'remove':
+            TeacherStudentRecord.objects.filter(
+                teacher=request.user, student_id__in=student_ids
+            ).delete()
+            
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)
+
 
 @login_required(login_url='login')
 @check_role('client', 'manager', 'staff')

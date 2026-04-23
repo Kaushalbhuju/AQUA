@@ -1,3 +1,4 @@
+{% load static %}
 {% extends "books/base_books.html" %}
 
 {% block content %}
@@ -73,7 +74,9 @@
         var img = document.querySelector('img[alt^="QR Code"]');
         if (!img) return;
         var win = window.open('', '_blank');
-        win.document.write('<html><head><title>Print QR – {{ book.id }}</title></head><body style="text-align:center;padding:40px;">');
+        win.document.write('<html><head>
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+<title>Print QR – {{ book.id }}</title></head><body style="text-align:center;padding:40px;">');
         win.document.write('<h2>{{ book.name }}</h2>');
         win.document.write('<p style="color:#888">{{ book.id }}</p>');
         win.document.write('<img src="' + img.src + '" style="width:280px;height:280px;" />');

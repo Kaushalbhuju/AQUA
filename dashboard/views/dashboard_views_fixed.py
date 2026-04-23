@@ -192,7 +192,7 @@ def class_attendance(request, classroom_id):
 def save_class_attendance(request, classroom_id):
     """AJAX endpoint to save O/X attendance for a class"""
     from django.http import JsonResponse
-    from dashboard.models import Classroom, ClassStudent, AttendanceRecord, Student
+    from dashboard.models import Classroom, AttendanceRecord, Student
     import json
     from datetime import date
     
@@ -204,47 +204,109 @@ def save_class_attendance(request, classroom_id):
         data = json.loads(request.body)
         records = data.get('records', [])
         
-        saved_count = 0
-        for rec in records:
-            student_id = rec.get('studentId')
-            day = rec.get('day')
-            status = rec.get('status')  # 'present' or 'absent'
-            japanese_name = rec.get('japaneseName', None)
+        if not records:
+            return JsonResponse({'success': True, 'message': _('No changes to save.'), 'records_saved': 0})
             
+        year = int(data.get('year', date.today().year))
+        month = int(data.get('month', date.today().month))
+        
+        # 1. Fetch all relevant students at once
+        student_ids = set()
+        for rec in records:
+            sid = rec.get('studentId')
+            if sid:
+                try:
+                    student_ids.add(int(sid))
+                except ValueError:
+                    pass
+                    
+        students_dict = Student.objects.in_bulk(student_ids)
+        
+        # 2. Track Japanese name updates efficiently
+        students_to_update = []
+        jp_names_updated = set() # Avoid duplicate updates for same student
+        for rec in records:
             try:
-                student = Student.objects.get(id=student_id)
+                sid = int(rec.get('studentId'))
+            except (ValueError, TypeError):
+                continue
                 
-                # Update Japanese name if provided
-                if japanese_name is not None:
-                    student.japanese_name = japanese_name
-                    student.save()
+            if sid in students_dict and sid not in jp_names_updated:
+                jp_name = rec.get('japaneseName', None)
+                if jp_name is not None and students_dict[sid].japanese_name != jp_name:
+                    students_dict[sid].japanese_name = jp_name
+                    students_to_update.append(students_dict[sid])
+                    jp_names_updated.add(sid)
+                    
+        if students_to_update:
+            Student.objects.bulk_update(students_to_update, ['japanese_name'])
+            
+        # 3. Load existing attendance records into memory
+        existing_records_qs = AttendanceRecord.objects.filter(
+            classroom=classroom,
+            attendance_date__year=year,
+            attendance_date__month=month,
+            student_id__in=student_ids
+        )
+        
+        # Dictionary keyed by (student_id, day)
+        existing_dict = {(r.student_id, r.attendance_date.day): r for r in existing_records_qs}
+        
+        records_to_create = []
+        records_to_update = []
+        records_to_delete_ids = []
+        
+        saved_count = 0
+        
+        for rec in records:
+            try:
+                sid = int(rec.get('studentId'))
+                day = int(rec.get('day'))
+            except (ValueError, TypeError):
+                continue
                 
-                # Build the date
-                year = data.get('year', date.today().year)
-                month = data.get('month', date.today().month)
+            status = rec.get('status')
+            if sid not in students_dict:
+                continue
+                
+            student = students_dict[sid]
+            try:
                 att_date = date(year, month, day)
-                if status in ('present', 'absent', 'holiday'):
-                    attendance, created = AttendanceRecord.objects.update_or_create(
+            except ValueError:
+                continue # Invalid date (e.g. Feb 31)
+                
+            existing_record = existing_dict.get((sid, day))
+            
+            if status in ('present', 'absent', 'holiday'):
+                if existing_record:
+                    if existing_record.status != status:
+                        existing_record.status = status
+                        existing_record.marked_by = request.user
+                        records_to_update.append(existing_record)
+                        saved_count += 1
+                else:
+                    records_to_create.append(AttendanceRecord(
                         student=student,
                         classroom=classroom,
                         attendance_date=att_date,
-                        defaults={
-                            'status': status,
-                            'marked_by': request.user
-                        }
-                    )
+                        status=status,
+                        marked_by=request.user
+                    ))
                     saved_count += 1
-                elif status == '':
-                    # Remove existing record if unmarked
-                    AttendanceRecord.objects.filter(
-                        student=student,
-                        classroom=classroom,
-                        attendance_date=att_date
-                    ).delete()
+            elif status == '':
+                if existing_record:
+                    records_to_delete_ids.append(existing_record.id)
                     
-            except Student.DoesNotExist:
-                continue
-        
+        # 4. Perform bulk database operations
+        if records_to_create:
+            AttendanceRecord.objects.bulk_create(records_to_create)
+            
+        if records_to_update:
+            AttendanceRecord.objects.bulk_update(records_to_update, ['status', 'marked_by'])
+            
+        if records_to_delete_ids:
+            AttendanceRecord.objects.filter(id__in=records_to_delete_ids).delete()
+            
         return JsonResponse({
             'success': True,
             'message': _('Saved %(count)s attendance records') % {'count': saved_count},
@@ -491,10 +553,14 @@ def save_attendance_data(request):
 @check_role('teacher')
 def student_records(request):
     """View for viewing student records with inline editable today's note and Japanese name"""
-    from dashboard.models import Student, StudentDailyNote
+    from dashboard.models import Student, StudentDailyNote, TeacherStudentRecord
     from datetime import date
     
-    students = Student.objects.all().order_by('full_name')
+    # Get students explicitly added to this teacher's list
+    enrolled_ids = TeacherStudentRecord.objects.filter(teacher=request.user).values_list('student_id', flat=True)
+    students = Student.objects.filter(id__in=enrolled_ids).order_by('full_name')
+    available_students = Student.objects.exclude(id__in=enrolled_ids).order_by('full_name')
+    
     today = date.today()
     
     # Pre-fetch today's notes for efficient rendering
@@ -512,10 +578,41 @@ def student_records(request):
         'user': request.user,
         'role_name': 'Teacher',
         'student_data': student_data,
+        'enrolled_students': students,
+        'available_students': available_students,
         'today_date': today,
         'page_title': 'Student Records'
     }
     return render(request, 'dashboards/student_records.html', context)
+
+
+@login_required(login_url='/')
+@check_role('teacher')
+def manage_teacher_records(request):
+    """AJAX endpoint for managing students in the Teacher Records list"""
+    from django.http import JsonResponse
+    from dashboard.models import Student, TeacherStudentRecord
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        student_ids = request.POST.getlist('student_ids')
+        
+        if action == 'add':
+            for sid in student_ids:
+                try:
+                    student = Student.objects.get(id=sid)
+                    TeacherStudentRecord.objects.get_or_create(
+                        teacher=request.user, student=student
+                    )
+                except Student.DoesNotExist:
+                    continue
+        elif action == 'remove':
+            TeacherStudentRecord.objects.filter(
+                teacher=request.user, student_id__in=student_ids
+            ).delete()
+            
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=400)
 
 @login_required(login_url='/')
 @check_role('client', 'manager', 'staff')

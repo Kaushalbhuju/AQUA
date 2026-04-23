@@ -5,6 +5,8 @@
 <html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
 
 <head>
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% trans "Student Records" %} - {% trans "Aqua Group" %}</title>
@@ -262,6 +264,40 @@
       display: inline-flex;
     }
 
+    /* Action bar */
+    .action-bar {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 2px solid #e2e8f0;
+        padding: 1.2rem 2rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    .action-bar .btn {
+        padding: 12px 32px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+
+    .action-bar .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .content-area {
+        padding-bottom: 100px; /* Space for fixed action bar */
+    }
+
     .toast-notification {
       position: fixed;
       top: 20px;
@@ -432,6 +468,101 @@
         </table>
       </div>
     </div>
+
+    <div class="action-bar">
+      <button type="button" class="btn btn-outline-primary btn-lg" data-bs-toggle="modal" data-bs-target="#manageStudentsModal">
+        <i class="fas fa-users-cog"></i> {% trans "Manage Students" %}
+      </button>
+    </div>
+  </div>
+
+  <!-- Manage Students Modal -->
+  <div class="modal fade" id="manageStudentsModal" tabindex="-1" aria-labelledby="manageStudentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content" style="border-radius: 16px; border: none; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+        <div class="modal-header" style="background: linear-gradient(135deg, #004E89, #006ebc); color: white; border: none; padding: 1.5rem 2rem;">
+          <h5 class="modal-title fw-bold" id="manageStudentsModalLabel"><i class="fas fa-users-cog me-2"></i> {% trans "Manage Student Records List" %}</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="background: #f8fafc; padding: 2rem;">
+          <div class="row gx-4">
+            <!-- Available Students -->
+            <div class="col-md-5">
+              <div class="card shadow-sm border-0 h-100" style="border-radius: 12px;">
+                <div class="card-header fw-bold" style="background: #e2e8f0; color: #475569; border-radius: 12px 12px 0 0; border: none; padding: 1rem 1.5rem;">
+                  <i class="fas fa-user-clock text-primary me-2"></i> {% trans "Available Students" %}
+                  <span class="badge bg-secondary float-end mt-1">{{ available_students|length }}</span>
+                </div>
+                <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                  <form id="modalAddForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add">
+                    <div class="list-group list-group-flush">
+                      {% for student in available_students %}
+                      <label class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 px-4" style="cursor: pointer; transition: all 0.2s;">
+                        <input class="form-check-input flex-shrink-0" type="checkbox" name="student_ids" value="{{ student.id }}" style="width: 22px; height: 22px; cursor: pointer;">
+                        <div>
+                          <div class="fw-bold text-dark" style="font-size: 1.05rem;">{{ student.full_name }}</div>
+                          <div class="small text-muted">{{ student.student_id }}</div>
+                        </div>
+                      </label>
+                      {% empty %}
+                      <div class="p-5 text-center text-muted">
+                        <i class="fas fa-check-circle fa-3x mb-3 text-light"></i><br>
+                        {% trans "All students are enrolled." %}
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center gap-4 py-4">
+              <button type="button" class="btn btn-success rounded-circle shadow" style="width: 60px; height: 60px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="submitManageForm('modalAddForm')" title="Add to List">
+                <i class="fas fa-chevron-right fa-xl"></i>
+              </button>
+              <button type="button" class="btn btn-danger rounded-circle shadow" style="width: 60px; height: 60px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="submitManageForm('modalRemoveForm')" title="Remove from List">
+                <i class="fas fa-chevron-left fa-xl"></i>
+              </button>
+            </div>
+
+            <!-- Enrolled Students -->
+            <div class="col-md-5">
+              <div class="card shadow-sm border-0 h-100" style="border-radius: 12px;">
+                <div class="card-header text-white fw-bold" style="background: linear-gradient(135deg, #004E89, #006ebc); border-radius: 12px 12px 0 0; border: none; padding: 1rem 1.5rem;">
+                  <i class="fas fa-user-graduate me-2"></i> {% trans "My Students" %}
+                  <span class="badge bg-light text-primary float-end mt-1">{{ enrolled_students|length }}</span>
+                </div>
+                <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                  <form id="modalRemoveForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="remove">
+                    <div class="list-group list-group-flush">
+                      {% for student in enrolled_students %}
+                      <label class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3 px-4" style="cursor: pointer; transition: all 0.2s;">
+                        <input class="form-check-input flex-shrink-0" type="checkbox" name="student_ids" value="{{ student.id }}" style="width: 22px; height: 22px; cursor: pointer;">
+                        <div>
+                          <div class="fw-bold text-dark" style="font-size: 1.05rem;">{{ student.full_name }}</div>
+                          <div class="small text-muted">{{ student.student_id }}</div>
+                        </div>
+                      </label>
+                      {% empty %}
+                      <div class="p-5 text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3 text-light"></i><br>
+                        {% trans "No students in your list." %}
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="toast-notification" id="toastNotification"></div>
@@ -557,6 +688,39 @@
         }
       }
       return cookieValue;
+    }
+
+    // Handle Manage Students form submission
+    function submitManageForm(formId) {
+        const form = document.getElementById(formId);
+        const formData = new FormData(form);
+        
+        // Check if any checkboxes are selected
+        if (!formData.getAll('student_ids').length) {
+            showToast('{% trans "Please select at least one student." %}', 'error');
+            return;
+        }
+
+        // Disable buttons to prevent double clicks
+        const buttons = document.querySelectorAll('#manageStudentsModal button');
+        buttons.forEach(b => b.disabled = true);
+
+        fetch("{% url 'dashboard:manage_teacher_records' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(response => {
+            if(response.ok) {
+                window.location.reload(); // Reload to show updated table and lists
+            } else {
+                throw new Error('Server returned error');
+            }
+        }).catch(err => {
+            showToast('{% trans "Network error. Please try again." %}', 'error');
+            buttons.forEach(b => b.disabled = false);
+        });
     }
   </script>
 </body>

@@ -33,6 +33,7 @@ urlpatterns = [
     path('teacher/student-attendance/', student_attendance, name='student_attendance'),
     path('teacher/save-attendance/', save_attendance_data, name='save_attendance_data'),
     path('teacher/student-records/', student_records, name='student_records'),
+    path('teacher/student-records/manage/', manage_teacher_records, name='manage_teacher_records'),
     path('teacher/classes/', class_list, name='class_list'),
     path('teacher/classes/<int:classroom_id>/attendance/', class_attendance, name='class_attendance'),
     path('teacher/classes/<int:classroom_id>/save-attendance/', save_class_attendance, name='save_class_attendance'),
