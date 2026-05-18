@@ -279,7 +279,7 @@ urlpatterns = [
     path('manager/', include('manager.urls', namespace='manager')),
     path('company/', include('company.urls')),
     path('regcompany/', include('regcompany.urls')),
-    path('staff/', include('staff.urls')),
+    path('staff/', include('staff.urls', namespace='staff')),
     path('sswdash/', include('sswdash.urls')),
     path('sswadmission/', include('sswadmission.urls')),
     path('appointment/', include('appointment.urls')),

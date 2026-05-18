@@ -973,23 +973,26 @@ def scan_documents(request):
     
     # Handle image merge
     if request.method == 'POST' and 'merge_images' in request.POST:
-        from PIL import Image
         from io import BytesIO
         import uuid
         
         image1 = request.FILES.get('merge_image1')
         image2 = request.FILES.get('merge_image2')
-        merge_mode = request.POST.get('merge_mode', 'vertical')  # vertical or horizontal
+        merge_mode = request.POST.get('merge_mode', 'vertical')
         
-        if image1 and image2:
+        if not image1 or not image2:
+            messages.error(request, 'Please select both images to merge.')
+        else:
             try:
+                from PIL import Image
+                
                 img1 = Image.open(image1)
                 img2 = Image.open(image2)
                 
                 # Convert to RGB if needed
-                if img1.mode in ('RGBA', 'P'):
+                if img1.mode in ('RGBA', 'P', 'LA'):
                     img1 = img1.convert('RGB')
-                if img2.mode in ('RGBA', 'P'):
+                if img2.mode in ('RGBA', 'P', 'LA'):
                     img2 = img2.convert('RGB')
                 
                 # A4 size at 300 DPI
@@ -997,18 +1000,21 @@ def scan_documents(request):
                 a4_height = 3508
                 
                 # Resize images to A4
-                img1 = img1.resize((a4_width, a4_height), Image.Resampling.LANCZOS)
-                img2 = img2.resize((a4_width, a4_height), Image.Resampling.LANCZOS)
+                try:
+                    resample = Image.Resampling.LANCZOS
+                except AttributeError:
+                    resample = Image.LANCZOS
+                
+                img1 = img1.resize((a4_width, a4_height), resample)
+                img2 = img2.resize((a4_width, a4_height), resample)
                 
                 if merge_mode == 'horizontal':
-                    # Side by side
                     merged_width = a4_width * 2
                     merged_height = a4_height
                     merged = Image.new('RGB', (merged_width, merged_height), (255, 255, 255))
                     merged.paste(img1, (0, 0))
                     merged.paste(img2, (a4_width, 0))
                 else:
-                    # Vertical (one above other)
                     merged_width = a4_width
                     merged_height = a4_height * 2
                     merged = Image.new('RGB', (merged_width, merged_height), (255, 255, 255))
@@ -1021,15 +1027,18 @@ def scan_documents(request):
                 output.seek(0)
                 
                 # Create downloadable response
-                from django.http import FileResponse
-                response = FileResponse(output, content_type='application/pdf')
+                from django.http import HttpResponse
+                response = HttpResponse(output.getvalue(), content_type='application/pdf')
                 response['Content-Disposition'] = f'attachment; filename="merged_document_{uuid.uuid4().hex[:8]}.pdf"'
                 return response
                 
+            except ImportError:
+                messages.error(request, 'Pillow library not installed. Run: pip install Pillow')
             except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Merge error: {str(e)}', exc_info=True)
                 messages.error(request, f'Error merging images: {str(e)}')
-        else:
-            messages.error(request, 'Please select both images to merge.')
     
     context = {
         'documents': documents,

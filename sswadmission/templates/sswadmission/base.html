@@ -190,7 +190,7 @@
                 {% endif %}
 
                 {% if request.user.is_authenticated and request.user.role == 'staff' %}
-                <a href="{% url 'staff_ssw_working_visa' %}" class="btn btn-outline-danger btn-sm ms-2">
+                <a href="{% url 'staff:staff_ssw_working_visa' %}" class="btn btn-outline-danger btn-sm ms-2">
                     <i class="bi bi-box-arrow-right"></i> Back to Dashboard
                 </a>
                 {% endif %}

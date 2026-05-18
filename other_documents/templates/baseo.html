@@ -111,7 +111,7 @@
         {% if request.user.is_authenticated and request.user.role == 'staff' %}
         <div>
             <a href="{% url 'document_list' %}"><i class="bi bi-house-door"></i> Home</a>
-            <a href="{% url 'staff_ssw_working_visa' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{% url 'staff:staff_ssw_working_visa' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
         </div>
         {% endif %}
         {% if request.user.is_authenticated and request.user.role == 'manager' %}

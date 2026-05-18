@@ -496,9 +496,15 @@
             </div>
             <div class="header-actions">
                 {% if request.user.is_authenticated %}
+                {% if request.user.role == 'staff' %}
+                <a href="{% url 'staff:staff_ssw_working_visa' %}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left"></i>Back
+                </a>
+                {% else %}
                 <a href="{% url 'manager:ssw_working_visa' %}" class="btn btn-outline-light">
                     <i class="fas fa-arrow-left"></i>Back
                 </a>
+                {% endif %}
                 <a href="{% url 'accounts:login' %}" class="btn btn-outline-light">
                     <i class="fas fa-sign-out-alt"></i>Logout
                 </a>
