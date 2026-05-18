@@ -268,3 +268,47 @@ LOGGING = {
 }
 
 SITE_URL = 'http://127.0.0.1:8000'
+
+
+# =============================================================================
+# EMAIL CONFIGURATION
+# =============================================================================
+# 
+# IMPORTANT: Gmail requires an App Password for SMTP (not your regular password)
+# 
+# To set up Gmail App Password:
+#   1. Go to https://myaccount.google.com/apppasswords
+#   2. Sign in with your Google account
+#   3. Select "Mail" and your device
+#   4. Copy the 16-character password (e.g., "abcd efgh ijkl mnop")
+#   5. Set it as environment variable: EMAIL_HOST_PASSWORD="your-app-password"
+#
+# For testing without real email: Use console backend (prints to terminal)
+# For production: Use SMTP backend with App Password
+# =============================================================================
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'kaushalbhuju467@gmail.com'
+
+# Gmail App Password (16 characters, spaces are OK in the string)
+# Generate at: https://myaccount.google.com/apppasswords
+# Regular Gmail passwords do NOT work for SMTP - must use App Password!
+EMAIL_HOST_PASSWORD = os.environ.get(
+    'EMAIL_HOST_PASSWORD',
+    'cmvm ajhn gpop ipfc'  # Your Gmail App Password
+)
+
+DEFAULT_FROM_EMAIL = 'SSW Academy Nepal <kaushalbhuju467@gmail.com>'
+SERVER_EMAIL = 'kaushalbhuju467@gmail.com'
+
+# Use console backend by default (prints emails to terminal for testing)
+# Switch to SMTP when EMAIL_HOST_PASSWORD is set with a valid App Password
+if EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    print(f"[EMAIL] Using SMTP backend with {EMAIL_HOST_USER}")
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    print("[EMAIL] Using console backend (prints to terminal). "
+          "Set EMAIL_HOST_PASSWORD env var to use real SMTP.")

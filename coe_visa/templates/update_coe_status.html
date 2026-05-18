@@ -1,82 +1,497 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update COE Status - Aqua Education</title>
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
-
-    <title>Update COE Status</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #1e40af;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --info: #0284c7;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
-        h1 { margin-bottom: 20px; color: #2c3e50; }
-        .student-info { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-        button { background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-back { background: #95a5a6; margin-right: 10px; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--gray-100) 0%, #e8edf2 100%);
+            min-height: 100vh;
+            color: var(--gray-700);
+        }
+
+        .page-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 16px;
+            padding: 30px 40px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        .student-info-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .student-info-card h3 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray-500);
+        }
+
+        .info-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1);
+        }
+
+        .form-control:disabled {
+            background: var(--gray-50);
+            color: var(--gray-500);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .status-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-not-started { background: var(--gray-100); color: var(--gray-500); }
+        .badge-processing { background: #dbeafe; color: #1e40af; }
+        .badge-approved { background: #d1fae5; color: #065f46; }
+        .badge-issued { background: #a7f3d0; color: #065f46; }
+        .badge-delivered { background: #6ee7b7; color: #064e3b; }
+        .badge-rejected { background: #fee2e2; color: #991b1b; }
+
+        .btn-container {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            padding-top: 24px;
+            border-top: 1px solid var(--gray-200);
+            margin-top: 32px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-600);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+
+        .saved-info-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #86efac;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .saved-info-card h4 {
+            color: #166534;
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #86efac;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #22c55e;
+            border: 2px solid white;
+        }
+
+        .timeline-date {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            margin-bottom: 4px;
+        }
+
+        .timeline-content {
+            font-size: 0.9rem;
+            color: var(--gray-700);
+        }
+
+        .timeline-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .text-muted {
+            color: var(--gray-400);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .page-container { margin: 20px auto; padding: 0 16px; }
+            .page-header { padding: 24px 20px; border-radius: 12px; }
+            .page-header h1 { font-size: 1.4rem; }
+            .card-body { padding: 24px 20px; }
+            .btn-container { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Update COE Status</h1>
-        
-        <div class="student-info">
-            <strong>Student:</strong> {{ student.full_name }}<br>
-            <strong>ID:</strong> {{ student.student_id }}
+    <div class="page-container">
+        <div class="page-header">
+            <h1><i class="fas fa-file-certificate me-3"></i>Update COE Status</h1>
+            <p>Certificate of Eligibility (COE) Application Management</p>
         </div>
-        
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label>COE Status:</label>
-                <select name="status">
-                    <option value="not_started" {% if coe_tracking.status == 'not_started' %}selected{% endif %}>
-                        Not Started
-                    </option>
-                    <option value="processing" {% if coe_tracking.status == 'processing' %}selected{% endif %}>
-                        Processing
-                    </option>
-                    <option value="approved" {% if coe_tracking.status == 'approved' %}selected{% endif %}>
-                        Approved
-                    </option>
-                    <option value="issued" {% if coe_tracking.status == 'issued' %}selected{% endif %}>
-                        Issued
-                    </option>
-                    <option value="delivered" {% if coe_tracking.status == 'delivered' %}selected{% endif %}>
-                        Delivered
-                    </option>
-                    <option value="rejected" {% if coe_tracking.status == 'rejected' %}selected{% endif %}>
-                        Rejected
-                    </option>
-                </select>
+
+        <div class="main-card">
+            <div class="card-body">
+                {% if messages %}
+                <div class="alert alert-success mb-4">
+                    {% for message in messages %}
+                    <i class="fas fa-check-circle me-2"></i>{{ message }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="student-info-card">
+                    <h3><i class="fas fa-user-graduate"></i>Student Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Full Name</span>
+                            <span class="info-value">{{ student.full_name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Student ID</span>
+                            <span class="info-value">{{ student.student_id }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">{{ student.email|default:"Not provided" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">{{ student.phone|default:"Not provided" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Passport No</span>
+                            <span class="info-value">{{ student.passport_no|default:"Not provided" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Current Status</span>
+                            <span class="info-value">
+                                {% if coe_tracking.status == 'not_started' %}<span class="status-badge badge-not-started"><i class="fas fa-clock"></i> Not Started</span>
+                                {% elif coe_tracking.status == 'processing' %}<span class="status-badge badge-processing"><i class="fas fa-spinner"></i> Processing</span>
+                                {% elif coe_tracking.status == 'approved' %}<span class="status-badge badge-approved"><i class="fas fa-check"></i> Approved</span>
+                                {% elif coe_tracking.status == 'issued' %}<span class="status-badge badge-issued"><i class="fas fa-file-alt"></i> Issued</span>
+                                {% elif coe_tracking.status == 'delivered' %}<span class="status-badge badge-delivered"><i class="fas fa-truck"></i> Delivered</span>
+                                {% elif coe_tracking.status == 'rejected' %}<span class="status-badge badge-rejected"><i class="fas fa-times"></i> Rejected</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {% if coe_tracking.coe_number or coe_tracking.applied_date or coe_tracking.issued_date %}
+                <div class="saved-info-card">
+                    <h4><i class="fas fa-history"></i>Previously Saved Information</h4>
+                    <div class="info-grid">
+                        {% if coe_tracking.coe_number %}
+                        <div class="info-item">
+                            <span class="info-label">COE Number</span>
+                            <span class="info-value">{{ coe_tracking.coe_number }}</span>
+                        </div>
+                        {% endif %}
+                        {% if coe_tracking.applied_date %}
+                        <div class="info-item">
+                            <span class="info-label">Applied Date</span>
+                            <span class="info-value">{{ coe_tracking.applied_date|date:"M d, Y" }}</span>
+                        </div>
+                        {% endif %}
+                        {% if coe_tracking.issued_date %}
+                        <div class="info-item">
+                            <span class="info-label">Issued Date</span>
+                            <span class="info-value">{{ coe_tracking.issued_date|date:"M d, Y" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if coe_tracking.notes %}
+                    <div class="info-item mt-3">
+                        <span class="info-label">Notes</span>
+                        <span class="info-value">{{ coe_tracking.notes }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="timeline mt-3">
+                        <div class="timeline-item">
+                            <div class="timeline-date">Last Updated</div>
+                            <div class="timeline-content">
+                                <strong>{{ coe_tracking.get_status_display }}</strong>
+                                {% if coe_tracking.updated_at %}
+                                <span class="text-muted"> - {{ coe_tracking.updated_at|date:"M d, Y h:i A" }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-clipboard-check"></i>
+                            COE Application Details
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>COE Status</label>
+                                <select name="status" class="form-control">
+                                    <option value="not_started" {% if coe_tracking.status == 'not_started' %}selected{% endif %}>Not Started</option>
+                                    <option value="processing" {% if coe_tracking.status == 'processing' %}selected{% endif %}>Processing</option>
+                                    <option value="approved" {% if coe_tracking.status == 'approved' %}selected{% endif %}>Approved</option>
+                                    <option value="issued" {% if coe_tracking.status == 'issued' %}selected{% endif %}>Issued</option>
+                                    <option value="delivered" {% if coe_tracking.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                    <option value="rejected" {% if coe_tracking.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>COE Number</label>
+                                <input type="text" name="coe_number" value="{{ coe_tracking.coe_number|default:'' }}" class="form-control" placeholder="Enter COE Number">
+                            </div>
+                            <div class="form-group">
+                                <label>Applied Date</label>
+                                <input type="date" name="applied_date" value="{{ coe_tracking.applied_date|date:'Y-m-d'|default:'' }}" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Issued Date</label>
+                                <input type="date" name="issued_date" value="{{ coe_tracking.issued_date|date:'Y-m-d'|default:'' }}" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-sticky-note"></i>
+                            Additional Notes
+                        </div>
+                        <div class="form-group">
+                            <textarea name="notes" class="form-control" placeholder="Add any additional notes about this COE application...">{{ coe_tracking.notes|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="btn-container">
+                        <a href="{% url 'coe_visa:seoandvisa_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
             </div>
-            
-            <div class="form-group">
-                <label>COE Number:</label>
-                <input type="text" name="coe_number" value="{{ coe_tracking.coe_number|default:'' }}">
-            </div>
-            
-            <div class="form-group">
-                <label>Applied Date:</label>
-                <input type="date" name="applied_date" value="{{ coe_tracking.applied_date|date:'Y-m-d'|default:'' }}">
-            </div>
-            
-            <div class="form-group">
-                <label>Issued Date:</label>
-                <input type="date" name="issued_date" value="{{ coe_tracking.issued_date|date:'Y-m-d'|default:'' }}">
-            </div>
-            
-            <div class="form-group">
-                <label>Notes:</label>
-                <textarea name="notes" rows="3">{{ coe_tracking.notes|default:'' }}</textarea>
-            </div>
-            
-            <button type="submit" class="btn-submit">Update COE Status</button>
-            <a href="{% url 'coe_visa:seoandvisa_dashboard' %}" class="btn-back">Cancel</a>
-        </form>
+        </div>
     </div>
 </body>
 </html>

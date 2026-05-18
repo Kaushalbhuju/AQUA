@@ -1,0 +1,36 @@
+APPOINTMENT BOOKED SUCCESSFULLY
+================================
+
+Dear {{ appointment.name }},
+
+Your appointment has been successfully booked with SSW Academy Nepal.
+
+CONFIRMATION CODE: {{ appointment.confirmation_code }}
+Please save this code for your reference.
+
+APPOINTMENT DETAILS
+-------------------
+Purpose:     {{ appointment.get_appointment_aim_display }}
+Date:        {{ appointment.date|date:"l, F j, Y" }}
+Time:        {{ appointment.time|time:"g:i A" }}
+Name:        {{ appointment.name }}
+Email:       {{ appointment.email }}
+Phone:       {{ appointment.phone }}
+Company:     {{ appointment.company_name }}
+{% if appointment.position %}Position:    {{ appointment.position }}{% endif %}
+
+STATUS: Waiting for Admin Confirmation
+Your appointment is currently pending confirmation by our admin team.
+You will receive another email once your appointment is confirmed.
+
+{% if public_url %}
+View your appointment details:
+{{ public_url }}
+{% endif %}
+
+---
+SSW Academy Nepal
+Email: kaushalbhuju467@gmail.com
+
+This is an automated email. Please do not reply directly to this message.
+If you need to make changes to your appointment, please contact us.

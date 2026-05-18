@@ -106,7 +106,7 @@
                 <h5 class="modal-title">Edit Assignment - {{ asgn.id }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="{% url 'books:update_assignment' asgn.id %}">
+            <form method="post" action="{% url 'books:update_assignment' asgn.id %}" onsubmit="return confirmBookChange{{ asgn.id|slugify }}();">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
@@ -115,8 +115,15 @@
                             required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Book</label>
-                        <input type="text" class="form-control" value="{{ asgn.book.name }}" disabled>
+                        <label class="form-label fw-semibold">Select Book</label>
+                        <select class="form-select" name="book_id" id="bookSelect{{ asgn.id|slugify }}" required>
+                            {% for book in all_books %}
+                            <option value="{{ book.id }}" {% if book.id == asgn.book.id %}selected{% endif %}>
+                                {{ book.id }} - {{ book.name }} (Stock: {{ book.remaining_stock }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Select a different book if needed</small>
                     </div>
                     <div class="mb-3">
                         <div class="form-check form-switch">
@@ -144,5 +151,20 @@
         </div>
     </div>
 </div>
+
+<script>
+function confirmBookChange{{ asgn.id|slugify }}() {
+    const select = document.getElementById('bookSelect{{ asgn.id|slugify }}');
+    const selectedOption = select.options[select.selectedIndex];
+    const currentBookId = "{{ asgn.book.id|escapejs }}";
+    const currentBookName = "{{ asgn.book.name|escapejs }}";
+    const selectedBookId = select.value;
+    
+    if (selectedBookId !== currentBookId) {
+        return confirm('Are you sure you want to change the book from "' + currentBookName + '" to "' + selectedOption.text.trim() + '"?');
+    }
+    return true;
+}
+</script>
 {% endfor %}
 {% endblock %}

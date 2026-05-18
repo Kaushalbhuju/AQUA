@@ -1,0 +1,38 @@
+YOUR APPOINTMENT IS CONFIRMED!
+==============================
+
+Dear {{ appointment.name }},
+
+Great news! Your appointment has been CONFIRMED by AQUA EDUCATION AND TRAINING ACADEMY
+We look forward to meeting you!
+
+STATUS: ✅ CONFIRMED
+Confirmation Code: {{ appointment.confirmation_code }}
+
+APPOINTMENT DETAILS
+-------------------
+Purpose:     {{ appointment.get_appointment_aim_display }}
+Date:        {{ appointment.date|date:"l, F j, Y" }}
+Time:        {{ appointment.time|time:"g:i A" }}
+Name:        {{ appointment.name }}
+Email:       {{ appointment.email }}
+Phone:       {{ appointment.phone }}
+Company:     {{ appointment.company_name }}
+{% if appointment.position %}Position:    {{ appointment.position }}{% endif %}
+
+PLEASE REMEMBER:
+- Arrive 10 minutes before your scheduled time
+- Bring any relevant documents or identification
+- If you need to reschedule, please contact us as soon as possible
+
+{% if public_url %}
+View your appointment details:
+{{ public_url }}
+{% endif %}
+
+---
+AQUA EDUCATION AND TRAINING ACADEMY
+
+
+This is an automated email. Please do not reply directly to this message.
+If you need to make changes to your appointment, please contact us.

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     StaffRegistration, EducationalHistory, WorkingExperience,
-    CertificateOfSkills, SkillsTrainingStatus, DrivingLicense
+    CertificateOfSkills, SkillsTrainingStatus, DrivingLicense, ScannedDocument
 )
 
 class EducationalHistoryInline(admin.TabularInline):
@@ -36,6 +36,14 @@ class StaffRegistrationAdmin(admin.ModelAdmin):
         SkillsTrainingStatusInline,
         DrivingLicenseInline,
     ]
+
+
+@admin.register(ScannedDocument)
+class ScannedDocumentAdmin(admin.ModelAdmin):
+    list_display = ['document_name', 'document_type', 'candidate_name', 'uploaded_by', 'created_at']
+    list_filter = ['document_type', 'created_at']
+    search_fields = ['document_name', 'candidate_name', 'candidate_id']
+    readonly_fields = ['created_at', 'uploaded_by']
 
 
 admin.site.register(EducationalHistory)

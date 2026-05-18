@@ -276,7 +276,7 @@ urlpatterns = [
     
     # Other app URLs
     path('dashboard/', include('dashboard.urls')),
-    path('manager/', include('manager.urls')),
+    path('manager/', include('manager.urls', namespace='manager')),
     path('company/', include('company.urls')),
     path('regcompany/', include('regcompany.urls')),
     path('staff/', include('staff.urls')),

@@ -118,15 +118,8 @@
 
         .content-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
             gap: 25px;
             margin-bottom: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
         }
 
         .card {
@@ -304,119 +297,115 @@
 
         <!-- Main Content Grid -->
         <div class="content-grid">
-            <!-- Left Column: Personal Information -->
-            <div class="card">
-                <h2>Personal Information</h2>
+            <!-- Personal Information - All Details in One Section -->
+        <div class="card">
+            <h2>Personal Details</h2>
 
-                <!-- Student Photo -->
-                <div class="photo-container">
-                    {% if student.photo_data_uri %}
-                    <img src="{{ student.photo_data_uri }}" alt="{{ student.full_name }}" class="student-photo">
-                    {% elif student.photo_display_url %}
-                    <img src="{{ student.photo_display_url }}" alt="{{ student.full_name }}" class="student-photo">
-                    {% else %}
-                    <div class="photo-placeholder">📷</div>
-                    {% endif %}
-                </div>
-
-                <div class="info-grid">
-                    <div class="info-item">
-                        <span class="info-label">Full Name</span>
-                        <span class="info-value">{{ student.full_name }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Student ID</span>
-                        <span class="info-value">{{ student.student_id }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Date of Birth</span>
-                        <span class="info-value">{{ student.date_of_birth|date:"F j, Y" }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Age</span>
-                        <span class="info-value">{{ student.age }} years</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Gender</span>
-                        <span class="info-value">{{ student.get_gender_display }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Marital Status</span>
-                        <span class="info-value">{{ student.get_marital_status_display }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Blood Group</span>
-                        <span class="info-value">{{ student.blood_group|default:"Not specified" }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">TB Status</span>
-                        <span class="info-value">{{ student.tb_status|default:"Not specified" }}</span>
-                    </div>
-                </div>
+            <!-- Student Photo -->
+            <div class="photo-container">
+                {% if student.photo_data_uri %}
+                <img src="{{ student.photo_data_uri }}" alt="{{ student.full_name }}" class="student-photo">
+                {% elif student.photo_display_url %}
+                <img src="{{ student.photo_display_url }}" alt="{{ student.full_name }}" class="student-photo">
+                {% else %}
+                <div class="photo-placeholder">📷</div>
+                {% endif %}
             </div>
 
-            <!-- Right Column: Contact & Physical Information -->
-            <div class="card">
-                <h2>Contact & Physical Information</h2>
-
-                <div class="info-grid">
-                    <div class="info-item full-width">
-                        <span class="info-label">Email</span>
-                        <span class="info-value">{{ student.email }}</span>
-                    </div>
-                    <div class="info-item full-width">
-                        <span class="info-label">Phone</span>
-                        <span class="info-value">{{ student.phone }}</span>
-                    </div>
-                    <div class="info-item full-width">
-                        <span class="info-label">Permanent Address</span>
-                        <span class="info-value">{{ student.permanent_address }}</span>
-                    </div>
-                    {% if student.present_address %}
-                    <div class="info-item full-width">
-                        <span class="info-label">Present Address</span>
-                        <span class="info-value">{{ student.present_address }}</span>
-                    </div>
-                    {% endif %}
-                    <div class="info-item">
-                        <span class="info-label">Height</span>
-                        <span class="info-value">{{ student.height|default:"Not specified" }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Weight</span>
-                        <span class="info-value">{{ student.weight|default:"Not specified" }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Medical Report</span>
-                        <span class="info-value">{{ student.medical_report|default:"Not provided" }}</span>
-                    </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value">{{ student.full_name }}</span>
                 </div>
+                <div class="info-item">
+                    <span class="info-label">Student ID</span>
+                    <span class="info-value">{{ student.student_id }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Date of Birth</span>
+                    <span class="info-value">{{ student.date_of_birth|date:"F j, Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Age</span>
+                    <span class="info-value">{{ student.age }} years</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Gender</span>
+                    <span class="info-value">{{ student.get_gender_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Marital Status</span>
+                    <span class="info-value">{{ student.get_marital_status_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Height</span>
+                    <span class="info-value">{{ student.height|default:"Not specified" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Weight</span>
+                    <span class="info-value">{{ student.weight|default:"Not specified" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Eye - Right</span>
+                    <span class="info-value">{{ student.eye_lens_right|default:"Not specified" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Eye - Left</span>
+                    <span class="info-value">{{ student.eye_lens_left|default:"Not specified" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Blood Group</span>
+                    <span class="info-value">{{ student.blood_group|default:"Not specified" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">TB Status</span>
+                    <span class="info-value">{{ student.tb_status|default:"Not specified" }}</span>
+                </div>
+                <div class="info-item full-width">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ student.email }}</span>
+                </div>
+                <div class="info-item full-width">
+                    <span class="info-label">Phone</span>
+                    <span class="info-value">{{ student.phone }}</span>
+                </div>
+                <div class="info-item full-width">
+                    <span class="info-label">Permanent Address</span>
+                    <span class="info-value">{{ student.permanent_address }}</span>
+                </div>
+                {% if student.present_address %}
+                <div class="info-item full-width">
+                    <span class="info-label">Present Address</span>
+                    <span class="info-value">{{ student.present_address }}</span>
+                </div>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Passport Information -->
-        {% if student.passport_no %}
+        <!-- Visa Details -->
         <div class="card">
-            <h2>Passport Information</h2>
+            <h2>Visa Details</h2>
             <div class="info-grid">
+                {% if student.passport_no %}
                 <div class="info-item">
                     <span class="info-label">Passport Number</span>
                     <span class="info-value">{{ student.passport_no }}</span>
                 </div>
+                {% endif %}
                 {% if student.passport_issue_date %}
                 <div class="info-item">
-                    <span class="info-label">Issue Date</span>
+                    <span class="info-label">Passport Issue Date</span>
                     <span class="info-value">{{ student.passport_issue_date|date:"F j, Y" }}</span>
                 </div>
                 {% endif %}
                 {% if student.passport_expiry_date %}
                 <div class="info-item">
-                    <span class="info-label">Expiry Date</span>
+                    <span class="info-label">Passport Expiry Date</span>
                     <span class="info-value">{{ student.passport_expiry_date|date:"F j, Y" }}</span>
                 </div>
                 {% endif %}
                 <div class="info-item">
-                    <span class="info-label">Visa Apply Record</span>
+                    <span class="info-label">Past Visa Apply</span>
                     <span class="info-value">{{ student.visa_apply_record|default:"No" }}</span>
                 </div>
                 {% if student.visa_details %}
@@ -427,16 +416,14 @@
                 {% endif %}
             </div>
         </div>
-        {% endif %}
 
         <!-- Family Records -->
-        {% if student.spouse_name %}
         <div class="card">
             <h2>Family Records</h2>
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">Spouse Name</span>
-                    <span class="info-value">{{ student.spouse_name }}</span>
+                    <span class="info-value">{{ student.spouse_name|default:"Not specified" }}</span>
                 </div>
                 {% if student.spouse_contact %}
                 <div class="info-item">
@@ -446,7 +433,6 @@
                 {% endif %}
             </div>
         </div>
-        {% endif %}
 
         <!-- Educational History -->
         <div class="card">

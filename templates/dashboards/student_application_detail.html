@@ -1,829 +1,1153 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Application Details - {{ student.full_name }}</title>
+    <title>Student Application - {{ student.full_name }}</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #1e40af;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --info: #0284c7;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--gray-100) 0%, #e8edf2 100%);
             min-height: 100vh;
-            color: #333;
+            color: var(--gray-700);
         }
 
-        .container {
-            max-width: 1200px;
+        .page-container {
+            max-width: 1400px;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
+            padding: 30px 20px;
         }
 
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            border-radius: 0 15px 0 0;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 25px 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #3498db, #2ecc71);
-        }
-
-        .header h1 {
-            margin: 15px 0 0 0;
-            font-size: 2.2rem;
-            font-weight: 700;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            color: white;
-            display: inline-flex;
+        .back-header {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            position: relative;
-            overflow: hidden;
-            gap: 8px;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.6s ease;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-        }
-
-        .btn:active {
-            transform: translateY(-1px);
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
         }
 
         .btn-back {
-            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-            padding: 10px 20px;
-            font-size: 13px;
-        }
-
-        .btn-pdf {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        }
-
-        .btn-approve {
-            background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
-        }
-
-        .btn-decline {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        }
-
-        .btn-view {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            padding: 8px 16px;
-            font-size: 13px;
-        }
-
-        .section {
-            background: linear-gradient(to right, #f8f9fa, #ffffff);
-            padding: 25px;
-            border-radius: 10px;
-            margin: 25px 0;
-            border-left: 5px solid #3498db;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
-            background: linear-gradient(to bottom, #3498db, #2ecc71);
-            transition: width 0.3s ease;
-        }
-
-        .section:hover {
-            transform: translateX(5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .section:hover::before {
-            width: 8px;
-        }
-
-        .section h3 {
-            color: #2c3e50;
-            margin-top: 0;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #eee;
-            font-size: 1.4rem;
-            font-weight: 600;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 10px;
+            padding: 14px 24px;
+            background: white;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
         }
 
-        .section h3::before {
-            content: '▶';
-            font-size: 0.8rem;
-            color: #3498db;
+        .btn-back:hover {
+            background: var(--gray-50);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateX(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 24px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h2 {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-body {
+            padding: 28px;
+        }
+
+        .nav-tabs-custom {
+            display: flex;
+            border-bottom: 2px solid var(--gray-100);
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 16px 24px;
+            background: none;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: var(--gray-700);
+            background: var(--gray-50);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .tab-content-custom {
+            display: none;
+            padding: 28px;
+        }
+
+        .tab-content-custom.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 20px;
-            margin-top: 20px;
         }
 
-        .info-item {
-            padding: 18px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        .info-card {
+            background: var(--gray-50);
+            border-radius: 14px;
+            padding: 22px;
+            border: 1px solid var(--gray-200);
             transition: all 0.3s ease;
-            border: 1px solid #e9ecef;
             position: relative;
+            overflow: hidden;
         }
 
-        .info-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.15);
-            border-color: #3498db;
+        .info-card:hover {
+            background: white;
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary), var(--info));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .info-card:hover::before {
+            opacity: 1;
         }
 
         .info-label {
-            font-weight: 600;
-            color: #666;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.08em;
+            color: var(--gray-400);
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .info-value {
-            color: #2c3e50;
-            font-size: 1.1rem;
-            font-weight: 500;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--gray-800);
             word-break: break-word;
-            line-height: 1.5;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-pending { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
+        .badge-approved { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46; }
+        .badge-declined { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b; }
+
+        .profile-section {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .profile-photo-container {
+            position: relative;
         }
 
         .profile-photo {
-            width: 180px;
-            height: 220px;
-            border-radius: 10px;
+            width: 160px;
+            height: 200px;
+            border-radius: 16px;
             object-fit: cover;
-            border: 4px solid #3498db;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border: 4px solid var(--primary);
+            box-shadow: var(--shadow-lg);
             transition: all 0.3s ease;
         }
 
         .profile-photo:hover {
             transform: scale(1.05);
-            border-color: #2ecc71;
+            border-color: var(--success);
         }
 
-        .bg-secondary {
-            background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
-            color: white;
+        .profile-initial {
+            width: 160px;
+            height: 200px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-        }
-
-        .status-badge {
-            padding: 8px 20px;
-            border-radius: 25px;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 4rem;
+            font-weight: 700;
             color: white;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-            display: inline-block;
-            min-width: 100px;
-            text-align: center;
+            border: 4px solid var(--primary);
+            box-shadow: var(--shadow-lg);
         }
 
-        .status-pending {
-            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        .profile-info {
+            flex: 1;
         }
 
-        .status-approved {
-            background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+        .profile-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 10px;
         }
 
-        .status-declined {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        .profile-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            color: var(--gray-500);
+            font-size: 0.9rem;
         }
 
-        .document-section {
+        .profile-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timeline-card {
             background: white;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-            transition: all 0.3s ease;
+            border-radius: 20px;
+            box-shadow: var(--shadow-md);
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .timeline-header h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .timeline {
             position: relative;
+            padding-left: 35px;
         }
 
-        .document-section:hover {
-            border-color: #3498db;
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary), var(--success), var(--warning));
+            border-radius: 3px;
         }
 
-        .document-section strong {
-            color: #2c3e50;
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-            display: block;
+        .timeline-item {
+            position: relative;
+            padding-bottom: 28px;
         }
 
-        .document-section span {
-            color: #555;
-            margin-bottom: 5px;
-            display: block;
+        .timeline-item:last-child {
+            padding-bottom: 0;
         }
 
-        .document-section small {
-            color: #95a5a6;
+        .timeline-marker {
+            position: absolute;
+            left: -35px;
+            top: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            z-index: 1;
+        }
+
+        .timeline-item.submitted .timeline-marker { background: var(--primary); color: white; }
+        .timeline-item.reviewed .timeline-marker { background: var(--info); color: white; }
+        .timeline-item.approved .timeline-marker { background: var(--success); color: white; }
+        .timeline-item.declined .timeline-marker { background: var(--danger); color: white; }
+
+        .timeline-content {
+            background: var(--gray-50);
+            border-radius: 12px;
+            padding: 18px;
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-content:hover {
+            background: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .timeline-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 6px;
+        }
+
+        .timeline-date {
             font-size: 0.85rem;
+            color: var(--gray-400);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timeline-status {
+            margin-top: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #047857; }
+
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #b91c1c; }
+
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-warning:hover { background: #b45309; }
+
+        .btn-outline { background: white; border: 2px solid var(--gray-300); color: var(--gray-600); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+        .document-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .document-card {
+            background: var(--gray-50);
+            border-radius: 14px;
+            padding: 22px;
+            border: 2px dashed var(--gray-200);
+            transition: all 0.3s ease;
+        }
+
+        .document-card:hover {
+            background: white;
+            border-color: var(--primary);
+            border-style: solid;
+            box-shadow: var(--shadow-md);
+        }
+
+        .document-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .document-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .document-icon.passport { background: #eff6ff; color: var(--primary); }
+        .document-icon.citizenship { background: #f0fdf4; color: var(--success); }
+        .document-icon.education { background: #fef3c7; color: var(--warning); }
+        .document-icon.medical { background: #fce7f3; color: #db2777; }
+        .document-icon.license { background: #f3e8ff; color: #9333ea; }
+        .document-icon.other { background: var(--gray-100); color: var(--gray-500); }
+
+        .document-type {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .document-count {
+            font-size: 0.85rem;
+            color: var(--gray-400);
+        }
+
+        .document-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .document-item {
-            padding: 18px;
-            border-bottom: 2px dashed #eee;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .document-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .document-info i {
+            color: var(--primary);
+        }
+
+        .document-date {
+            font-size: 0.8rem;
+            color: var(--gray-400);
+        }
+
+        .btn-view {
+            padding: 8px 14px;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-view:hover {
+            background: var(--primary-dark);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .empty-docs {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-400);
+        }
+
+        .empty-docs i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-docs p {
+            font-size: 0.95rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .education-card, .work-card {
+            background: var(--gray-50);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 16px;
+            border: 1px solid var(--gray-200);
             transition: all 0.3s ease;
         }
 
-        .document-item:hover {
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-bottom-color: #3498db;
-        }
-
-        .document-item:last-child {
-            border-bottom: none;
-        }
-
-        .document-item strong {
-            color: #2c3e50;
-            font-size: 1rem;
-        }
-
-        /* Action buttons container */
-        .action-buttons {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 3px solid #f0f0f0;
-            position: relative;
-        }
-
-        .action-buttons::before {
-            content: '⚙️';
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
+        .education-card:hover, .work-card:hover {
             background: white;
-            padding: 0 20px;
-            font-size: 1.5rem;
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
         }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
+        .education-card h4, .work-card h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 8px;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 5px;
+        .education-card p, .work-card p {
+            color: var(--gray-500);
+            font-size: 0.9rem;
+            margin-bottom: 4px;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #3498db 0%, #2ecc71 100%);
-            border-radius: 5px;
+        .education-card .years, .work-card .years {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #eff6ff;
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #2ecc71 0%, #3498db 100%);
+        .quick-actions {
+            background: var(--gray-50);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
+        .quick-actions h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-            .container {
-                padding: 20px;
-            }
-
-            .header {
-                padding: 20px;
-                text-align: center;
-            }
-
-            .header h1 {
-                font-size: 1.8rem;
-            }
-
-            .info-grid {
+        @media (max-width: 1200px) {
+            .main-content {
                 grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .section {
-                padding: 20px;
-            }
-
-            .btn {
-                padding: 10px 20px;
-                margin: 5px;
-                width: 100%;
-            }
-
-            .profile-photo {
-                width: 150px;
-                height: 180px;
-                margin: 0 auto;
-                display: block;
-            }
-
-            .document-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
             }
         }
 
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .section h3 {
-                font-size: 1.2rem;
-            }
-
-            .btn {
-                font-size: 13px;
-            }
-
-            .info-value {
-                font-size: 1rem;
-            }
+        @media (max-width: 768px) {
+            .page-container { padding: 20px 16px; }
+            .back-header { flex-direction: column; align-items: flex-start; }
+            .profile-section { flex-direction: column; }
+            .profile-photo, .profile-initial { width: 140px; height: 170px; }
+            .info-grid { grid-template-columns: 1fr; }
+            .nav-tabs-custom { padding: 0 16px; }
+            .nav-tab { padding: 14px 16px; }
+            .document-grid { grid-template-columns: 1fr; }
         }
 
-        /* Print styles */
-        @media print {
-            body {
-                background: white !important;
-                padding: 0 !important;
-            }
-
-            .container {
-                box-shadow: none !important;
-                margin: 0 !important;
-                max-width: 100% !important;
-                padding: 10px !important;
-            }
-
-            .btn,
-            .action-buttons {
-                display: none !important;
-            }
-
-            .section {
-                break-inside: avoid;
-                box-shadow: none !important;
-                border: 1px solid #ddd !important;
-                margin: 10px 0 !important;
-                padding: 15px !important;
-            }
-
-            .profile-photo {
-                width: 120px !important;
-                height: 150px !important;
-            }
-        }
-
-        /* Animation for loading states */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .section {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        /* Tooltip styles */
-        [title] {
-            position: relative;
-            cursor: help;
-        }
-
-        [title]:hover::after {
-            content: attr(title);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2c3e50;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            white-space: nowrap;
-            z-index: 1000;
-            margin-bottom: 5px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        [title]:hover::before {
-            content: '';
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 5px solid transparent;
-            border-top-color: #2c3e50;
-            margin-bottom: -5px;
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--gray-100); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <!-- Header with Back Button -->
-        <div class="header">
-            <!-- FIXED: Added dashboard: namespace -->
-            <a href="{% url 'dashboard:student_list' %}" class="btn btn-back">
-                ← Back to the Dashboard
+    <div class="page-container">
+        <div class="back-header">
+            <a href="{% url 'dashboard:student_list' %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>Back to List
             </a>
-            <h1 style="margin: 10px 0 0 0;">Student Application Details</h1>
+            <h1 class="page-title">
+                <i class="fas fa-user-graduate"></i>Student Application Details
+            </h1>
         </div>
 
-        <!-- Student Information -->
-        <div class="section">
-            <h3>Student Information</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Student ID</div>
-                    <div class="info-value">{{ student.student_id }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Full Name</div>
-                    <div class="info-value">{{ student.full_name }}</div>
-                </div>
-                <div>
-                    {% if student.photo_data_uri %}
-                    <img src="{{ student.photo_data_uri }}" alt="{{ student.full_name }}" class="profile-photo">
-                    {% elif student.photo_display_url %}
-                    <img src="{{ student.photo_display_url }}" alt="{{ student.full_name }}" class="profile-photo">
-                    {% else %}
-                    <div class="profile-photo bg-secondary d-flex align-items-center justify-content-center text-white"
-                        style="font-size: 4rem;">
-                        {{ student.full_name|first|upper }}
+        <div class="main-content">
+            <div class="left-column">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user"></i>Student Information</h2>
                     </div>
-                    {% endif %}
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Status</div>
-                    <div class="info-value">
-                        <span class="status-badge status-{{ student.status }}">
-                            {{ student.status|upper }}
-                        </span>
+                    <div class="card-body">
+                        <div class="profile-section">
+                            <div class="profile-photo-container">
+                                {% if student.photo_data_uri %}
+                                <img src="{{ student.photo_data_uri }}" alt="{{ student.full_name }}" class="profile-photo">
+                                {% elif student.photo_display_url %}
+                                <img src="{{ student.photo_display_url }}" alt="{{ student.full_name }}" class="profile-photo">
+                                {% else %}
+                                <div class="profile-initial">{{ student.full_name|first|upper }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="profile-info">
+                                <h2 class="profile-name">{{ student.full_name }}</h2>
+                                <div style="margin-bottom: 12px;">
+                                    <span class="status-badge badge-{{ student.status }}">
+                                        <i class="fas fa-circle"></i>{{ student.status|upper }}
+                                    </span>
+                                </div>
+                                <div class="profile-meta">
+                                    <span><i class="fas fa-id-badge"></i>{{ student.student_id }}</span>
+                                    <span><i class="fas fa-envelope"></i>{{ student.email }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="nav-tabs-custom mt-4">
+                            <button class="nav-tab active" onclick="switchTab('personal')">
+                                <i class="fas fa-user"></i>Personal
+                            </button>
+                            <button class="nav-tab" onclick="switchTab('contact')">
+                                <i class="fas fa-map-marker-alt"></i>Contact
+                            </button>
+                            <button class="nav-tab" onclick="switchTab('family')">
+                                <i class="fas fa-users"></i>Family
+                            </button>
+                            <button class="nav-tab" onclick="switchTab('documents')">
+                                <i class="fas fa-file-alt"></i>Documents
+                            </button>
+                            <button class="nav-tab" onclick="switchTab('education')">
+                                <i class="fas fa-graduation-cap"></i>Education
+                            </button>
+                            <button class="nav-tab" onclick="switchTab('work')">
+                                <i class="fas fa-briefcase"></i>Work
+                            </button>
+                        </div>
+
+                        <div id="personal-tab" class="tab-content-custom active">
+                            <h3 class="section-title"><i class="fas fa-id-card"></i>Personal Details</h3>
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-envelope"></i>Email</div>
+                                    <div class="info-value">{{ student.email }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-phone"></i>Phone</div>
+                                    <div class="info-value">{{ student.phone }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-calendar"></i>Date of Birth</div>
+                                    <div class="info-value">{{ student.date_of_birth|date:"F j, Y" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-user-clock"></i>Age</div>
+                                    <div class="info-value">{{ student.age }} years</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-venus-mars"></i>Gender</div>
+                                    <div class="info-value">{{ student.get_gender_display }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-ring"></i>Marital Status</div>
+                                    <div class="info-value">{{ student.get_marital_status_display }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-ruler-vertical"></i>Height</div>
+                                    <div class="info-value">{{ student.height|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-weight"></i>Weight</div>
+                                    <div class="info-value">{{ student.weight|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-eye"></i>Eye - Right</div>
+                                    <div class="info-value">{{ student.eye_lens_right|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-eye"></i>Eye - Left</div>
+                                    <div class="info-value">{{ student.eye_lens_left|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-tint"></i>Blood Group</div>
+                                    <div class="info-value">{{ student.blood_group|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-stethoscope"></i>TB Status</div>
+                                    <div class="info-value">{{ student.tb_status|default:"N/A" }}</div>
+                                </div>
+                            </div>
+
+                            <h3 class="section-title mt-4"><i class="fas fa-passport"></i>Passport & Visa Details</h3>
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-passport"></i>Passport Number</div>
+                                    <div class="info-value">{{ student.passport_no|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-calendar-plus"></i>Passport Issue Date</div>
+                                    <div class="info-value">{{ student.passport_issue_date|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-calendar-minus"></i>Passport Expiry Date</div>
+                                    <div class="info-value">{{ student.passport_expiry_date|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-plane"></i>Past Visa Apply</div>
+                                    <div class="info-value">{{ student.visa_apply_record|default:"No" }}</div>
+                                </div>
+                                <div class="info-card" style="grid-column: 1 / -1;">
+                                    <div class="info-label"><i class="fas fa-file-alt"></i>Visa Details</div>
+                                    <div class="info-value">{{ student.visa_details|default:"N/A" }}</div>
+                                </div>
+                            </div>
+
+                            <h3 class="section-title mt-4"><i class="fas fa-car"></i>Driving License</h3>
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-car"></i>License Type (1)</div>
+                                    <div class="info-value">{{ student.driving_license|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-calendar-check"></i>Pass Year & Month (1)</div>
+                                    <div class="info-value">{{ student.license_pass_year|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-car"></i>License Type (2)</div>
+                                    <div class="info-value">{{ student.license_type_2|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-calendar-check"></i>Pass Year & Month (2)</div>
+                                    <div class="info-value">{{ student.license_pass_year_2|default:"N/A" }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="contact-tab" class="tab-content-custom">
+                            <h3 class="section-title"><i class="fas fa-map-marker-alt"></i>Address Information</h3>
+                            <div class="info-grid">
+                                <div class="info-card" style="grid-column: 1 / -1;">
+                                    <div class="info-label"><i class="fas fa-home"></i>Permanent Address</div>
+                                    <div class="info-value">{{ student.permanent_address }}</div>
+                                </div>
+                                {% if student.present_address %}
+                                <div class="info-card" style="grid-column: 1 / -1;">
+                                    <div class="info-label"><i class="fas fa-map-pin"></i>Present Address</div>
+                                    <div class="info-value">{{ student.present_address }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div id="family-tab" class="tab-content-custom">
+                            <h3 class="section-title"><i class="fas fa-users"></i>Family Information</h3>
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-heart"></i>Spouse Name</div>
+                                    <div class="info-value">{{ student.spouse_name|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-label"><i class="fas fa-phone-alt"></i>Spouse Contact</div>
+                                    <div class="info-value">{{ student.spouse_contact|default:"N/A" }}</div>
+                                </div>
+                                <div class="info-card" style="grid-column: 1 / -1;">
+                                    <div class="info-label"><i class="fas fa-book"></i>Family Records</div>
+                                    <div class="info-value">{{ student.family_records|linebreaks|default:"No records provided." }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="documents-tab" class="tab-content-custom">
+                            <h3 class="section-title"><i class="fas fa-file-alt"></i>Uploaded Documents</h3>
+                            
+                            {% if all_documents %}
+                            <div class="document-grid">
+                                {% if documents_by_type.bio_data %}
+                                <div class="document-card">
+                                    <div class="document-header">
+                                        <div class="document-icon passport"><i class="fas fa-passport"></i></div>
+                                        <div>
+                                            <div class="document-type">Passport</div>
+                                            <div class="document-count">{{ documents_by_type.bio_data|length }} file(s)</div>
+                                        </div>
+                                    </div>
+                                    <div class="document-preview">
+                                        {% for document in documents_by_type.bio_data %}
+                                        <div class="document-item">
+                                            <div class="document-info">
+                                                <i class="fas fa-file-pdf"></i>
+                                                <span>Passport Copy</span>
+                                            </div>
+                                            <div>
+                                                <span class="document-date">{{ document.uploaded_at|date:"M d, Y" }}</span>
+                                                <a href="{{ document.document_file_url }}" target="_blank" class="btn-view">
+                                                    <i class="fas fa-eye"></i>View
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if documents_by_type.id_info %}
+                                <div class="document-card">
+                                    <div class="document-header">
+                                        <div class="document-icon citizenship"><i class="fas fa-id-card"></i></div>
+                                        <div>
+                                            <div class="document-type">Citizenship/Driving</div>
+                                            <div class="document-count">{{ documents_by_type.id_info|length }} file(s)</div>
+                                        </div>
+                                    </div>
+                                    <div class="document-preview">
+                                        {% for document in documents_by_type.id_info %}
+                                        <div class="document-item">
+                                            <div class="document-info">
+                                                <i class="fas fa-file-image"></i>
+                                                <span>ID Document</span>
+                                            </div>
+                                            <div>
+                                                <span class="document-date">{{ document.uploaded_at|date:"M d, Y" }}</span>
+                                                <a href="{{ document.document_file_url }}" target="_blank" class="btn-view">
+                                                    <i class="fas fa-eye"></i>View
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if documents_by_type.educational_doc %}
+                                <div class="document-card">
+                                    <div class="document-header">
+                                        <div class="document-icon education"><i class="fas fa-graduation-cap"></i></div>
+                                        <div>
+                                            <div class="document-type">Education</div>
+                                            <div class="document-count">{{ documents_by_type.educational_doc|length }} file(s)</div>
+                                        </div>
+                                    </div>
+                                    <div class="document-preview">
+                                        {% for document in documents_by_type.educational_doc %}
+                                        <div class="document-item">
+                                            <div class="document-info">
+                                                <i class="fas fa-file-alt"></i>
+                                                <span>Certificate/Transcript</span>
+                                            </div>
+                                            <div>
+                                                <span class="document-date">{{ document.uploaded_at|date:"M d, Y" }}</span>
+                                                <a href="{{ document.document_file_url }}" target="_blank" class="btn-view">
+                                                    <i class="fas fa-eye"></i>View
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if documents_by_type.report %}
+                                <div class="document-card">
+                                    <div class="document-header">
+                                        <div class="document-icon medical"><i class="fas fa-heartbeat"></i></div>
+                                        <div>
+                                            <div class="document-type">Medical Report</div>
+                                            <div class="document-count">{{ documents_by_type.report|length }} file(s)</div>
+                                        </div>
+                                    </div>
+                                    <div class="document-preview">
+                                        {% for document in documents_by_type.report %}
+                                        <div class="document-item">
+                                            <div class="document-info">
+                                                <i class="fas fa-file-medical"></i>
+                                                <span>Medical Report</span>
+                                            </div>
+                                            <div>
+                                                <span class="document-date">{{ document.uploaded_at|date:"M d, Y" }}</span>
+                                                <a href="{{ document.document_file_url }}" target="_blank" class="btn-view">
+                                                    <i class="fas fa-eye"></i>View
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if documents_by_type.other %}
+                                <div class="document-card">
+                                    <div class="document-header">
+                                        <div class="document-icon other"><i class="fas fa-folder-open"></i></div>
+                                        <div>
+                                            <div class="document-type">Other Documents</div>
+                                            <div class="document-count">{{ documents_by_type.other|length }} file(s)</div>
+                                        </div>
+                                    </div>
+                                    <div class="document-preview">
+                                        {% for document in documents_by_type.other %}
+                                        <div class="document-item">
+                                            <div class="document-info">
+                                                <i class="fas fa-file"></i>
+                                                <span>Document</span>
+                                            </div>
+                                            <div>
+                                                <span class="document-date">{{ document.uploaded_at|date:"M d, Y" }}</span>
+                                                <a href="{{ document.document_file_url }}" target="_blank" class="btn-view">
+                                                    <i class="fas fa-eye"></i>View
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <div class="empty-docs">
+                                <i class="fas fa-folder-open"></i>
+                                <p>No documents uploaded yet for this application.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div id="education-tab" class="tab-content-custom">
+                            <h3 class="section-title"><i class="fas fa-graduation-cap"></i>Educational History</h3>
+                            {% if education_history %}
+                            {% for education in education_history %}
+                            <div class="education-card">
+                                <h4>{{ education.pass_level }}</h4>
+                                <p><i class="fas fa-school"></i> {{ education.school_name }}</p>
+                                <p><i class="fas fa-calendar-alt"></i> {{ education.admission_year }}/{{ education.admission_month }} - {{ education.graduation_year }}/{{ education.graduation_month }}</p>
+                                <span class="years"><i class="fas fa-clock"></i> {{ education.enrolled_years }} years</span>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="empty-docs">
+                                <i class="fas fa-graduation-cap"></i>
+                                <p>No education history recorded.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div id="work-tab" class="tab-content-custom">
+                            <h3 class="section-title"><i class="fas fa-briefcase"></i>Work Experience</h3>
+                            {% if work_experience %}
+                            {% for work in work_experience %}
+                            <div class="work-card">
+                                <h4>{{ work.work_type }}</h4>
+                                <p><i class="fas fa-building"></i> {{ work.company_name }}</p>
+                                <p><i class="fas fa-calendar"></i> {{ work.join_date }} - {{ work.resign_date }}</p>
+                                <span class="years"><i class="fas fa-clock"></i> {{ work.working_years }} years</span>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="empty-docs">
+                                <i class="fas fa-briefcase"></i>
+                                <p>No work experience recorded.</p>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">{{ student.email }}</div>
+            </div>
+
+            <div class="right-column">
+                <div class="timeline-card">
+                    <div class="timeline-header">
+                        <i class="fas fa-history" style="color: var(--primary); font-size: 1.3rem;"></i>
+                        <h3>Application Timeline</h3>
+                    </div>
+                    <div class="timeline">
+                        <div class="timeline-item submitted">
+                            <div class="timeline-marker"><i class="fas fa-paper-plane"></i></div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">Application Submitted</div>
+                                <div class="timeline-date"><i class="far fa-calendar"></i>{{ student.created_at|date:"F j, Y" }}</div>
+                            </div>
+                        </div>
+                        {% if student.reviewed_at %}
+                        <div class="timeline-item {% if student.status == 'approved' %}approved{% elif student.status == 'declined' %}declined{% else %}reviewed{% endif %}">
+                            <div class="timeline-marker">
+                                {% if student.status == 'approved' %}
+                                <i class="fas fa-check"></i>
+                                {% elif student.status == 'declined' %}
+                                <i class="fas fa-times"></i>
+                                {% else %}
+                                <i class="fas fa-eye"></i>
+                                {% endif %}
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">
+                                    {% if student.status == 'approved' %}Application Approved{% elif student.status == 'declined' %}Application Declined{% else %}Under Review{% endif %}
+                                </div>
+                                <div class="timeline-date"><i class="far fa-calendar"></i>{{ student.reviewed_at|date:"F j, Y" }}</div>
+                                {% if student.review_notes %}
+                                <div class="timeline-status">{{ student.review_notes }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Phone</div>
-                    <div class="info-value">{{ student.phone }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Date of Birth</div>
-                    <div class="info-value">{{ student.date_of_birth|date:"F j, Y" }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Age</div>
-                    <div class="info-value">{{ student.age }} years</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Type of license (1)</div>
-                    <div class="info-value">{{ student.driving_license|default:"N/A" }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Pass Year & Month (1)</div>
-                    <div class="info-value">{{ student.license_pass_year|default:"N/A" }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Type of license (2)</div>
-                    <div class="info-value">{{ student.license_type_2|default:"N/A" }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Pass Year & Month (2)</div>
-                    <div class="info-value">{{ student.license_pass_year_2|default:"N/A" }}</div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-bolt"></i>Quick Actions</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="action-buttons">
+                            <a href="{% url 'dashboard:generate_student_pdf' student.id %}" target="_blank" class="btn-action btn-danger">
+                                <i class="fas fa-file-pdf"></i>Generate PDF Report
+                            </a>
+                            {% if student.status == 'pending' %}
+                            <a href="{% url 'dashboard:approve_student_page' student.id %}" class="btn-action btn-success">
+                                <i class="fas fa-check-circle"></i>Approve Application
+                            </a>
+                            <a href="{% url 'dashboard:decline_student_page' student.id %}" class="btn-action btn-warning">
+                                <i class="fas fa-times-circle"></i>Decline Application
+                            </a>
+                            {% endif %}
+                            {% if request.user.is_authenticated and request.user.role == 'manager' and student.status == 'approved' %}
+                            <a href="{% url 'guarantee_letter:issue_for_student' student.id %}" target="_blank" class="btn-action btn-success">
+                                <i class="fas fa-file-signature"></i>Issue Guarantee Letter
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'dashboard:student_list' %}" class="btn-action btn-outline">
+                                <i class="fas fa-arrow-left"></i>Back to List
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Contact Information -->
-        <div class="section">
-            <h3>Contact Information</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Permanent Address</div>
-                    <div class="info-value">{{ student.permanent_address }}</div>
-                </div>
-                {% if student.present_address %}
-                <div class="info-item">
-                    <div class="info-label">Present Address</div>
-                    <div class="info-value">{{ student.present_address }}</div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Family Information -->
-        <div class="section">
-            <h3>Family Information</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Spouse Name</div>
-                    <div class="info-value">{{ student.spouse_name|default:"N/A" }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Spouse Contact</div>
-                    <div class="info-value">{{ student.spouse_contact|default:"N/A" }}</div>
-                </div>
-                <div class="info-item" style="grid-column: 1 / -1;">
-                    <div class="info-label">Family Records</div>
-                    <div class="info-value">{{ student.family_records|linebreaks|default:"No records provided." }}</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Passport Information -->
-        {% if student.passport_no %}
-        <div class="section">
-            <h3>Passport Information</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Passport Number</div>
-                    <div class="info-value">{{ student.passport_no }}</div>
-                </div>
-                {% if student.passport_issue_date %}
-                <div class="info-item">
-                    <div class="info-label">Issue Date</div>
-                    <div class="info-value">{{ student.passport_issue_date|date:"F j, Y" }}</div>
-                </div>
-                {% endif %}
-                {% if student.passport_expiry_date %}
-                <div class="info-item">
-                    <div class="info-label">Expiry Date</div>
-                    <div class="info-value">{{ student.passport_expiry_date|date:"F j, Y" }}</div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Educational History -->
-        {% if education_history %}
-        <div class="section">
-            <h3>Educational History</h3>
-            {% for education in education_history %}
-            <div class="document-section">
-                <strong>{{ education.pass_level }}</strong><br>
-                <span>{{ education.school_name }}</span><br>
-                <small>
-                    Admission: {{ education.admission_year }}/{{ education.admission_month }} -
-                    Graduation: {{ education.graduation_year }}/{{ education.graduation_month }} -
-                    Years: {{ education.enrolled_years }}
-                </small>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <!-- Work Experience -->
-        {% if work_experience %}
-        <div class="section">
-            <h3>Work Experience</h3>
-            {% for work in work_experience %}
-            <div class="document-section">
-                <strong>{{ work.work_type }}</strong><br>
-                <span>{{ work.company_name }}</span><br>
-                <small>
-                    Join: {{ work.join_date }} -
-                    Resign: {{ work.resign_date }} -
-                    Years: {{ work.working_years }}
-                </small>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <!-- Documents -->
-        <div class="section">
-            <h3>Uploaded Documents</h3>
-
-            {% if documents_by_type.bio_data %}
-            <div class="document-section">
-                <strong>Passport</strong>
-                {% for document in documents_by_type.bio_data %}
-                <div class="document-item">
-                    <a href="{{ document.document_file_url }}" target="_blank" class="btn btn-view"
-                        style="padding: 5px 10px; font-size: 12px;">
-                        📄 View Passport
-                    </a>
-                    <small>Uploaded: {{ document.uploaded_at|date:"F j, Y" }}</small>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            {% if documents_by_type.id_info %}
-            <div class="document-section">
-                <strong>Citizenship/Driving</strong>
-                {% for document in documents_by_type.id_info %}
-                <div class="document-item">
-                    <a href="{{ document.document_file_url }}" target="_blank" class="btn btn-view"
-                        style="padding: 5px 10px; font-size: 12px;">
-                        📄 View Document
-                    </a>
-                    <small>Uploaded: {{ document.uploaded_at|date:"F j, Y" }}</small>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            {% if documents_by_type.educational_doc %}
-            <div class="document-section">
-                <strong>Graduation/Transcript</strong>
-                {% for document in documents_by_type.educational_doc %}
-                <div class="document-item">
-                    <a href="{{ document.document_file_url }}" target="_blank" class="btn btn-view"
-                        style="padding: 5px 10px; font-size: 12px;">
-                        📄 View Document
-                    </a>
-                    <small>Uploaded: {{ document.uploaded_at|date:"F j, Y" }}</small>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            {% if documents_by_type.report %}
-            <div class="document-section">
-                <strong>Medical Report</strong>
-                {% for document in documents_by_type.report %}
-                <div class="document-item">
-                    <a href="{{ document.document_file_url }}" target="_blank" class="btn btn-view"
-                        style="padding: 5px 10px; font-size: 12px;">
-                        📄 View Document
-                    </a>
-                    <small>Uploaded: {{ document.uploaded_at|date:"F j, Y" }}</small>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            {% if documents_by_type.other %}
-            <div class="document-section">
-                <strong>Other</strong>
-                {% for document in documents_by_type.other %}
-                <div class="document-item">
-                    <a href="{{ document.document_file_url }}" target="_blank" class="btn btn-view"
-                        style="padding: 5px 10px; font-size: 12px;">
-                        📄 View Document
-                    </a>
-                    <small>Uploaded: {{ document.uploaded_at|date:"F j, Y" }}</small>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            {% if not all_documents %}
-            <p>No documents uploaded yet.</p>
-            {% endif %}
-        </div>
-
-        <!-- Review Information -->
-        {% if student.reviewed_at %}
-        <div class="section">
-            <h3>Review Information</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Reviewed On</div>
-                    <div class="info-value">{{ student.reviewed_at|date:"F j, Y" }}</div>
-                </div>
-                {% if student.review_notes %}
-                <div class="info-item" style="grid-column: 1 / -1;">
-                    <div class="info-label">Review Notes</div>
-                    <div class="info-value">{{ student.review_notes }}</div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Action Buttons -->
-        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee;">
-            <!-- FIXED: Added dashboard: namespace -->
-            <a href="{% url 'dashboard:generate_student_pdf' student.id %}" target="_blank" class="btn btn-pdf">
-                📄 Generate PDF Report
-            </a>
-
-            {% if student.status == 'pending' %}
-            <!-- FIXED: Changed to use approval pages instead of direct action URLs -->
-            <a href="{% url 'dashboard:approve_student_page' student.id %}" class="btn btn-approve">
-                ✅ Approve Application
-            </a>
-            <!-- FIXED: Changed to use decline page instead of direct action URL -->
-            <a href="{% url 'dashboard:decline_student_page' student.id %}" class="btn btn-decline">
-                ❌ Decline Application
-            </a>
-            {% endif %}
         </div>
     </div>
-</body>
 
+    <script>
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content-custom').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.closest('.nav-tab').classList.add('active');
+        }
+    </script>
+</body>
 </html>

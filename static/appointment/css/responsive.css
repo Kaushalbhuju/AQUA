@@ -66,6 +66,89 @@
     }
 }
 
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+    
+    .col-xxl-8 {
+        flex: 0 0 auto;
+        width: 66.666667%;
+    }
+    
+    .col-xxl-4 {
+        flex: 0 0 auto;
+        width: 33.333333%;
+    }
+}
+
+@media (min-width: 768px) {
+    .row {
+        margin-left: -1rem;
+        margin-right: -1rem;
+    }
+
+    .row > * {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .g-4 {
+        gap: 1.5rem;
+    }
+
+    .g-3 {
+        gap: 1rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .page-header {
+        padding: 3rem 1rem 2rem;
+    }
+    
+    .booking-form-wrapper .card-body {
+        padding: 2rem 2.5rem;
+    }
+    
+    .sidebar-wrapper .card-body {
+        padding: 1.5rem;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 1.5rem;
+    }
+    
+    .form-row > div {
+        flex: 1;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1100px;
+    }
+    
+    .booking-form-wrapper .card-body {
+        padding: 2.5rem 3rem;
+    }
+    
+    .sidebar-wrapper {
+        max-width: 360px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
 @media (max-width: 767.98px) {
     .row {
         margin-left: -0.5rem;
@@ -140,45 +223,16 @@
     .order-2 {
         order: unset !important;
     }
-}
-
-@media (min-width: 768px) {
-    .row {
-        margin-left: -1rem;
-        margin-right: -1rem;
-    }
-
-    .row > * {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    .g-4 {
-        gap: 1.5rem;
-    }
-
-    .g-3 {
-        gap: 1rem;
-    }
-}
-
-@media (min-width: 992px) {
+    
     .page-header {
-        padding: 3rem 1rem 2rem;
+        padding: 2rem 1rem 1.5rem;
     }
-}
 
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+    .page-header h1,
+    .page-header .display-5 {
+        font-size: 1.75rem;
     }
-}
-
-@media (max-width: 767.98px) {
+    
     .table-responsive {
         margin-bottom: 0;
     }

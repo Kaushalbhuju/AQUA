@@ -184,7 +184,7 @@
             <div>
                 <span class="badge bg-secondary">{{ request.user.get_role_display|default:"Administrator" }}</span>
                 {% if request.user.is_authenticated and request.user.role == 'manager' %}
-                <a href="{% url 'ssw_working_visa' %}" class="btn btn-outline-danger btn-sm ms-2">
+                <a href="{% url 'manager:ssw_working_visa' %}" class="btn btn-outline-danger btn-sm ms-2">
                     <i class="bi bi-box-arrow-right"></i> Back to Dashboard
                 </a>
                 {% endif %}

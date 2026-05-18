@@ -202,8 +202,10 @@ def scan_book(request, book_id):
 @manager_or_staff_required
 def assignment_list(request):
     assignments = BookAssignment.objects.all()
+    all_books = Book.objects.all().order_by('name')
     context = {
         'assignments': assignments,
+        'all_books': all_books,
         'page_title': 'All Assignments',
     }
     return render(request, 'books/assignment_list.html', context)
@@ -214,6 +216,8 @@ def update_assignment(request, assignment_id):
     assignment = get_object_or_404(BookAssignment, pk=assignment_id)
     
     if request.method == 'POST':
+        old_book_name = assignment.book.name
+        
         # Update paid status
         is_paid = request.POST.get('is_paid') == 'on'
         assignment.is_paid = is_paid
@@ -223,12 +227,23 @@ def update_assignment(request, assignment_id):
         if recipient_name:
             assignment.recipient_name = recipient_name.strip()
         
+        # Update book (if changed)
+        new_book_id = request.POST.get('book_id')
+        if new_book_id and new_book_id != str(assignment.book.id):
+            new_book = get_object_or_404(Book, pk=new_book_id)
+            assignment.book = new_book
+        
         # Update notes
         notes = request.POST.get('notes', '').strip()
         assignment.notes = notes if notes else None
         
         assignment.save()
-        messages.success(request, f'Assignment updated successfully.')
+        
+        new_book_name = assignment.book.name
+        if old_book_name != new_book_name:
+            messages.success(request, f'Assignment updated. Book changed from "{old_book_name}" to "{new_book_name}".')
+        else:
+            messages.success(request, f'Assignment updated successfully.')
         
     return redirect('books:assignment_list')
     

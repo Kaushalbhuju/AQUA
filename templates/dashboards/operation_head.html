@@ -105,10 +105,11 @@
         <h1 class="display-5 fw-bold">Welcome, {{ user.username }}!</h1>
         <p class="lead">Operation Head Dashboard – full access to all modules.</p>
         <div class="btn-group">
-            <a href="{% url 'ssw_working_visa' %}" class="btn btn-outline-primary btn-xxl">SSW &amp; Working Visa</a>
-            <a href="{% url 'student_visa' %}" class="btn btn-outline-success btn-xxl">Student Visa</a>
-            <a href="{% url 'staff_list' %}" class="btn btn-outline-warning btn-xxl">Staff Registration</a>
+            <a href="{% url 'manager:ssw_working_visa' %}" class="btn btn-outline-primary btn-xxl">SSW &amp; Working Visa</a>
+            <a href="{% url 'manager:student_visa' %}" class="btn btn-outline-success btn-xxl">Student Visa</a>
+            <a href="{% url 'manager:staff_list' %}" class="btn btn-outline-warning btn-xxl">Staff Registration</a>
             <a href="{% url 'dashboard' %}" class="btn btn-outline-info btn-xxl">Appointments</a>
+            <a href="{% url 'manager:scan_documents' %}" class="btn btn-outline-secondary btn-xxl">📄 Scan Documents</a>
             <a href="{% url 'books:book_list' %}" class="btn btn-outline-dark btn-xxl">📚 Book Records</a>
         </div>
     </div>

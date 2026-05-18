@@ -918,3 +918,131 @@ def ssw_working_visa(request):
 
 def student_visa(request):
     return render(request, 'canstud/manager_student.html')
+
+
+# Scan Documents Feature
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import models
+from .models import ScannedDocument
+
+def is_manager(user):
+    return user.is_authenticated and user.role in ['manager', 'admin', 'superuser', 'staff', 'operation_head']
+
+@login_required
+@user_passes_test(is_manager)
+def scan_documents(request):
+    documents = ScannedDocument.objects.all()
+    
+    # Filter by document type
+    doc_type_filter = request.GET.get('document_type')
+    if doc_type_filter:
+        documents = documents.filter(document_type=doc_type_filter)
+    
+    # Search by name or candidate
+    search_query = request.GET.get('search')
+    if search_query:
+        documents = documents.filter(
+            models.Q(document_name__icontains=search_query) |
+            models.Q(candidate_name__icontains=search_query) |
+            models.Q(candidate_id__icontains=search_query)
+        )
+    
+    # Handle document upload
+    if request.method == 'POST' and 'document_name' in request.POST:
+        document_name = request.POST.get('document_name')
+        document_type = request.POST.get('document_type')
+        candidate_name = request.POST.get('candidate_name')
+        candidate_id = request.POST.get('candidate_id')
+        notes = request.POST.get('notes')
+        document_file = request.FILES.get('document_file')
+        
+        if document_name and document_file:
+            scanned_doc = ScannedDocument.objects.create(
+                document_name=document_name,
+                document_type=document_type,
+                candidate_name=candidate_name,
+                candidate_id=candidate_id,
+                notes=notes,
+                document_file=document_file,
+                uploaded_by=request.user
+            )
+            messages.success(request, f'Document "{document_name}" uploaded successfully!')
+            return redirect('manager:scan_documents')
+        else:
+            messages.error(request, 'Please provide document name and file.')
+    
+    # Handle image merge
+    if request.method == 'POST' and 'merge_images' in request.POST:
+        from PIL import Image
+        from io import BytesIO
+        import uuid
+        
+        image1 = request.FILES.get('merge_image1')
+        image2 = request.FILES.get('merge_image2')
+        merge_mode = request.POST.get('merge_mode', 'vertical')  # vertical or horizontal
+        
+        if image1 and image2:
+            try:
+                img1 = Image.open(image1)
+                img2 = Image.open(image2)
+                
+                # Convert to RGB if needed
+                if img1.mode in ('RGBA', 'P'):
+                    img1 = img1.convert('RGB')
+                if img2.mode in ('RGBA', 'P'):
+                    img2 = img2.convert('RGB')
+                
+                # A4 size at 300 DPI
+                a4_width = 2480
+                a4_height = 3508
+                
+                # Resize images to A4
+                img1 = img1.resize((a4_width, a4_height), Image.Resampling.LANCZOS)
+                img2 = img2.resize((a4_width, a4_height), Image.Resampling.LANCZOS)
+                
+                if merge_mode == 'horizontal':
+                    # Side by side
+                    merged_width = a4_width * 2
+                    merged_height = a4_height
+                    merged = Image.new('RGB', (merged_width, merged_height), (255, 255, 255))
+                    merged.paste(img1, (0, 0))
+                    merged.paste(img2, (a4_width, 0))
+                else:
+                    # Vertical (one above other)
+                    merged_width = a4_width
+                    merged_height = a4_height * 2
+                    merged = Image.new('RGB', (merged_width, merged_height), (255, 255, 255))
+                    merged.paste(img1, (0, 0))
+                    merged.paste(img2, (0, a4_height))
+                
+                # Save to BytesIO
+                output = BytesIO()
+                merged.save(output, format='PDF', resolution=300.0)
+                output.seek(0)
+                
+                # Create downloadable response
+                from django.http import FileResponse
+                response = FileResponse(output, content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="merged_document_{uuid.uuid4().hex[:8]}.pdf"'
+                return response
+                
+            except Exception as e:
+                messages.error(request, f'Error merging images: {str(e)}')
+        else:
+            messages.error(request, 'Please select both images to merge.')
+    
+    context = {
+        'documents': documents,
+        'page_title': 'Scan Documents',
+    }
+    return render(request, 'canstud/scan_documents.html', context)
+
+
+@login_required
+@user_passes_test(is_manager)
+def delete_scanned_document(request, doc_id):
+    document = get_object_or_404(ScannedDocument, pk=doc_id)
+    doc_name = document.document_name
+    document.delete()
+    messages.success(request, f'Document "{doc_name}" deleted successfully.')
+    return redirect('manager:scan_documents')

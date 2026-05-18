@@ -17,6 +17,8 @@ import csv
 
 from .models import Appointment, AppointmentSlot
 from .forms import AppointmentForm, DateFilterForm, AppointmentSlotForm
+from .emails import AppointmentEmailService
+
 
 # ================ UTILITY FUNCTIONS ================
 
@@ -52,6 +54,9 @@ class AppointmentCreateView(CreateView):
         if slot_id:
             form.instance.appointment_slot_id = slot_id
         
+        # Mark that view will send email (prevents signal double-send)
+        form.instance._booking_email_sent = True
+        
         # Save the form to get the appointment object
         self.object = form.save()
         
@@ -61,11 +66,27 @@ class AppointmentCreateView(CreateView):
             slot.booked_count = min(slot.booked_count + 1, slot.max_capacity)
             slot.save()
         
+        # Send booking confirmation email from the view
+        # With console backend, this prints to terminal for testing
+        # With SMTP backend, this sends real email
+        email_sent = AppointmentEmailService.send_booking_confirmation(
+            self.object, request=self.request
+        )
+        
+        # Provide user feedback if email failed
+        if not email_sent:
+            messages.warning(
+                self.request,
+                "Appointment booked, but confirmation email could not be sent. "
+                "Please save your confirmation code!"
+            )
+        
         # Store the appointment ID in session for confirmation page
         self.request.session['last_appointment_id'] = self.object.id
         
         # Don't use messages here as we redirect to confirmation page
         return redirect(reverse('appointment_confirmation'))
+
 
 class AppointmentSlotListView(ListView):
     """View for displaying available appointment slots"""
@@ -287,15 +308,12 @@ def dashboard(request):
     
     # Average appointments per day (handle empty database)
     try:
-        # Check if there are any appointments
         earliest_appointment = Appointment.objects.earliest('created_at')
         days_count = (today - earliest_appointment.created_at.date()).days + 1
         avg_daily_appointments = round(total_appointments / max(days_count, 1), 1)
     except Appointment.DoesNotExist:
-        # No appointments yet
         avg_daily_appointments = 0
-    except Exception as e:
-        # Handle any other errors
+    except Exception:
         avg_daily_appointments = 0
     
     # ================ CONTEXT ================
@@ -325,7 +343,7 @@ def dashboard(request):
         'purpose_distribution': purpose_distribution,
         'top_companies': top_companies,
         
-        # Chart data - handle empty data
+        # Chart data
         'purpose_labels': json.dumps([item['appointment_aim'] for item in purpose_distribution]),
         'purpose_data': json.dumps([item['count'] for item in purpose_distribution]),
         'trend_dates': json.dumps(trend_dates),
@@ -457,9 +475,22 @@ def confirm_appointment(request, appointment_id):
         if appointment.is_confirmed:
             messages.warning(request, f"Appointment #{appointment_id} is already confirmed!")
         else:
+            # Mark that view will send email (prevents signal double-send)
+            appointment._confirmation_email_sent = True
+            
             appointment.is_confirmed = True
             appointment.save()
-            messages.success(request, f"Appointment #{appointment_id} confirmed successfully!")
+            
+            # Send admin confirmation email to user
+            email_sent = AppointmentEmailService.send_admin_confirmation(
+                appointment, request=request
+            )
+            
+            if email_sent:
+                messages.success(request, f"Appointment #{appointment_id} confirmed and email sent!")
+            else:
+                messages.success(request, f"Appointment #{appointment_id} confirmed successfully!")
+                messages.warning(request, "Could not send confirmation email to user.")
             
     except Appointment.DoesNotExist:
         messages.error(request, f"Appointment #{appointment_id} not found!")
@@ -795,9 +826,22 @@ def confirm_appointment_form(request):
         if appointment.is_confirmed:
             messages.warning(request, f"Appointment #{appointment_id} is already confirmed!")
         else:
+            # Mark that view will send email (prevents signal double-send)
+            appointment._confirmation_email_sent = True
+            
             appointment.is_confirmed = True
             appointment.save()
-            messages.success(request, f"Appointment #{appointment_id} confirmed successfully!")
+            
+            # Send admin confirmation email to user
+            email_sent = AppointmentEmailService.send_admin_confirmation(
+                appointment, request=request
+            )
+            
+            if email_sent:
+                messages.success(request, f"Appointment #{appointment_id} confirmed and email sent!")
+            else:
+                messages.success(request, f"Appointment #{appointment_id} confirmed successfully!")
+                messages.warning(request, "Could not send confirmation email to user.")
             
     except Appointment.DoesNotExist:
         messages.error(request, f"Appointment #{appointment_id} not found!")

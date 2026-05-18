@@ -10,12 +10,13 @@
             <!-- Success Card -->
             <div class="card border-success shadow-lg">
                 <div class="card-header bg-success text-white text-center py-4">
+
                     <div class="display-1 mb-3">
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <h1 class="card-title mb-0">Appointment Confirmed!</h1>
                 </div>
-                
+
                 <div class="card-body p-5">
                     {% if appointment %}
                     <!-- Confirmation Details -->
@@ -23,7 +24,7 @@
                         <h3 class="text-success mb-3">Your appointment has been successfully scheduled</h3>
                         <p class="lead text-muted">Please save your confirmation details below</p>
                     </div>
-                    
+
                     <!-- Confirmation Card -->
                     <div class="card border-primary mb-4">
                         <div class="card-header bg-light">
@@ -33,7 +34,13 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <h6 class="text-muted">Confirmation Code</h6>
-                                    <h2 class="text-primary fw-bold">{{ appointment.confirmation_code }}</h2>
+                                    <div class="d-flex align-items-center">
+                                        <h2 class="text-primary fw-bold mb-0 me-2">{{ appointment.confirmation_code }}</h2>
+                                        <button onclick="copyConfirmationCode()" class="btn btn-sm btn-outline-primary"
+                                            title="Copy to clipboard">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-md-6 text-md-end">
                                     <h6 class="text-muted">Booking Date</h6>
@@ -43,13 +50,123 @@
                             </div>
                         </div>
                     </div>
-                    
+
+                    <!-- Print-only document -->
+                    <div id="print-confirmation" class="d-none">
+                        <div style="padding: 24px;">
+                            <div style="border: 2px solid #0d6efd; border-radius: 12px; padding: 18px;">
+                                <div style="text-align:center; margin-bottom: 10px;">
+                                    <div class="print-huge">Appointment Confirmation</div>
+                                    <div class="print-subtitle">Official booking details</div>
+                                </div>
+
+                                <div class="print-grid">
+                                    <div class="print-box">
+                                        <div class="print-section-title">Booking</div>
+                                        <div class="print-kv">
+                                            <div class="print-k">Date</div>
+                                            <div class="print-v">{{ appointment.date|date:"l, F j, Y" }}</div>
+                                        </div>
+                                        <div class="print-kv" style="margin-top:8px;">
+                                            <div class="print-k">Time</div>
+                                            <div class="print-v">{{ appointment.time|time:"g:i A" }}</div>
+                                        </div>
+                                        {% if slot_duration %}
+                                        <div class="print-kv" style="margin-top:8px;">
+                                            <div class="print-k">Duration</div>
+                                            <div class="print-v">{{ slot_duration }} minutes</div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="print-box">
+                                        <div class="print-section-title">Confirmation Code</div>
+                                        <div style="text-align:center; padding-top: 6px;">
+                                            <div class="print-huge" style="font-size: 26px; color:#0d6efd;">{{ appointment.confirmation_code }}</div>
+                                            <div class="print-note">Use this code for reference</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="print-section-title">Candidate Information</div>
+                                <div class="print-box" style="margin-bottom: 14px;">
+                                    <div class="print-kv">
+                                        <div class="print-k">Name</div>
+                                        <div class="print-v">{{ appointment.name }}</div>
+                                    </div>
+                                    <div class="print-kv" style="margin-top:10px;">
+                                        <div class="print-k">Email</div>
+                                        <div class="print-v">{{ appointment.email }}</div>
+                                    </div>
+                                    {% if appointment.phone %}
+                                    <div class="print-kv" style="margin-top:10px;">
+                                        <div class="print-k">Phone</div>
+                                        <div class="print-v">{{ appointment.phone }}</div>
+                                    </div>
+                                    {% endif %}
+                                    {% if appointment.company_name %}
+                                    <div class="print-kv" style="margin-top:10px;">
+                                        <div class="print-k">Company</div>
+                                        <div class="print-v">{{ appointment.company_name }}</div>
+                                    </div>
+                                    {% endif %}
+                                    {% if appointment.position %}
+                                    <div class="print-kv" style="margin-top:10px;">
+                                        <div class="print-k">Position</div>
+                                        <div class="print-v">{{ appointment.position }}</div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="print-section-title">Purpose & Status</div>
+                                <div class="print-box" style="margin-bottom: 14px;">
+                                    <div class="print-kv">
+                                        <div class="print-k">Purpose</div>
+                                        <div class="print-v">{{ appointment.get_appointment_aim_display }}</div>
+                                    </div>
+                                    <div class="print-kv" style="margin-top:10px;">
+                                        <div class="print-k">Status</div>
+                                        <div class="print-v">{% if appointment.is_confirmed %}Confirmed{% else %}Pending{% endif %}</div>
+                                    </div>
+                                    {% if appointment.address %}
+                                    <div class="print-kv" style="margin-top:10px;">
+                                        <div class="print-k">Address</div>
+                                        <div class="print-v">{{ appointment.address|linebreaksbr }}</div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                {% if appointment.message %}
+                                <div class="print-section-title">Message</div>
+                                <div class="print-box" style="margin-bottom: 14px;">
+                                    <div style="font-size: 14px; font-weight: 600; color:#212529;">{{ appointment.message|linebreaks }}</div>
+                                </div>
+                                {% endif %}
+
+                                <div class="print-section-title">Next Steps</div>
+                                <div class="print-box">
+                                    <div style="font-size: 14px; font-weight: 700; margin-bottom: 6px;">Please note:</div>
+                                    <ul style="margin:0; padding-left: 18px; line-height: 1.6;">
+                                        <li>You will receive a confirmation email shortly</li>
+                                        <li>Arrive 10 minutes before your scheduled time</li>
+                                        <li>Bring a valid ID and this confirmation</li>
+                                    </ul>
+                                </div>
+
+                                <div class="print-note" style="text-align:center; margin-top: 14px;">
+                                    Need help? +01-4519666 • ssw.edu.academy@gmail.com
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <!-- Appointment Details -->
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <div class="card h-100">
                                 <div class="card-header">
-                                    <h6 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Appointment Time</h6>
+                        <h6 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Appointment Time</h6>
                                 </div>
                                 <div class="card-body text-center">
                                     <div class="display-4 text-primary mb-2">
@@ -57,11 +174,13 @@
                                     </div>
                                     <h3 class="fw-bold">{{ appointment.date|date:"l, F j, Y" }}</h3>
                                     <h2 class="text-success">{{ appointment.time|time:"g:i A" }}</h2>
+                                    {% if slot_duration %}
                                     <p class="text-muted mb-0">Duration: {{ slot_duration }} minutes</p>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-6 mb-4">
                             <div class="card h-100">
                                 <div class="card-header">
@@ -77,20 +196,24 @@
                                             <td><strong>Email:</strong></td>
                                             <td>{{ appointment.email }}</td>
                                         </tr>
+                                        {% if appointment.phone %}
                                         <tr>
                                             <td><strong>Phone:</strong></td>
                                             <td>{{ appointment.phone }}</td>
                                         </tr>
+                                        {% endif %}
+                                        {% if appointment.company_name %}
                                         <tr>
                                             <td><strong>Company:</strong></td>
                                             <td>{{ appointment.company_name }}</td>
                                         </tr>
+                                        {% endif %}
                                     </table>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Additional Information -->
                     <div class="card mb-4">
                         <div class="card-header">
@@ -99,19 +222,27 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-6">
+                                    {% if appointment.get_appointment_aim_display %}
                                     <p><strong>Purpose:</strong> {{ appointment.get_appointment_aim_display }}</p>
+                                    {% endif %}
+                                    {% if appointment.position %}
                                     <p><strong>Position:</strong> {{ appointment.position }}</p>
+                                    {% endif %}
                                 </div>
                                 <div class="col-md-6">
-                                    <p><strong>Status:</strong> 
-                                        <span class="badge {% if appointment.is_confirmed %}bg-success{% else %}bg-warning{% endif %}">
+                                    <p><strong>Status:</strong>
+                                        <span
+                                            class="badge {% if appointment.is_confirmed %}bg-success{% else %}bg-warning{% endif %}">
                                             {% if appointment.is_confirmed %}Confirmed{% else %}Pending Confirmation{% endif %}
+
                                         </span>
                                     </p>
+                                    {% if appointment.address %}
                                     <p><strong>Address:</strong> {{ appointment.address|linebreaks }}</p>
+                                    {% endif %}
                                 </div>
                             </div>
-                            
+
                             {% if appointment.message %}
                             <div class="mt-3">
                                 <strong>Your Message:</strong>
@@ -120,7 +251,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <!-- Next Steps -->
                     <div class="alert alert-info">
                         <h5><i class="fas fa-list-check me-2"></i>Next Steps</h5>
@@ -131,9 +262,9 @@
                             <li>Bring a valid ID and this confirmation</li>
                         </ul>
                     </div>
-                    
+
                     <!-- Action Buttons -->
-                    <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-5">
+                    <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-5 no-print">
                         <a href="{% url 'available_slots' %}" class="btn btn-primary btn-lg px-5">
                             <i class="fas fa-calendar-plus me-2"></i>Book Another
                         </a>
@@ -144,7 +275,7 @@
                             <i class="fas fa-home me-2"></i>Home
                         </a>
                     </div>
-                    
+
                     {% else %}
                     <!-- No Appointment Found -->
                     <div class="text-center py-5">
@@ -164,35 +295,125 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <!-- Footer Note -->
-                <div class="card-footer bg-light text-center py-3">
+                <div class="card-footer bg-light text-center py-3 no-print">
                     <small class="text-muted">
-                        <i class="fas fa-phone-alt me-1"></i> Need help? Call us at +1 (555) 123-4567 or 
-                        <a href="mailto:support@appointments.com">email support</a>
+                        <i class="fas fa-phone-alt me-1"></i> Need help? Call us at +01-4519666 or
+                        <a href="mailto:ssw.edu.academy@gmail.com">Email Us</a>
                     </small>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        /* Hide everything by default */
+        body * {
+            visibility: hidden !important;
+        }
+
+        /* Show only the print document */
+        #print-confirmation, #print-confirmation * {
+            visibility: visible !important;
+        }
+
+        /* Prevent page header/footer noise */
+        .no-print {
+            display: none !important;
+        }
+
+        /* Make the print area take full width */
+        #print-confirmation {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+
+        /* Print-friendly styling */
+        .print-title {
+            font-weight: 800;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .print-subtitle {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 18px;
+        }
+
+        .print-section-title {
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #495057;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 6px;
+            margin: 16px 0 10px;
+        }
+
+        .print-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .print-box {
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .print-kv {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 8px 12px;
+            align-items: baseline;
+        }
+
+        .print-k {
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        .print-v {
+            font-size: 14px;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .print-huge {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0d6efd;
+            letter-spacing: 1px;
+        }
+
+        .print-note {
+            margin-top: 14px;
+            font-size: 13px;
+            color: #212529;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block extra_js %}
 <script>
-// Auto-print option (optional)
-// setTimeout(function() {
-//     if (confirm('Would you like to print your confirmation?')) {
-//         window.print();
-//     }
-// }, 2000);
-
-// Copy confirmation code to clipboard
-function copyConfirmationCode() {
-    const code = '{{ appointment.confirmation_code }}';
-    navigator.clipboard.writeText(code).then(() => {
-        alert('Confirmation code copied to clipboard!');
-    });
-}
+    function copyConfirmationCode() {
+        const code = '{{ appointment.confirmation_code|escapejs }}';
+        navigator.clipboard.writeText(code).then(function () {
+            alert('Confirmation code copied to clipboard!');
+        }).catch(function (err) {
+            console.error('Could not copy text: ', err);
+        });
+    }
 </script>
-{% endblock %}
 {% endblock %}

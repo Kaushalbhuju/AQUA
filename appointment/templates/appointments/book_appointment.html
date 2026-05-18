@@ -25,6 +25,28 @@
     .help-card-header {
         background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     }
+    
+    @media (min-width: 992px) {
+        .booking-form-wrapper {
+            max-width: 100%;
+        }
+        
+        .sidebar-wrapper {
+            max-width: 380px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+    
+    @media (min-width: 1400px) {
+        .booking-form-wrapper {
+            max-width: 800px;
+        }
+        
+        .sidebar-wrapper {
+            max-width: 350px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -37,9 +59,9 @@
     <p class="text-secondary">Select your preferred date and time, then fill in your details.</p>
 </div>
 
-<div class="row g-4">
-    <div class="col-lg-8">
-        <div class="card">
+<div class="row g-4 justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="card booking-form-wrapper">
             <div class="card-header py-3">
                 <h5 class="mb-0"><i class="fas fa-user-edit me-2" style="color: #e9394b;"></i>Appointment Details</h5>
             </div>
@@ -168,7 +190,7 @@
                         <div class="form-check mb-4">
                             <input class="form-check-input" type="checkbox" id="terms" required>
                             <label class="form-check-label" for="terms">
-                                I agree to the <a href="#" class="text-decoration-none" style="color: #e9394b;">terms and conditions</a> 
+                                I agree to the <a href="#" class="text-decoration-none" style="color: #e9394b;" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a> 
                                 and confirm that all information provided is accurate.
                             </label>
                         </div>
@@ -187,7 +209,8 @@
         </div>
     </div>
     
-    <div class="col-lg-4">
+    <div class="col-lg-4 col-xl-4">
+        <div class="card mb-4 sidebar-wrapper">
         <div class="card mb-4">
             <div class="card-header py-3" style="background: linear-gradient(135deg, #fef2f4 0%, #fce7e9 100%); border-color: #fecdd3;">
                 <h5 class="mb-0"><i class="fas fa-clock me-2" style="color: #e9394b;"></i>Selected Time Slot</h5>
@@ -257,6 +280,40 @@
                     </h6>
                     <p class="text-secondary mb-0">Mon-Fri: 9:00 AM - 6:00 PM</p>
                 </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <h5 class="modal-title text-white" id="termsModalLabel">
+                    <i class="fas fa-file-contract me-2"></i>Terms and Conditions
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="font-size: 0.95rem; line-height: 1.8;">
+                <ol class="ps-3">
+                    <li class="mb-3"><strong>Accuracy of Information</strong><br>The applicant must provide accurate and complete information while filling out the appointment form. Any false or misleading information may result in cancellation of the appointment.</li>
+                    <li class="mb-3"><strong>Appointment Confirmation</strong><br>Submission of the form does not guarantee confirmation. The academy will confirm the appointment via phone, email, or SMS.</li>
+                    <li class="mb-3"><strong>Punctuality</strong><br>Applicants are requested to arrive at least 10-15 minutes before the scheduled appointment time. Late arrival may result in rescheduling or cancellation.</li>
+                    <li class="mb-3"><strong>Rescheduling and Cancellation</strong><br>Appointments must be rescheduled or canceled at least 24 hours in advance.<br>The academy reserves the right to reschedule appointments due to unforeseen circumstances.</li>
+                    <li class="mb-3"><strong>Code of Conduct</strong><br>Applicants are expected to maintain respectful behavior within the academy premises. Misconduct may lead to denial of services.</li>
+                    <li class="mb-3"><strong>Document Requirement</strong><br>Applicants must bring all necessary documents (academic certificates, identification, etc.) at the time of the appointment.</li>
+                    <li class="mb-3"><strong>Privacy Policy</strong><br>Personal information provided will be kept confidential and used only for appointment and academic purposes, in accordance with applicable data protection regulations.</li>
+                    <li class="mb-3"><strong>Health and Safety</strong><br>Applicants must follow all safety and health guidelines set by the academy.</li>
+                    <li class="mb-3"><strong>Liability Disclaimer</strong><br>The academy shall not be responsible for any loss, damage, or injury occurring during the visit, except where required by law.</li>
+                    <li class="mb-3"><strong>Changes to Terms</strong><br>Aqua Education and Training Academy reserves the right to update or modify these terms and conditions at any time without prior notice.</li>
+                    <li class="mb-3"><strong>Agreement</strong><br>By submitting the appointment form, the applicant agrees to all the above terms and conditions.</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="document.getElementById('terms').checked = true;">
+                    <i class="fas fa-check me-2"></i>I Accept
+                </button>
             </div>
         </div>
     </div>

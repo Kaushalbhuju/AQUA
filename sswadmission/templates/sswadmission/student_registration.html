@@ -1,7 +1,7 @@
 {% extends 'sswadmission/base.html' %}
 {% load static %}
 
-{% block title %}Register New Student - Student Admission System{% endblock %}
+{% block title %}Register New Student - Aqua Education{% endblock %}
 
 {% block page_title %}Register New Student{% endblock %}
 
@@ -11,23 +11,41 @@
         <i class="bi bi-arrow-left"></i> Back to Students
     </a>
     <button type="button" onclick="window.location.reload()" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-clockwise"></i> Reset Form
+        <i class="bi bi-arrow-clockwise"></i> Reset
     </button>
 </div>
 {% endblock %}
 
 {% block content %}
 <div class="row">
-    <div class="col-lg-8 mx-auto">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-person-plus"></i> Student Registration Form</h5>
+    <div class="col-lg-10 mx-auto">
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-gradient text-white py-4" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="bg-white bg-opacity-25 rounded-circle p-3">
+                            <i class="bi bi-person-plus-fill fs-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="mb-1 fw-bold">Student Registration</h4>
+                        <p class="mb-0 opacity-75 small">Complete all required information to register a new student</p>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <!-- Student Selection (optional) -->
+            <div class="card-body p-4">
+                {% if selectable_students %}
+                <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <div>
+                        <strong>Tip:</strong> Select an existing student to prefill the form, then complete missing information.
+                    </div>
+                </div>
                 <div class="mb-4">
-                    <label for="selectedStudent" class="form-label">Select Student (optional)</label>
-                    <select id="selectedStudent" class="form-control" onchange="onStudentSelectChange(this.value)">
+                    <label for="selectedStudent" class="form-label fw-semibold">
+                        <i class="bi bi-people me-1"></i> Select Existing Student (Optional)
+                    </label>
+                    <select id="selectedStudent" class="form-select" onchange="onStudentSelectChange(this.value)">
                         <option value="">-- New student (blank form) --</option>
                         {% for s in selectable_students %}
                             <option value="{{ s.id }}" {% if selected_student_id == s.id|stringformat:"s" %}selected{% endif %}>
@@ -35,254 +53,300 @@
                             </option>
                         {% endfor %}
                     </select>
-                    <small class="text-muted d-block mt-1">
-                        Pick an existing student to prefill the form, then complete missing information and Save/Register.
-                    </small>
                 </div>
+                {% endif %}
 
-                <form method="post" id="studentForm">
+                <form method="post" id="studentForm" class="needs-validation" novalidate>
                     {% csrf_token %}
                     <input type="hidden" name="selected_student_id" id="selectedStudentHidden" value="{{ selected_student_id }}">
                     <input type="hidden" name="submit_action" id="submitAction" value="submit">
                     
-                    <!-- Progress Bar -->
-                    <div class="mb-4">
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar" role="progressbar" style="width: 100%;" id="formProgress"></div>
+                    <div class="form-wizard">
+                        <div class="wizard-progress mb-5">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" id="formProgress"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <span class="step-label active" data-step="1">
+                                    <i class="bi bi-person-fill"></i> Personal
+                                </span>
+                                <span class="step-label" data-step="2">
+                                    <i class="bi bi-geo-alt"></i> Address
+                                </span>
+                                <span class="step-label" data-step="3">
+                                    <i class="bi bi-mortarboard"></i> Academic
+                                </span>
+                                <span class="step-label" data-step="4">
+                                    <i class="bi bi-cash"></i> Fee
+                                </span>
+                                <span class="step-label" data-step="5">
+                                    <i class="bi bi-check-circle"></i> Complete
+                                </span>
+                            </div>
                         </div>
-                        <div class="d-flex justify-content-between mt-2">
-                            <small>Personal Info</small>
-                            <small>Academic Info</small>
-                            <small>Fee Details</small>
-                            <small>Complete</small>
-                        </div>
-                    </div>
 
-                    <!-- Personal Information -->
-                    <div class="form-section">
-                        <h5 class="border-bottom pb-2 mb-4">
-                            <i class="bi bi-person-circle text-primary"></i> Personal Information
-                        </h5>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name *</label>
-                                {{ form.full_name }}
-                                {% if form.full_name.errors %}
-                                <div class="text-danger small mt-1">
-                                    {{ form.full_name.errors }}
+                        <div class="wizard-content">
+                            <div class="form-section" data-section="personal">
+                                <div class="section-header mb-4">
+                                    <h5 class="text-primary fw-bold">
+                                        <i class="bi bi-person-circle me-2"></i>Personal Information
+                                    </h5>
                                 </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address *</label>
-                                {{ form.email }}
-                                {% if form.email.errors %}
-                                <div class="text-danger small mt-1">
-                                    {{ form.email.errors }}
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                            {{ form.full_name }}
+                                        </div>
+                                        {% if form.full_name.errors %}
+                                        <div class="text-danger small mt-1">{{ form.full_name.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ form.email.id_for_label }}" class="form-label">Email Address <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                            {{ form.email }}
+                                        </div>
+                                        {% if form.email.errors %}
+                                        <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number *</label>
-                                {{ form.phone }}
-                                {% if form.phone.errors %}
-                                <div class="text-danger small mt-1">
-                                    {{ form.phone.errors }}
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-4">
+                                        <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-phone"></i></span>
+                                            {{ form.phone }}
+                                        </div>
+                                        {% if form.phone.errors %}
+                                        <div class="text-danger small mt-1">{{ form.phone.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-calendar"></i></span>
+                                            {{ form.date_of_birth }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-gender-neuter"></i></span>
+                                            {{ form.gender }}
+                                        </div>
+                                    </div>
                                 </div>
-                                {% endif %}
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-4">
+                                        <label for="{{ form.blood_group.id_for_label }}" class="form-label">Blood Group</label>
+                                        {{ form.blood_group }}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
-                                {{ form.date_of_birth }}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
-                                {{ form.gender }}
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.blood_group.id_for_label }}" class="form-label">Blood Group</label>
-                                {{ form.blood_group }}
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Address Information -->
-                    <div class="form-section mt-4">
-                        <h5 class="border-bottom pb-2 mb-4">
-                            <i class="bi bi-geo-alt text-primary"></i> Address Information
-                        </h5>
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
-                                {{ form.address }}
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
-                                {{ form.city }}
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.state.id_for_label }}" class="form-label">State</label>
-                                {{ form.state }}
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.pincode.id_for_label }}" class="form-label">PIN Code</label>
-                                {{ form.pincode }}
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
-                                {{ form.country }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Academic Information -->
-                    <div class="form-section mt-4">
-                        <h5 class="border-bottom pb-2 mb-4">
-                            <i class="bi bi-mortarboard text-primary"></i> Academic Information
-                        </h5>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.course.id_for_label }}" class="form-label">Course *</label>
-                                {{ form.course }}
-                                {% if form.course.errors %}
-                                <div class="text-danger small mt-1">
-                                    {{ form.course.errors }}
+                            <div class="form-section mt-4" data-section="address">
+                                <div class="section-header mb-4">
+                                    <h5 class="text-primary fw-bold">
+                                        <i class="bi bi-geo-alt-fill me-2"></i>Address Information
+                                    </h5>
                                 </div>
-                                {% endif %}
-                                <small class="text-muted">Enter the course name</small>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.batch.id_for_label }}" class="form-label">Batch</label>
-                                {{ form.batch }}
-                                <small class="text-muted">e.g., 2024-25, Jan 2024, etc.</small>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.qualification.id_for_label }}" class="form-label">Qualification</label>
-                                {{ form.qualification }}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.previous_institution.id_for_label }}" class="form-label">Previous Institution</label>
-                                {{ form.previous_institution }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Fee Information -->
-                    <div class="form-section mt-4">
-                        <h5 class="border-bottom pb-2 mb-4">
-                            <i class="bi bi-cash-coin text-primary"></i> Fee Information
-                        </h5>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.total_fee.id_for_label }}" class="form-label">Total Fee *</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">रु</span>
-                                    {{ form.total_fee }}
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                                        {{ form.address }}
+                                    </div>
                                 </div>
-                                {% if form.total_fee.errors %}
-                                <div class="text-danger small mt-1">
-                                    {{ form.total_fee.errors }}
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-4">
+                                        <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-building"></i></span>
+                                            {{ form.city }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.state.id_for_label }}" class="form-label">State</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-map"></i></span>
+                                            {{ form.state }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="{{ form.pincode.id_for_label }}" class="form-label">PIN Code</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
+                                            {{ form.pincode }}
+                                        </div>
+                                    </div>
                                 </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.discount.id_for_label }}" class="form-label">Discount</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">रु</span>
-                                    {{ form.discount }}
-                                </div>
-                                {% if form.discount.errors %}
-                                <div class="text-danger small mt-1">
-                                    {{ form.discount.errors }}
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-12">
-                                <div class="card bg-light">
-                                    <div class="card-body p-3">
-                                        <div class="row text-center">
-                                            <div class="col-md-4">
-                                                <h6>Total Fee</h6>
-                                                <h4 id="totalFeeDisplay">रु0</h4>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <h6>After Discount</h6>
-                                                <h4 id="afterDiscountDisplay">रु0</h4>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <h6>Due Amount</h6>
-                                                <h4 id="dueAmountDisplay" class="text-danger">रु0</h4>
-                                            </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-globe"></i></span>
+                                            {{ form.country }}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- Emergency Contact -->
-                    <div class="form-section mt-4">
-                        <h5 class="border-bottom pb-2 mb-4">
-                            <i class="bi bi-telephone text-primary"></i> Emergency Contact
-                        </h5>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.emergency_contact_name.id_for_label }}" class="form-label">Contact Name</label>
-                                {{ form.emergency_contact_name }}
+                            <div class="form-section mt-4" data-section="academic">
+                                <div class="section-header mb-4">
+                                    <h5 class="text-primary fw-bold">
+                                        <i class="bi bi-mortarboard-fill me-2"></i>Academic Information
+                                    </h5>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.course.id_for_label }}" class="form-label">Course <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-book"></i></span>
+                                            {{ form.course }}
+                                        </div>
+                                        {% if form.course.errors %}
+                                        <div class="text-danger small mt-1">{{ form.course.errors }}</div>
+                                        {% endif %}
+                                        <small class="text-muted">Enter the course name</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ form.batch.id_for_label }}" class="form-label">Batch</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-calendar-range"></i></span>
+                                            {{ form.batch }}
+                                        </div>
+                                        <small class="text-muted">e.g., 2024-25, Jan 2024, etc.</small>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.qualification.id_for_label }}" class="form-label">Qualification</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-award"></i></span>
+                                            {{ form.qualification }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ form.previous_institution.id_for_label }}" class="form-label">Previous Institution</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-building"></i></span>
+                                            {{ form.previous_institution }}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.emergency_contact.id_for_label }}" class="form-label">Contact Number</label>
-                                {{ form.emergency_contact }}
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Additional Information -->
-                    <div class="form-section mt-4">
-                        <h5 class="border-bottom pb-2 mb-4">
-                            <i class="bi bi-chat-left-text text-primary"></i> Additional Information
-                        </h5>
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <label for="{{ form.remarks.id_for_label }}" class="form-label">Remarks</label>
-                                {{ form.remarks }}
+                            <div class="form-section mt-4" data-section="fee">
+                                <div class="section-header mb-4">
+                                    <h5 class="text-primary fw-bold">
+                                        <i class="bi bi-cash-stack me-2"></i>Fee Information
+                                    </h5>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.total_fee.id_for_label }}" class="form-label">Total Fee <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light fw-bold">रु</span>
+                                            {{ form.total_fee }}
+                                        </div>
+                                        {% if form.total_fee.errors %}
+                                        <div class="text-danger small mt-1">{{ form.total_fee.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ form.discount.id_for_label }}" class="form-label">Discount</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light fw-bold">रु</span>
+                                            {{ form.discount }}
+                                        </div>
+                                        {% if form.discount.errors %}
+                                        <div class="text-danger small mt-1">{{ form.discount.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="fee-summary-card mt-4 p-4 rounded-3" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);">
+                                    <div class="row text-white text-center">
+                                        <div class="col-md-4">
+                                            <div class="mb-2 opacity-75">
+                                                <i class="bi bi-wallet2 fs-4"></i>
+                                            </div>
+                                            <h6 class="opacity-75 mb-1">Total Fee</h6>
+                                            <h3 class="fw-bold mb-0" id="totalFeeDisplay">रु0</h3>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-2 opacity-75">
+                                                <i class="bi bi-percent fs-4"></i>
+                                            </div>
+                                            <h6 class="opacity-75 mb-1">After Discount</h6>
+                                            <h3 class="fw-bold mb-0" id="afterDiscountDisplay">रु0</h3>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-2 opacity-75">
+                                                <i class="bi bi-credit-card fs-4"></i>
+                                            </div>
+                                            <h6 class="opacity-75 mb-1">Due Amount</h6>
+                                            <h3 class="fw-bold mb-0" id="dueAmountDisplay">रु0</h3>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- Form Buttons -->
-                    <div class="form-section mt-5">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
-                                    <i class="bi bi-trash"></i> Clear All
-                                </button>
+                            <div class="form-section mt-4" data-section="emergency">
+                                <div class="section-header mb-4">
+                                    <h5 class="text-primary fw-bold">
+                                        <i class="bi bi-telephone-fill me-2"></i>Emergency Contact
+                                    </h5>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.emergency_contact_name.id_for_label }}" class="form-label">Contact Name</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                            {{ form.emergency_contact_name }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="{{ form.emergency_contact.id_for_label }}" class="form-label">Contact Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-phone"></i></span>
+                                            {{ form.emergency_contact }}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <button type="button" class="btn btn-outline-primary me-2" onclick="saveAsDraft()">
-                                    <i class="bi bi-save"></i> Save Draft
-                                </button>
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-check-circle"></i> Register Student
-                                </button>
+
+                            <div class="form-section mt-4" data-section="additional">
+                                <div class="section-header mb-4">
+                                    <h5 class="text-primary fw-bold">
+                                        <i class="bi bi-chat-left-text-fill me-2"></i>Additional Information
+                                    </h5>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label for="{{ form.remarks.id_for_label }}" class="form-label">Remarks</label>
+                                        {{ form.remarks }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions mt-5 pt-4 border-top">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                    <button type="button" class="btn btn-outline-danger" onclick="clearForm()">
+                                        <i class="bi bi-trash me-2"></i>Clear All
+                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-primary" onclick="saveAsDraft()">
+                                            <i class="bi bi-save me-2"></i>Save Draft
+                                        </button>
+                                        <button type="submit" class="btn btn-success px-4" id="submitBtn">
+                                            <i class="bi bi-check-circle me-2"></i>Register Student
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -295,55 +359,148 @@
 
 {% block extra_css %}
 <style>
+    :root {
+        --primary: #1e3a8a;
+        --primary-dark: #1e40af;
+        --success: #059669;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .card {
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .wizard-progress {
+        position: relative;
+    }
+
+    .step-label {
+        font-size: 0.8rem;
+        color: var(--gray-200);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .step-label.active {
+        color: var(--primary);
+    }
+
+    .step-label i {
+        font-size: 1.2rem;
+    }
+
     .form-section {
-        animation: fadeIn 0.5s ease-in;
+        animation: fadeSlideIn 0.4s ease;
     }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+
+    @keyframes fadeSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    
-    .form-label {
-        font-weight: 500;
-        margin-bottom: 0.3rem;
-    }
-    
-    .form-control, .form-select {
-        border-radius: 0.375rem;
-        border: 1px solid #ced4da;
-        padding: 0.5rem 0.75rem;
-        transition: all 0.2s;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        border-color: #86b7fe;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-    
-    .form-control.is-invalid {
-        border-color: #dc3545;
-    }
-    
-    textarea.form-control {
-        min-height: 80px;
-        resize: vertical;
-    }
-    
+
     .input-group-text {
-        background-color: #f8f9fa;
+        border: none;
+        background: var(--gray-100);
     }
-    
-    .fee-summary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+
+    .form-control, .form-select {
+        border: 2px solid var(--gray-200);
         border-radius: 10px;
-        padding: 20px;
+        padding: 12px 16px;
+        transition: all 0.3s ease;
     }
-    
-    .fee-summary h4 {
-        font-weight: bold;
-        margin-bottom: 0;
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1);
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc2626;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+    }
+
+    .section-header h5 {
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .fee-summary-card {
+        border-radius: 16px !important;
+    }
+
+    .btn {
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--success) 0%, #047857 100%);
+        border: none;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+
+    .text-danger {
+        color: #dc2626;
+    }
+
+    .alert-info {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 1px solid #93c5fd;
+        border-radius: 12px;
+    }
+
+    .bg-gradient {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    }
+
+    @media (max-width: 768px) {
+        .step-label {
+            font-size: 0.7rem;
+        }
+        
+        .step-label i {
+            font-size: 1rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+        }
     }
 </style>
 {% endblock %}
@@ -358,36 +515,27 @@
         }
     }
 
-    // Calculate and display fee summary
     function calculateFeeSummary() {
-        const totalFee = parseFloat(document.getElementById('{{ form.total_fee.id_for_label }}').value) || 0;
-        const discount = parseFloat(document.getElementById('{{ form.discount.id_for_label }}').value) || 0;
+        const totalFeeInput = document.getElementById('{{ form.total_fee.id_for_label }}');
+        const discountInput = document.getElementById('{{ form.discount.id_for_label }}');
+        
+        const totalFee = parseFloat(totalFeeInput.value) || 0;
+        const discount = parseFloat(discountInput.value) || 0;
         
         const afterDiscount = totalFee - discount;
-        const dueAmount = afterDiscount; // Initially, due amount equals total after discount
+        const dueAmount = afterDiscount;
         
-        // Update displays
         document.getElementById('totalFeeDisplay').textContent = 'रु' + totalFee.toLocaleString('en-IN');
         document.getElementById('afterDiscountDisplay').textContent = 'रु' + afterDiscount.toLocaleString('en-IN');
         document.getElementById('dueAmountDisplay').textContent = 'रु' + dueAmount.toLocaleString('en-IN');
         
-        // Update due amount color
-        if (dueAmount > 0) {
-            document.getElementById('dueAmountDisplay').className = 'text-danger';
-        } else {
-            document.getElementById('dueAmountDisplay').className = 'text-success';
-        }
-        
-        // Validate discount
         if (discount > totalFee) {
-            document.getElementById('{{ form.discount.id_for_label }}').classList.add('is-invalid');
-            alert('Discount cannot be greater than total fee!');
+            discountInput.classList.add('is-invalid');
         } else {
-            document.getElementById('{{ form.discount.id_for_label }}').classList.remove('is-invalid');
+            discountInput.classList.remove('is-invalid');
         }
     }
     
-    // Clear form
     function clearForm() {
         if (confirm('Are you sure you want to clear all form data?')) {
             document.getElementById('studentForm').reset();
@@ -395,65 +543,21 @@
         }
     }
     
-    // Save as draft (placeholder function)
     function saveAsDraft() {
         document.getElementById('submitAction').value = 'draft';
         document.getElementById('studentForm').submit();
     }
-    
-    // Initialize form validation
-    function initializeFormValidation() {
-        const form = document.getElementById('studentForm');
-        
-        // Add real-time validation
-        const inputs = form.querySelectorAll('input[required], select[required]');
-        inputs.forEach(input => {
-            input.addEventListener('blur', function() {
-                if (!this.value.trim()) {
-                    this.classList.add('is-invalid');
-                } else {
-                    this.classList.remove('is-invalid');
-                }
-            });
-        });
-        
-        // Email validation
-        const emailInput = document.getElementById('{{ form.email.id_for_label }}');
-        emailInput.addEventListener('blur', function() {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(this.value)) {
-                this.classList.add('is-invalid');
-            } else {
-                this.classList.remove('is-invalid');
-            }
-        });
-        
-        // Phone validation
-        const phoneInput = document.getElementById('{{ form.phone.id_for_label }}');
-        phoneInput.addEventListener('blur', function() {
-            const phoneRegex = /^[0-9]{10}$/;
-            if (!phoneRegex.test(this.value)) {
-                this.classList.add('is-invalid');
-            } else {
-                this.classList.remove('is-invalid');
-            }
-        });
-    }
-    
-    // Form submission handler
+
     document.getElementById('studentForm').addEventListener('submit', function(e) {
-        // Default action is submit unless explicitly set to draft
         if (!document.getElementById('submitAction').value) {
             document.getElementById('submitAction').value = 'submit';
         }
 
-        // Keep selected student id in sync
         const selected = document.getElementById('selectedStudent');
         if (selected) {
             document.getElementById('selectedStudentHidden').value = selected.value || '';
         }
 
-        // Validate required fields
         const requiredFields = this.querySelectorAll('[required]');
         let isValid = true;
         
@@ -461,10 +565,11 @@
             if (!field.value.trim()) {
                 field.classList.add('is-invalid');
                 isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
             }
         });
         
-        // Validate discount
         const totalFee = parseFloat(document.getElementById('{{ form.total_fee.id_for_label }}').value) || 0;
         const discount = parseFloat(document.getElementById('{{ form.discount.id_for_label }}').value) || 0;
         
@@ -473,7 +578,6 @@
             isValid = false;
         }
         
-        // For drafts, skip strict validation (allow partial saves)
         const isDraft = document.getElementById('submitAction').value === 'draft';
         if (isDraft) {
             return true;
@@ -483,33 +587,22 @@
             e.preventDefault();
             alert('Please fill all required fields correctly.');
         } else {
-            // Show loading state
             const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Registering...';
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Registering...';
             submitBtn.disabled = true;
-            
-            // Form is valid, allow submission
             return true;
         }
     });
-    
-    // Initialize when page loads
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize fee calculation
         calculateFeeSummary();
         
-        // Add event listeners for fee fields
         document.getElementById('{{ form.total_fee.id_for_label }}').addEventListener('input', calculateFeeSummary);
         document.getElementById('{{ form.discount.id_for_label }}').addEventListener('input', calculateFeeSummary);
         
-        // Initialize form validation
-        initializeFormValidation();
-        
-        // Set today's date as default for date fields
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('{{ form.date_of_birth.id_for_label }}').max = today;
         
-        // Auto-calculate age from date of birth
         document.getElementById('{{ form.date_of_birth.id_for_label }}').addEventListener('change', function() {
             if (this.value) {
                 const birthDate = new Date(this.value);
@@ -520,41 +613,18 @@
                     age--;
                 }
                 
-                // Show age near the date field (optional)
-                const ageDisplay = document.getElementById('ageDisplay');
+                let ageDisplay = document.getElementById('ageDisplay');
                 if (!ageDisplay) {
-                    const ageDiv = document.createElement('div');
-                    ageDiv.id = 'ageDisplay';
-                    ageDiv.className = 'text-muted small mt-1';
-                    ageDiv.textContent = `Age: ${age} years`;
-                    this.parentNode.appendChild(ageDiv);
-                } else {
-                    ageDisplay.textContent = `Age: ${age} years`;
+                    ageDisplay = document.createElement('div');
+                    ageDisplay.id = 'ageDisplay';
+                    ageDisplay.className = 'text-muted small mt-1';
+                    this.parentNode.appendChild(ageDisplay);
                 }
+                ageDisplay.textContent = `Age: ${age} years`;
             }
         });
         
-        // Set default country to Nepal
         document.getElementById('{{ form.country.id_for_label }}').value = 'Nepal';
-        
-        // Auto-generate student ID preview
-        document.getElementById('{{ form.course.id_for_label }}').addEventListener('input', function() {
-            const courseCode = this.value.substring(0, 3).toUpperCase() || 'GEN';
-            const year = new Date().getFullYear().toString().substr(-2);
-            const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-            const studentIdPreview = `${courseCode}${year}${randomNum}`;
-            
-            const previewDiv = document.getElementById('studentIdPreview');
-            if (!previewDiv) {
-                const div = document.createElement('div');
-                div.id = 'studentIdPreview';
-                div.className = 'text-info small mt-1';
-                div.innerHTML = `<i class="bi bi-info-circle"></i> Student ID will be: <strong>${studentIdPreview}</strong>`;
-                this.parentNode.appendChild(div);
-            } else {
-                previewDiv.innerHTML = `<i class="bi bi-info-circle"></i> Student ID will be: <strong>${studentIdPreview}</strong>`;
-            }
-        });
     });
 </script>
 {% endblock %}

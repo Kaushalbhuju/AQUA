@@ -269,3 +269,32 @@ class DrivingLicense(models.Model):
     
     def __str__(self):
         return f"{self.staff.full_name} - License"
+
+
+class ScannedDocument(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ('passport', 'Passport'),
+        ('citizenship', 'Citizenship'),
+        ('medical', 'Medical Report'),
+        ('education', 'Education Certificate'),
+        ('photo', 'Photo'),
+        ('visa', 'Visa Document'),
+        ('other', 'Other'),
+    ]
+    
+    document_name = models.CharField(max_length=200)
+    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPE_CHOICES, default='other')
+    candidate_name = models.CharField(max_length=200, blank=True, help_text='Associated candidate name')
+    candidate_id = models.CharField(max_length=50, blank=True, help_text='Associated candidate ID')
+    document_file = models.FileField(upload_to='scanned_documents/')
+    notes = models.TextField(blank=True, null=True)
+    uploaded_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Scanned Document'
+        verbose_name_plural = 'Scanned Documents'
+    
+    def __str__(self):
+        return f"{self.document_name} - {self.get_document_type_display()}"
