@@ -14,6 +14,7 @@ from .views.portal_views import (
     PortalStudentRegistrationView, portal_registration_success, portal_logout
 )
 from .views.ssw_views import months_2026 
+from .views.material_views import share_materials, delete_material, view_shared_materials, download_material, public_materials
 
 app_name = 'dashboard'
 
@@ -81,5 +82,12 @@ urlpatterns = [
 
     # SSW specific views
     path('aggredcs/', months_2026, name='contracts_2026'),
+
+    # Shared Materials
+    path('teacher/share-materials/', share_materials, name='share_materials'),
+    path('teacher/share-materials/delete/<int:material_id>/', delete_material, name='delete_material'),
+    path('materials/', view_shared_materials, name='view_shared_materials'),
+    path('materials/download/<int:material_id>/', download_material, name='download_material'),
+    path('public/materials/', public_materials, name='public_materials'),
 ]
 

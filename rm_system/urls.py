@@ -290,6 +290,7 @@ urlpatterns = [
     path('coe-visa/', include('coe_visa.urls')),
     path('other-documents/', include('other_documents.urls')),
     path('books/', include('books.urls', namespace='books')),
+    path('japanese-exam/', include('japanese_exam.urls')),
 
 ]
 

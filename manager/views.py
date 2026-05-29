@@ -919,11 +919,24 @@ def ssw_working_visa(request):
 def student_visa(request):
     return render(request, 'canstud/manager_student.html')
 
+def language_skill_dashboard(request):
+    return render(request, 'manager/language_skill_dashboard.html')
+
 
 # Scan Documents Feature
+import os
+import uuid
+import json
+from io import BytesIO
+from PIL import Image
+from django.core.files.base import ContentFile
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.http import require_POST
 from django.db import models
 from .models import ScannedDocument
+from django.contrib import messages
+from django.shortcuts import redirect, get_object_or_404
 
 def is_manager(user):
     return user.is_authenticated and user.role in ['manager', 'admin', 'superuser', 'staff', 'operation_head']
@@ -947,111 +960,118 @@ def scan_documents(request):
             models.Q(candidate_id__icontains=search_query)
         )
     
-    # Handle document upload
-    if request.method == 'POST' and 'document_name' in request.POST:
+    # Handle simple single-document upload
+    if request.method == 'POST' and 'document_name' in request.POST and 'document_file' in request.FILES:
         document_name = request.POST.get('document_name')
         document_type = request.POST.get('document_type')
-        candidate_name = request.POST.get('candidate_name')
-        candidate_id = request.POST.get('candidate_id')
-        notes = request.POST.get('notes')
+        candidate_name = request.POST.get('candidate_name', '')
+        candidate_id = request.POST.get('candidate_id', '')
+        notes = request.POST.get('notes', '')
         document_file = request.FILES.get('document_file')
         
         if document_name and document_file:
-            scanned_doc = ScannedDocument.objects.create(
+            doc = ScannedDocument.objects.create(
                 document_name=document_name,
                 document_type=document_type,
                 candidate_name=candidate_name,
                 candidate_id=candidate_id,
                 notes=notes,
                 document_file=document_file,
+                file_size=document_file.size,
                 uploaded_by=request.user
             )
             messages.success(request, f'Document "{document_name}" uploaded successfully!')
             return redirect('manager:scan_documents')
         else:
             messages.error(request, 'Please provide document name and file.')
-    
-    # Handle image merge
-    if request.method == 'POST' and 'merge_images' in request.POST:
-        from io import BytesIO
-        import uuid
-        
-        image1 = request.FILES.get('merge_image1')
-        image2 = request.FILES.get('merge_image2')
-        merge_mode = request.POST.get('merge_mode', 'vertical')
-        
-        if not image1 or not image2:
-            messages.error(request, 'Please select both images to merge.')
-        else:
-            try:
-                from PIL import Image
-                
-                img1 = Image.open(image1)
-                img2 = Image.open(image2)
-                
-                # Convert to RGB if needed
-                if img1.mode in ('RGBA', 'P', 'LA'):
-                    img1 = img1.convert('RGB')
-                if img2.mode in ('RGBA', 'P', 'LA'):
-                    img2 = img2.convert('RGB')
-                
-                # A4 size at 300 DPI
-                a4_width = 2480
-                a4_height = 3508
-                
-                # Resize images to A4
-                try:
-                    resample = Image.Resampling.LANCZOS
-                except AttributeError:
-                    resample = Image.LANCZOS
-                
-                img1 = img1.resize((a4_width, a4_height), resample)
-                img2 = img2.resize((a4_width, a4_height), resample)
-                
-                if merge_mode == 'horizontal':
-                    merged_width = a4_width * 2
-                    merged_height = a4_height
-                    merged = Image.new('RGB', (merged_width, merged_height), (255, 255, 255))
-                    merged.paste(img1, (0, 0))
-                    merged.paste(img2, (a4_width, 0))
-                else:
-                    merged_width = a4_width
-                    merged_height = a4_height * 2
-                    merged = Image.new('RGB', (merged_width, merged_height), (255, 255, 255))
-                    merged.paste(img1, (0, 0))
-                    merged.paste(img2, (0, a4_height))
-                
-                # Save to BytesIO
-                output = BytesIO()
-                merged.save(output, format='PDF', resolution=300.0)
-                output.seek(0)
-                
-                # Create downloadable response
-                from django.http import HttpResponse
-                response = HttpResponse(output.getvalue(), content_type='application/pdf')
-                response['Content-Disposition'] = f'attachment; filename="merged_document_{uuid.uuid4().hex[:8]}.pdf"'
-                return response
-                
-            except ImportError:
-                messages.error(request, 'Pillow library not installed. Run: pip install Pillow')
-            except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.error(f'Merge error: {str(e)}', exc_info=True)
-                messages.error(request, f'Error merging images: {str(e)}')
-    
+            
     context = {
         'documents': documents,
-        'page_title': 'Scan Documents',
+        'page_title': 'Document Scanner & Gallery',
     }
     return render(request, 'canstud/scan_documents.html', context)
 
+@login_required
+@user_passes_test(is_manager)
+@require_POST
+def images_to_pdf(request):
+    """
+    Receives multiple images via AJAX and converts them to a single multi-page PDF.
+    """
+    try:
+        images = request.FILES.getlist('images[]')
+        document_name = request.POST.get('document_name', 'Scanned_Document')
+        document_type = request.POST.get('document_type', 'other')
+        candidate_name = request.POST.get('candidate_name', '')
+        candidate_id = request.POST.get('candidate_id', '')
+        notes = request.POST.get('notes', '')
+        
+        if not images:
+            return JsonResponse({'success': False, 'error': 'No images provided.'})
+            
+        pil_images = []
+        for img_file in images:
+            img = Image.open(img_file)
+            if img.mode in ('RGBA', 'P', 'LA'):
+                img = img.convert('RGB')
+            pil_images.append(img)
+            
+        if not pil_images:
+            return JsonResponse({'success': False, 'error': 'Failed to process images.'})
+            
+        # Convert first image to PDF and append the rest
+        pdf_bytes = BytesIO()
+        first_image = pil_images[0]
+        rest_images = pil_images[1:]
+        
+        first_image.save(
+            pdf_bytes, "PDF", resolution=100.0, save_all=True, append_images=rest_images
+        )
+        pdf_bytes.seek(0)
+        
+        # Save as ScannedDocument
+        pdf_filename = f"{uuid.uuid4().hex[:10]}.pdf"
+        
+        doc = ScannedDocument(
+            document_name=document_name,
+            document_type=document_type,
+            candidate_name=candidate_name,
+            candidate_id=candidate_id,
+            notes=notes,
+            page_count=len(pil_images),
+            uploaded_by=request.user
+        )
+        
+        doc.document_file.save(pdf_filename, ContentFile(pdf_bytes.read()), save=False)
+        doc.file_size = doc.document_file.size
+        doc.save()
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f'Successfully created PDF with {len(pil_images)} pages.',
+            'redirect_url': '/manager/scan-documents/'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@user_passes_test(is_manager)
+def download_document(request, doc_id):
+    document = get_object_or_404(ScannedDocument, pk=doc_id)
+    if document.document_file:
+        response = HttpResponse(document.document_file, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(document.document_file.name)}"'
+        return response
+    return redirect('manager:scan_documents')
 
 @login_required
 @user_passes_test(is_manager)
 def delete_scanned_document(request, doc_id):
     document = get_object_or_404(ScannedDocument, pk=doc_id)
     doc_name = document.document_name
+    if document.document_file:
+        document.document_file.delete(save=False)
     document.delete()
     messages.success(request, f'Document "{doc_name}" deleted successfully.')
     return redirect('manager:scan_documents')

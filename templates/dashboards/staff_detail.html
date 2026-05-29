@@ -528,16 +528,16 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <a href="{% url 'staff_list' %}" class="btn btn-custom btn-back">
+                <a href="{% url 'manager:staff_list' %}" class="btn btn-custom btn-back">
                     <i class="fas fa-arrow-left"></i> Back to List
                 </a>
-                <a href="{% url 'staff_print_pdf' staff.pk %}" target="_blank" class="btn btn-custom btn-print">
+                <a href="{% url 'manager:staff_print_pdf' staff.pk %}" target="_blank" class="btn btn-custom btn-print">
                     <i class="fas fa-print"></i> Print
                 </a>
-                <a href="{% url 'staff_update' staff.pk %}" class="btn btn-custom btn-edit-detail">
+                <a href="{% url 'manager:staff_update' staff.pk %}" class="btn btn-custom btn-edit-detail">
                     <i class="fas fa-edit"></i> Edit
                 </a>
-                <a href="{% url 'staff_delete' staff.pk %}" class="btn btn-custom btn-delete-detail">
+                <a href="{% url 'manager:staff_delete' staff.pk %}" class="btn btn-custom btn-delete-detail">
                     <i class="fas fa-trash"></i> Delete
                 </a>
             </div>

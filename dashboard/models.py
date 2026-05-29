@@ -369,3 +369,67 @@ class StudentDocument(models.Model):
     
     def get_marital_status_display(self):
         return dict(self._meta.get_field('marital_status').choices).get(self.marital_status, self.marital_status)
+
+
+class SharedMaterial(models.Model):
+    """Materials shared by teachers for students to access and download"""
+    MATERIAL_TYPE_CHOICES = [
+        ('document', 'Document'),
+        ('video', 'Video'),
+        ('audio', 'Audio'),
+        ('image', 'Image'),
+        ('link', 'External Link'),
+        ('other', 'Other'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('lecture_notes', 'Lecture Notes'),
+        ('homework', 'Homework'),
+        ('study_guide', 'Study Guide'),
+        ('assignment', 'Assignment'),
+        ('exam_prep', 'Exam Preparation'),
+        ('reference', 'Reference Material'),
+        ('other', 'Other'),
+    ]
+    
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    material_type = models.CharField(max_length=20, choices=MATERIAL_TYPE_CHOICES, default='document')
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
+    material_file = models.FileField(upload_to='shared_materials/', blank=True, null=True)
+    external_link = models.URLField(blank=True, null=True, help_text='URL for external resources')
+    uploaded_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, related_name='shared_materials')
+    target_class = models.CharField(max_length=100, blank=True, null=True, help_text='Target class or group')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    download_count = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Shared Material'
+        verbose_name_plural = 'Shared Materials'
+    
+    def __str__(self):
+        return f"{self.title} - {self.get_material_type_display()}"
+    
+    @property
+    def material_file_url(self):
+        if self.material_file and self.material_file.name:
+            from django.conf import settings
+            if settings.DEBUG:
+                return self.material_file.url
+            return f"/media/{self.material_file.name}"
+        return None
+    
+    @property
+    def file_size_display(self):
+        if self.material_file:
+            size = self.material_file.size
+            if size < 1024:
+                return f"{size} B"
+            elif size < 1024 * 1024:
+                return f"{size / 1024:.1f} KB"
+            else:
+                return f"{size / (1024 * 1024):.1f} MB"
+        return None

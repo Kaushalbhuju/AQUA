@@ -189,7 +189,7 @@
                 {% csrf_token %}
                 
                 <div class="action-buttons">
-                    <a href="{% url 'staff_detail' staff.pk %}" class="btn btn-custom btn-cancel">
+                    <a href="{% url 'manager:staff_detail' staff.pk %}" class="btn btn-custom btn-cancel">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                     <button type="submit" class="btn btn-custom btn-confirm-delete" id="deleteBtn" disabled>

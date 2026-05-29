@@ -287,6 +287,8 @@ class ScannedDocument(models.Model):
     candidate_name = models.CharField(max_length=200, blank=True, help_text='Associated candidate name')
     candidate_id = models.CharField(max_length=50, blank=True, help_text='Associated candidate ID')
     document_file = models.FileField(upload_to='scanned_documents/')
+    file_size = models.PositiveIntegerField(default=0, help_text='File size in bytes')
+    page_count = models.PositiveIntegerField(default=1, help_text='Number of pages (for PDFs)')
     notes = models.TextField(blank=True, null=True)
     uploaded_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

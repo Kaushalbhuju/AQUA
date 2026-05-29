@@ -2,12 +2,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseForbidden
+from django.db.models import Q
+from django.core.paginator import Paginator
 
 from books.models import Book, AssignmentTemplate, BookAssignment
-from books.models import Book, AssignmentTemplate, BookAssignment
 from books.forms import AssignBookForm, AssignmentTemplateForm, BookForm
-from books.decorators import manager_or_staff_required, manager_required
 from books.utils import generate_qr, generate_sticker, generate_assignment_qr, merge_qr_into_pdf, generate_assignment_image
+from books.decorators import manager_or_staff_required, manager_required
 
 
 @login_required
@@ -202,11 +203,61 @@ def scan_book(request, book_id):
 @manager_or_staff_required
 def assignment_list(request):
     assignments = BookAssignment.objects.all()
+
+    search = request.GET.get('search', '').strip()
+    book_filter = request.GET.get('book', '')
+    status_filter = request.GET.get('status', '')
+    paid_filter = request.GET.get('paid', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+
+    if book_filter:
+        assignments = assignments.filter(book_id=book_filter)
+
+    if search:
+        assignments = assignments.filter(
+            Q(recipient_name__icontains=search) |
+            Q(recipient_id__icontains=search) |
+            Q(book__name__icontains=search) |
+            Q(book__id__icontains=search) |
+            Q(id__icontains=search)
+        )
+
+    if status_filter == 'active':
+        assignments = assignments.filter(returned=False)
+    elif status_filter == 'returned':
+        assignments = assignments.filter(returned=True)
+
+    if paid_filter == 'paid':
+        assignments = assignments.filter(is_paid=True)
+    elif paid_filter == 'unpaid':
+        assignments = assignments.filter(is_paid=False)
+
+    if date_from:
+        assignments = assignments.filter(created_at__gte=date_from)
+    if date_to:
+        assignments = assignments.filter(created_at__lte=date_to)
+
+    paginator = Paginator(assignments, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     all_books = Book.objects.all().order_by('name')
+    all_assignments = BookAssignment.objects.all()
     context = {
-        'assignments': assignments,
+        'assignments': page_obj,
         'all_books': all_books,
         'page_title': 'All Assignments',
+        'search': search,
+        'book_filter': book_filter,
+        'status_filter': status_filter,
+        'paid_filter': paid_filter,
+        'date_from': date_from,
+        'date_to': date_to,
+        'is_paginated': page_obj.has_other_pages(),
+        'active_count': all_assignments.filter(returned=False).count(),
+        'returned_count': all_assignments.filter(returned=True).count(),
+        'unpaid_count': all_assignments.filter(is_paid=False).count(),
     }
     return render(request, 'books/assignment_list.html', context)
 

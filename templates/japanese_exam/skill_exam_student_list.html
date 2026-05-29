@@ -1,0 +1,309 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Exam - Approved Students - Aqua Education</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #1e40af;
+            --success: #059669;
+            --danger: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--gray-100) 0%, #e8edf2 100%);
+            min-height: 100vh;
+            color: var(--gray-700);
+        }
+        .page-container { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 16px;
+            padding: 25px 35px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .page-header h1 { font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+        .page-header p { opacity: 0.9; font-size: 0.95rem; }
+        .header-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px; background: rgba(255,255,255,0.15);
+            color: white; border-radius: 10px; text-decoration: none;
+            font-weight: 600; font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .header-btn:hover { background: rgba(255,255,255,0.25); color: white; }
+        .main-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .card-header h2 {
+            font-size: 1.1rem; font-weight: 700; color: var(--gray-800);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .card-header h2 i { color: var(--primary); }
+        .table-responsive { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table thead { background: var(--gray-50); }
+        .data-table th {
+            padding: 16px 20px; text-align: left;
+            font-size: 0.75rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--gray-500); border-bottom: 2px solid var(--gray-200);
+        }
+        .data-table td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+        .data-table tbody tr:hover { background: var(--gray-50); }
+        .student-photo {
+            width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+            border: 2px solid var(--gray-200);
+        }
+        .no-photo {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--gray-100); color: var(--gray-400);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; border: 2px solid var(--gray-200);
+        }
+        .student-id { font-weight: 700; color: var(--primary); font-size: 0.85rem; }
+        .student-name { font-weight: 600; color: var(--gray-800); }
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 50px;
+            font-size: 0.8rem; font-weight: 600;
+        }
+        .badge-pass { background: #d1fae5; color: #065f46; }
+        .badge-fail { background: #fee2e2; color: #991b1b; }
+        .badge-pending { background: var(--gray-100); color: var(--gray-500); }
+        .form-select-sm {
+            padding: 8px 12px; border: 2px solid var(--gray-200);
+            border-radius: 8px; font-size: 0.8rem; font-family: 'Inter', sans-serif;
+            min-width: 200px; max-width: 280px;
+        }
+        .form-select-sm:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30,64,175,0.1);
+        }
+        .score-input {
+            width: 70px; padding: 8px 8px;
+            border: 2px solid var(--gray-200); border-radius: 8px;
+            font-size: 0.85rem; text-align: center;
+            font-family: 'Inter', sans-serif;
+        }
+        .score-input:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30,64,175,0.1);
+        }
+        .radio-group { display: flex; gap: 12px; }
+        .radio-group label {
+            display: inline-flex; align-items: center; gap: 4px;
+            cursor: pointer; font-weight: 500; font-size: 0.85rem;
+        }
+        .radio-group input[type="radio"] { accent-color: var(--primary); }
+        .btn-submit {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border: none; border-radius: 8px;
+            font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            background: var(--primary); color: white;
+            transition: all 0.2s ease;
+        }
+        .btn-submit:hover { background: var(--primary-dark); }
+        .empty-state {
+            text-align: center; padding: 60px 40px; color: var(--gray-500);
+        }
+        .empty-state i { font-size: 4rem; margin-bottom: 20px; opacity: 0.3; }
+        .empty-state h3 { font-size: 1.2rem; margin-bottom: 8px; color: var(--gray-700); }
+        .recorded-info { font-size: 0.75rem; color: var(--gray-500); }
+        .recorded-info i { color: var(--success); }
+        @media (max-width: 992px) { .page-header { flex-direction: column; text-align: center; } }
+        @media (max-width: 768px) {
+            .page-container { margin: 20px auto; padding: 0 16px; }
+            .page-header { padding: 20px; }
+            .card-header { padding: 16px 20px; }
+            .data-table th, .data-table td { padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <div>
+                <h1><i class="fas fa-tools"></i>Skill Exam Results</h1>
+                <p>Record pass/fail and scores for approved students</p>
+            </div>
+            <a href="{% if request.user.role == 'manager' %}{% url 'manager:language_skill_dashboard' %}{% else %}{% url 'staff:staff_ssw_working_visa' %}{% endif %}" class="header-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="main-card">
+            <div class="card-header">
+                <h2><i class="fas fa-users"></i>Approved Students</h2>
+                <span class="text-muted">{{ student_data|length }} students</span>
+            </div>
+
+            {% if student_data %}
+            {% for item in student_data %}
+            <form id="form_{{ item.student.id }}" method="post" class="d-none">
+                {% csrf_token %}
+                <input type="hidden" name="student_id" value="{{ item.student.id }}">
+            </form>
+            {% endfor %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">Photo</th>
+                            <th>Student ID</th>
+                            <th>Full Name</th>
+                            <th>Skill Category</th>
+                            <th>Result</th>
+                            <th>Score</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in student_data %}
+                        <tr>
+                            <td>
+                                {% if item.student.photo_data_uri %}
+                                <img src="{{ item.student.photo_data_uri }}" alt="" class="student-photo">
+                                {% elif item.student.photo_display_url %}
+                                <img src="{{ item.student.photo_display_url }}" alt="" class="student-photo">
+                                {% else %}
+                                <div class="no-photo"><i class="fas fa-user"></i></div>
+                                {% endif %}
+                            </td>
+                            <td><span class="student-id">{{ item.student.student_id }}</span></td>
+                            <td><span class="student-name">{{ item.student.full_name }}</span></td>
+                            <td>
+                                <select name="skill_category" class="form-select-sm" form="form_{{ item.student.id }}">
+                                    <option value="">-- Select Skill --</option>
+                                    {% for code, label in skill_categories %}
+                                    <option value="{{ code }}" {% if item.result and item.result.skill_category == code %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <div class="radio-group">
+                                    <label>
+                                        <input type="radio" name="status" value="pass"
+                                            form="form_{{ item.student.id }}"
+                                            {% if item.result and item.result.status == 'pass' %}checked{% endif %}>
+                                        Pass
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="status" value="fail"
+                                            form="form_{{ item.student.id }}"
+                                            {% if item.result and item.result.status == 'fail' %}checked{% endif %}>
+                                        Fail
+                                    </label>
+                                </div>
+                            </td>
+                            <td>
+                                <input type="number" name="score" class="score-input"
+                                    form="form_{{ item.student.id }}"
+                                    value="{{ item.result.score|default:'' }}" min="0" max="100">
+                            </td>
+                            <td>
+                                {% if item.result %}
+                                <span class="status-badge badge-{{ item.result.status }}">
+                                    <i class="fas fa-circle" style="font-size: 6px;"></i>
+                                    {{ item.result.get_status_display }}
+                                </span>
+                                <div class="recorded-info mt-1"><i class="fas fa-check-circle"></i> Recorded</div>
+                                {% else %}
+                                <span class="status-badge badge-pending">
+                                    <i class="fas fa-circle" style="font-size: 6px;"></i>
+                                    Not Recorded
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="submit" form="form_{{ item.student.id }}" class="btn-submit">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users-slash"></i>
+                <h3>No Approved Students Found</h3>
+                <p>There are no approved students to record skill exam results for.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('.btn-submit').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                var formId = this.getAttribute('form');
+                var cat = document.querySelector('select[name="skill_category"][form="' + formId + '"]');
+                var checked = document.querySelector('input[name="status"][form="' + formId + '"]:checked');
+                if (!cat || !cat.value) {
+                    e.preventDefault();
+                    alert('Please select a Skill Category before saving.');
+                } else if (!checked) {
+                    e.preventDefault();
+                    alert('Please select Pass or Fail before saving.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -151,15 +151,15 @@
         <a href="{% url 'dashboard:student_list' %}" class="workflow-button">CANDIDATE BIO-DATA</a>
         <a href="#" class="workflow-button">COMPANY APPLICATION FORM</a>
         <a href="{% url 'coe_visa:seoandvisa_dashboard' %}" class="workflow-button">COE & VISA REPORT</a>
-        <a href="#" class="workflow-button">SCAN DOCUMENTS</a>
+        <a href="{% url 'manager:scan_documents' %}" class="workflow-button">SCAN DOCUMENTS</a>
       </div>
 
       <!-- Right Column -->
       <div class="button-list">
         <a href="{% url 'sswdashboard:professional_dashboard' %}" class="workflow-button">ADMISSION & FEE PAYMENT</a>
         <a href="#" class="workflow-button">LANGUAGE LEARNING CERTIFICATE</a>
-        <a href="https://www.jpf.go.jp/jft-basic/e/index.html" target="_blank" class="workflow-button">JAPANESE LANGUAGE EXAM</a>
-        <a href="#" class="workflow-button">SSW SKILL EXAM</a>
+        <a href="{% url 'japanese_exam:exam_selection' %}" class="workflow-button">JAPANESE LANGUAGE EXAM</a>
+        <a href="{% url 'japanese_exam:skill_exam_student_list' %}" class="workflow-button">SSW SKILL EXAM</a>
         <a href="{% url 'document_list' %}" class="workflow-button">OTHER DOCUMENTS</a>
 
 
