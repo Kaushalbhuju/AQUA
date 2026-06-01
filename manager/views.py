@@ -3,6 +3,7 @@
 # ============================================
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from .models import StaffRegistration, DrivingLicense
@@ -921,6 +922,46 @@ def student_visa(request):
 
 def language_skill_dashboard(request):
     return render(request, 'manager/language_skill_dashboard.html')
+
+
+from django.contrib.auth import get_user_model
+from staff.models import StaffTask
+
+@login_required
+def manage_tasks(request):
+    User = get_user_model()
+    staff_users = User.objects.filter(role='staff').order_by('username')
+    selected_staff_id = request.GET.get('staff', '')
+    staff_tasks = StaffTask.objects.none()
+    selected_staff = None
+
+    if selected_staff_id:
+        selected_staff = get_object_or_404(User, id=selected_staff_id, role='staff')
+        staff_tasks = StaffTask.objects.filter(assigned_to=selected_staff).order_by('-created_at')
+    else:
+        staff_tasks = StaffTask.objects.all().order_by('-created_at')
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        staff_id = request.POST.get('assigned_to')
+        description = request.POST.get('description', '').strip()
+        if title and staff_id:
+            target = get_object_or_404(User, id=staff_id, role='staff')
+            StaffTask.objects.create(
+                title=title,
+                description=description or None,
+                assigned_by=request.user,
+                assigned_to=target,
+            )
+            messages.success(request, f'Task assigned to {target.username}')
+        return redirect('manager:manage_tasks')
+
+    return render(request, 'manager/manage_tasks.html', {
+        'staff_users': staff_users,
+        'staff_tasks': staff_tasks,
+        'selected_staff': selected_staff,
+        'selected_staff_id': selected_staff_id,
+    })
 
 
 # Scan Documents Feature

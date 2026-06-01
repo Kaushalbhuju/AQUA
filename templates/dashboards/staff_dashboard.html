@@ -11,6 +11,7 @@
   <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     body {
       background-color: #f8f9fa;
@@ -18,9 +19,7 @@
 
     .navbar {
       padding-top: 1.5rem;
-      /* increase top spacing */
       padding-bottom: 1.5rem;
-      /* increase bottom spacing */
     }
 
     .logout-btn {
@@ -37,8 +36,6 @@
       background-color: #c9302c;
     }
 
-
-    /* Navbar custom dark blue */
     .bg-custom {
       background-color: #004E89 !important;
     }
@@ -54,46 +51,124 @@
       margin-top: 8rem;
       display: flex;
       flex-direction: column;
-      /* stack vertically */
       align-items: center;
       gap: 2rem;
-      /* more spacing between buttons */
       width: 100%;
       max-width: 800px;
-      /* wider container */
       margin-left: auto;
       margin-right: auto;
     }
 
     .btn-xxl {
       padding: 2rem 4rem;
-      /* much bigger padding */
       font-size: 2rem;
-      /* oversized text */
       border-radius: 0.75rem;
       width: 100%;
-      /* full width */
       font-weight: bold;
-      /* bold text */
     }
 
     .footer {
       background-color: rgb(255, 255, 255) !important;
-      /* dark blue background */
-      border-top: 1px solidrgb(255, 255, 255);
-      /* subtle darker border */
+      border-top: 1px solid rgb(255, 255, 255);
     }
 
     .footer small,
     .footer a {
       color: rgb(56, 59, 54) !important;
-      /* light text for contrast */
     }
 
     .footer a:hover {
       color: rgb(66, 79, 86);
-      /* aqua hover effect */
       text-decoration: underline;
+    }
+
+    /* Floating task button */
+    .float-task-btn {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 1050;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #004E89;
+      color: white;
+      border: none;
+      box-shadow: 0 4px 16px rgba(0, 78, 137, 0.4);
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .float-task-btn:hover {
+      background: #003b6f;
+      transform: scale(1.1);
+    }
+    .float-task-btn .badge-count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #dc3545;
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Offcanvas custom */
+    .offcanvas-tasks {
+      width: 380px !important;
+    }
+    .offcanvas-tasks .offcanvas-header {
+      background: #004E89;
+      color: white;
+    }
+    .task-item {
+      padding: 16px 20px;
+      border-bottom: 1px solid #eee;
+      transition: background 0.2s;
+    }
+    .task-item:hover {
+      background: #f8f9fa;
+    }
+    .task-item .title {
+      font-weight: 600;
+      color: #333;
+    }
+    .task-item .desc {
+      font-size: 0.85rem;
+      color: #6c757d;
+      margin-top: 4px;
+    }
+    .task-item .meta {
+      font-size: 0.75rem;
+      color: #adb5bd;
+      margin-top: 6px;
+    }
+    .task-item .badge {
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .badge-pending { background: #e9ecef; color: #6c757d; }
+    .badge-in_progress { background: #cce5ff; color: #004085; }
+    .badge-completed { background: #d4edda; color: #155724; }
+    .task-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #adb5bd;
+    }
+    .task-empty i {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
     }
   </style>
 </head>
@@ -102,34 +177,25 @@
   <!-- Navigation Header -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-custom">
     <div class="container-fluid d-flex justify-content-between align-items-center">
-
-      <!-- Left: Logout & Switch -->
       <ul class="navbar-nav">
         <li class="nav-item">
           <a class="logout-btn me-2" href="{% url 'accounts:login_view' %}">Logout</a>
         </li>
         {% if user.role == 'manager' or user.role == 'operation_head' %}
         <li class="nav-item">
-          <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:manager_dashboard' %}">Switch to Manager
-            View</a>
+          <a class="btn btn-sm btn-outline-light" href="{% url 'dashboard:manager_dashboard' %}">Switch to Manager View</a>
         </li>
         {% endif %}
       </ul>
-
-
       <a class="navbar-brand mx-auto position-absolute start-50 translate-middle-x" href="#">
         <h4>RECRUITMENT MANAGEMENT CONTROLLING SYSTEM</h4>
       </a>
-
-      <!-- Right: optional links (empty for now) -->
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <!-- Add right-side items here if needed -->
-        </ul>
+        <ul class="navbar-nav ms-auto"></ul>
       </div>
     </div>
   </nav>
-  <!-- Hero Section -->
+
   <div class="hero">
     <h1 class="display-5 fw-bold">Where are you going to?</h1>
     <p class="lead">Choose your visa category to proceed with registration and documentation.</p>
@@ -141,8 +207,6 @@
     </div>
   </div>
 
-
-  <!-- Footer -->
   <footer class="footer mt-auto py-3">
     <div class="container text-center">
       <small class="text-muted">
@@ -151,9 +215,67 @@
     </div>
   </footer>
 
+  <!-- Floating Tasks Button -->
+  <button class="float-task-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#tasksPanel" aria-controls="tasksPanel">
+    <i class="fas fa-clipboard-list"></i>
+    {% if pending_count > 0 %}
+    <span class="badge-count">{{ pending_count }}</span>
+    {% endif %}
+  </button>
+
+  <!-- Tasks Offcanvas Panel -->
+  <div class="offcanvas offcanvas-end offcanvas-tasks" tabindex="-1" id="tasksPanel" aria-labelledby="tasksPanelLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="tasksPanelLabel">
+        <i class="fas fa-tasks me-2"></i>My Tasks
+      </h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+      {% if tasks %}
+      {% for task in tasks %}
+      <div class="task-item">
+        <div class="d-flex justify-content-between align-items-start">
+          <div class="flex-grow-1 me-2">
+            <div class="title">{{ task.title }}</div>
+            {% if task.description %}
+            <div class="desc">{{ task.description }}</div>
+            {% endif %}
+            <div class="meta">
+              <i class="fas fa-user me-1"></i>{{ task.assigned_by.get_full_name|default:task.assigned_by.username }}
+              &middot; {{ task.created_at|date:"d M Y" }}
+            </div>
+          </div>
+          <span class="badge badge-{{ task.status }}">
+            {% if task.status == 'pending' %}Pending
+            {% elif task.status == 'in_progress' %}In Progress
+            {% else %}Completed{% endif %}
+          </span>
+        </div>
+        {% if task.status != 'completed' %}
+        <form method="post" action="{% url 'staff:update_task_status' task.id %}" class="mt-2">
+          {% csrf_token %}
+          <input type="hidden" name="status" value="completed">
+          <input type="hidden" name="next" value="{% url 'dashboard:staff_dashboard' %}">
+          <button type="submit" class="btn btn-sm btn-success">
+            <i class="fas fa-check me-1"></i>Mark Done
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="task-empty">
+        <i class="fas fa-clipboard-list d-block"></i>
+        <p class="mb-0">No tasks assigned yet.</p>
+        <small>Tasks from your manager will appear here.</small>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
     crossorigin="anonymous"></script>
 </body>
-
 </html>

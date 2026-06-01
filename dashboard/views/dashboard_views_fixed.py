@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from dashboard.models import Student
+from staff.models import StaffTask
 from .decorators_fixed import check_role
 
 
@@ -41,10 +42,14 @@ def manager_dashboard(request):
 @login_required(login_url='/')
 @check_role('staff')
 def staff_dashboard(request):
+    tasks = StaffTask.objects.filter(assigned_to=request.user)
+    pending_count = tasks.exclude(status='completed').count()
     context = {
         'user': request.user, 
         'role_name': 'Staff', 
-        'role_description': 'View assigned tasks and updates'
+        'role_description': 'View assigned tasks and updates',
+        'tasks': tasks,
+        'pending_count': pending_count,
     }
     return render(request, 'dashboards/staff_dashboard.html', context)
 

@@ -10,6 +10,7 @@ urlpatterns = [
     path('<int:pk>/update/', views.staff_registration_update, name='staff_update'),
     path('<int:pk>/delete/', views.staff_delete, name='staff_delete'),
     path('<int:pk>/print/', views.generate_staff_registration_pdf, name='staff_print_pdf'),
+    path('staff-tasks/', views.manage_tasks, name='manage_tasks'),
     path('language-skill-exam/', views.language_skill_dashboard, name='language_skill_dashboard'),
     path('mdashboard/', views.ssw_working_visa, name='ssw_working_visa'),
     path('mdashboardone/', views.student_visa, name='student_visa'),

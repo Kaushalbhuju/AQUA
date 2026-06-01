@@ -1,0 +1,248 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Tasks - Aqua Education</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #1e40af;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--gray-100) 0%, #e8edf2 100%);
+            min-height: 100vh;
+            color: var(--gray-700);
+        }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .page-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 16px;
+            padding: 25px 35px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .page-header h1 { font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px; background: rgba(255,255,255,0.15);
+            color: white; border-radius: 10px; text-decoration: none;
+            font-weight: 600; font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.25); color: white; }
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .card-header {
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .card-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 10px; }
+        .card-header h2 i { color: var(--primary); }
+        .card-body { padding: 24px 28px; }
+        .badge {
+            padding: 6px 14px; border-radius: 50px;
+            font-size: 0.8rem; font-weight: 600;
+        }
+        .badge-pending { background: var(--gray-100); color: var(--gray-500); }
+        .badge-in_progress { background: #dbeafe; color: #1e40af; }
+        .badge-completed { background: #d1fae5; color: #065f46; }
+        .form-control, .form-select {
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(30,64,175,0.1);
+        }
+        .btn-primary {
+            background: var(--primary); color: white; border: none;
+            padding: 10px 24px; border-radius: 10px; font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th {
+            padding: 14px 20px; text-align: left;
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--gray-500);
+            border-bottom: 2px solid var(--gray-200); background: var(--gray-50);
+        }
+        .data-table td { padding: 14px 20px; border-bottom: 1px solid var(--gray-100); font-size: 0.95rem; vertical-align: middle; }
+        .data-table tbody tr:hover { background: var(--gray-50); }
+        .empty-state { text-align: center; padding: 40px; color: var(--gray-500); }
+        .empty-state i { font-size: 3rem; margin-bottom: 16px; opacity: 0.3; }
+        @media (max-width: 768px) {
+            .container { margin: 20px auto; padding: 0 16px; }
+            .page-header { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1><i class="fas fa-tasks"></i>Staff Tasks</h1>
+                <p class="mb-0 opacity-75">Assign and track tasks for staff members</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'dashboard:manager_dashboard' %}" class="back-btn">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="{% url 'manager:ssw_working_visa' %}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-plus-circle"></i>Assign Task</h2>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Staff Member</label>
+                                <select name="assigned_to" class="form-select" required>
+                                    <option value="">-- Select Staff --</option>
+                                    {% for u in staff_users %}
+                                    <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }} ({{ u.username }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Task Title</label>
+                                <input type="text" name="title" class="form-control" placeholder="Enter task title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Description</label>
+                                <textarea name="description" class="form-control" rows="3" placeholder="Optional details..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-paper-plane me-2"></i>Assign Task
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-filter"></i>Filter by Staff</h2>
+                    </div>
+                    <div class="card-body">
+                        <form method="get">
+                            <select name="staff" class="form-select mb-3" onchange="this.form.submit()">
+                                <option value="">All Staff</option>
+                                {% for u in staff_users %}
+                                <option value="{{ u.id }}" {% if selected_staff_id == u.id|stringformat:'s' %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
+                                {% endfor %}
+                            </select>
+                            <noscript><button type="submit" class="btn btn-primary btn-sm w-100">Filter</button></noscript>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-list"></i>
+                            {% if selected_staff %}Tasks for {{ selected_staff.get_full_name|default:selected_staff.username }}
+                            {% else %}All Tasks{% endif %}
+                        </h2>
+                        <span class="text-muted small">{{ staff_tasks|length }} task{{ staff_tasks|pluralize }}</span>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if staff_tasks %}
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Staff</th>
+                                    <th>Assigned By</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in staff_tasks %}
+                                <tr>
+                                    <td>
+                                        <span class="fw-semibold">{{ task.title }}</span>
+                                        {% if task.description %}
+                                        <small class="d-block text-muted">{{ task.description|truncatechars:60 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</td>
+                                    <td>{{ task.assigned_by.get_full_name|default:task.assigned_by.username }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ task.status }}">
+                                            {% if task.status == 'pending' %}Pending
+                                            {% elif task.status == 'in_progress' %}In Progress
+                                            {% else %}Completed{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="small text-muted">{{ task.created_at|date:"d M Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <h5 class="mt-2">No tasks{% if selected_staff %} for this staff member{% endif %}</h5>
+                            <p class="small">Assign a task using the form on the left.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
