@@ -1,0 +1,177 @@
+{% extends "translation/base.html" %}
+{% load humanize %}
+
+{% block title %}Dashboard — Translation System{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+  <div class="col-xl-3 col-sm-6">
+    <div class="tr-stat-card">
+      <div class="tr-stat-icon primary"><i class="bi bi-file-earmark-text-fill"></i></div>
+      <div>
+        <div class="tr-stat-value">{{ total_documents }}</div>
+        <div class="tr-stat-label">Total Documents</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-sm-6">
+    <div class="tr-stat-card">
+      <div class="tr-stat-icon success"><i class="bi bi-translate"></i></div>
+      <div>
+        <div class="tr-stat-value">{{ translated_documents }}</div>
+        <div class="tr-stat-label">Translated</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-sm-6">
+    <div class="tr-stat-card">
+      <div class="tr-stat-icon accent"><i class="bi bi-database-fill"></i></div>
+      <div>
+        <div class="tr-stat-value">{{ tm_count }}</div>
+        <div class="tr-stat-label">Translation Memory</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-sm-6">
+    <div class="tr-stat-card">
+      <div class="tr-stat-icon info"><i class="bi bi-pencil-square"></i></div>
+      <div>
+        <div class="tr-stat-value">{{ pending_review }}</div>
+        <div class="tr-stat-label">Pending Review</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="tr-card mb-4">
+  <div class="tr-card-body d-flex flex-wrap gap-2">
+    <a href="{% url 'translation:document_upload' %}" class="btn btn-tr-primary" id="btn-quick-upload">
+      <i class="bi bi-cloud-upload me-1"></i> Upload Document
+    </a>
+    <a href="{% url 'translation:document_list' %}?status=translated" class="btn btn-tr-outline" id="btn-quick-review">
+      <i class="bi bi-pencil-square me-1"></i> Review Translations
+    </a>
+    <a href="{% url 'translation:tm_list' %}" class="btn btn-tr-outline" id="btn-quick-tm">
+      <i class="bi bi-database me-1"></i> Browse Memory
+    </a>
+    <a href="{% url 'translation:tm_add' %}" class="btn btn-tr-outline" id="btn-quick-tm-add">
+      <i class="bi bi-plus-circle me-1"></i> Add TM Entry
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Recent Documents -->
+  <div class="col-lg-7">
+    <div class="tr-card">
+      <div class="tr-card-header">
+        <h5><i class="bi bi-clock-fill me-2" style="color: var(--tr-primary)"></i>Recent Documents</h5>
+        <a href="{% url 'translation:document_list' %}" class="btn btn-tr-sm btn-tr-outline" id="link-all-docs">View All</a>
+      </div>
+      <div class="tr-card-body p-0">
+        {% if recent_documents %}
+          <table class="tr-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for doc in recent_documents %}
+                <tr>
+                  <td>
+                    <a href="{% url 'translation:document_detail' doc.pk %}" class="text-decoration-none fw-semibold" style="color: var(--tr-primary)">
+                      {{ doc.title|truncatechars:40 }}
+                    </a>
+                  </td>
+                  <td>
+                    <span class="text-muted" style="font-size: 12.5px">
+                      {{ doc.document_type.name|default:"—" }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="tr-badge tr-badge-{{ doc.status }}">{{ doc.get_status_display }}</span>
+                  </td>
+                  <td style="font-size: 12.5px; color: var(--tr-text-muted)">
+                    {{ doc.created_at|date:"M d, H:i" }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="tr-empty">
+            <i class="bi bi-file-earmark-text"></i>
+            <h6>No documents yet</h6>
+            <p>Upload your first document to get started.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column -->
+  <div class="col-lg-5">
+    <!-- Document Type Breakdown -->
+    <div class="tr-card mb-4">
+      <div class="tr-card-header">
+        <h5><i class="bi bi-pie-chart-fill me-2" style="color: var(--tr-accent)"></i>By Document Type</h5>
+      </div>
+      <div class="tr-card-body">
+        {% if type_stats %}
+          {% for stat in type_stats %}
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span style="font-size: 13px; font-weight: 500">
+                {{ stat.document_type__name|default:"Unclassified" }}
+              </span>
+              <span class="tr-badge" style="background: #e0e7ff; color: #3730a3">
+                {{ stat.count }}
+              </span>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-muted text-center" style="font-size: 13px; padding: 20px 0">
+            No data available
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="tr-card">
+      <div class="tr-card-header">
+        <h5><i class="bi bi-activity me-2" style="color: var(--tr-success)"></i>Recent Activity</h5>
+        <a href="{% url 'translation:history_list' %}" class="btn btn-tr-sm btn-tr-outline" id="link-all-history">View All</a>
+      </div>
+      <div class="tr-card-body p-0">
+        {% if recent_history %}
+          <div class="list-group list-group-flush">
+            {% for entry in recent_history|slice:":8" %}
+              <div class="list-group-item border-0 px-3 py-2" style="font-size: 12.5px">
+                <div class="d-flex justify-content-between">
+                  <span class="fw-semibold">{{ entry.get_action_display }}</span>
+                  <span class="text-muted">{{ entry.created_at|date:"M d, H:i" }}</span>
+                </div>
+                {% if entry.details %}
+                  <div class="text-muted mt-1" style="font-size: 11.5px">{{ entry.details|truncatechars:80 }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-muted text-center py-4" style="font-size: 13px">
+            No activity yet
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

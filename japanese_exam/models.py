@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 from dashboard.models import Student
 
 class ExamResult(models.Model):
@@ -14,17 +15,20 @@ class ExamResult(models.Model):
 
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='exam_results')
     exam_type = models.CharField(max_length=4, choices=EXAM_TYPE_CHOICES)
+    attempt_number = models.PositiveIntegerField(default=1, verbose_name="Attempt Number")
+    exam_date = models.DateField(default=timezone.now, blank=True, null=True, verbose_name="Exam Date")
     status = models.CharField(max_length=4, choices=STATUS_CHOICES, blank=True, null=True)
     score = models.IntegerField(blank=True, null=True)
+    remarks = models.CharField(max_length=255, blank=True, null=True, verbose_name="Remarks/Notes")
     recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('student', 'exam_type')
+        ordering = ['-exam_date', '-attempt_number', '-created_at']
 
     def __str__(self):
-        return f"{self.student.full_name} - {self.exam_type} - {self.status or 'Pending'}"
+        return f"{self.student.full_name} - {self.exam_type} (Attempt #{self.attempt_number}) - {self.status or 'Pending'}"
 
 
 class SkillExamResult(models.Model):

@@ -147,11 +147,11 @@ def student_registration(request):
     """Student registration form
 
     Supports two modes:
-    - New registration (no selected student)
-    - Prefill from an already-created Dashboard student (selected from list)
+    - New registration (no selected student) — full form
+    - Quick registration from Dashboard student — shows student info card
+      with only class, payment purpose, emergency contact, fee & remarks editable
     """
-    # Optional: select an existing Dashboard student to prefill registration
-    from dashboard.models import Student as DashboardStudent
+    from dashboard.models import Student as DashboardStudent, Classroom
 
     selected_student_id = request.GET.get('student_id') or None
     if request.method == 'POST':
@@ -173,8 +173,35 @@ def student_registration(request):
         if not matched_admission_student and getattr(selected_dashboard_student, 'phone', None):
             matched_admission_student = Student.objects.filter(phone=selected_dashboard_student.phone).first()
 
+    # Quick-registration mode: a Dashboard student is selected
+    is_quick_mode = selected_dashboard_student is not None
+
+    # Available classrooms for dropdown
+    classrooms = Classroom.objects.all().order_by('name')
+
     if request.method == 'POST':
-        form = StudentForm(request.POST, instance=matched_admission_student)
+        if is_quick_mode:
+            # In quick mode only certain fields come from the form;
+            # the rest are populated from the dashboard student record.
+            form = StudentForm(request.POST, instance=matched_admission_student)
+
+            # Force dashboard-sourced values into the form data so validation passes
+            ds = selected_dashboard_student
+            perm_addr = getattr(ds, 'permanent_address', '') or ''
+            pres_addr = getattr(ds, 'present_address', '') or ''
+            form.data = form.data.copy()
+            form.data['full_name'] = getattr(ds, 'full_name', '') or ''
+            form.data['email'] = getattr(ds, 'email', '') or ''
+            form.data['phone'] = getattr(ds, 'phone', '') or ''
+            form.data['date_of_birth'] = str(getattr(ds, 'date_of_birth', '') or '')
+            form.data['gender'] = getattr(ds, 'gender', '') or 'male'
+            form.data['blood_group'] = getattr(ds, 'blood_group', '') or ''
+            form.data['qualification'] = getattr(ds, 'qualification', '') or ''
+            form.data['address'] = (pres_addr or perm_addr)
+            form.data['country'] = 'Nepal'
+        else:
+            form = StudentForm(request.POST, instance=matched_admission_student)
+
         if form.is_valid():
             try:
                 with transaction.atomic():
@@ -196,6 +223,13 @@ def student_registration(request):
                             )
                             return redirect(f"{request.path}?student_id={selected_dashboard_student.id}")
                         student.student_id = dashboard_student_id
+
+                    # Append payment purpose to remarks if provided
+                    payment_purpose = request.POST.get('payment_purpose', '').strip()
+                    if payment_purpose:
+                        purpose_line = f"[Payment Purpose: {payment_purpose}]"
+                        if purpose_line not in (student.remarks or ""):
+                            student.remarks = (student.remarks + "\n" if student.remarks else "") + purpose_line
 
                     # Keep traceability back to Dashboard student (no hard DB link)
                     if selected_dashboard_student:
@@ -224,28 +258,32 @@ def student_registration(request):
         initial = {}
         if selected_dashboard_student:
             # Prefill the admission form with available dashboard data
+            ds = selected_dashboard_student
             initial = {
-                'full_name': getattr(selected_dashboard_student, 'full_name', '') or '',
-                'email': getattr(selected_dashboard_student, 'email', '') or '',
-                'phone': getattr(selected_dashboard_student, 'phone', '') or '',
-                'date_of_birth': getattr(selected_dashboard_student, 'date_of_birth', None),
-                'gender': getattr(selected_dashboard_student, 'gender', '') or 'male',
-                'blood_group': getattr(selected_dashboard_student, 'blood_group', '') or '',
-                'qualification': getattr(selected_dashboard_student, 'qualification', '') or '',
+                'full_name': getattr(ds, 'full_name', '') or '',
+                'email': getattr(ds, 'email', '') or '',
+                'phone': getattr(ds, 'phone', '') or '',
+                'date_of_birth': getattr(ds, 'date_of_birth', None),
+                'gender': getattr(ds, 'gender', '') or 'male',
+                'blood_group': getattr(ds, 'blood_group', '') or '',
+                'qualification': getattr(ds, 'qualification', '') or '',
             }
             # Address mapping (best-effort)
-            perm_addr = getattr(selected_dashboard_student, 'permanent_address', '') or ''
-            pres_addr = getattr(selected_dashboard_student, 'present_address', '') or ''
+            perm_addr = getattr(ds, 'permanent_address', '') or ''
+            pres_addr = getattr(ds, 'present_address', '') or ''
             initial['address'] = (pres_addr or perm_addr)
         form = StudentForm(instance=matched_admission_student, initial=initial)
 
     # Show selectable students (useful for completing registrations)
     selectable_students = DashboardStudent.objects.order_by('-created_at')[:500]
-    
+
     return render(request, 'sswadmission/student_registration.html', {
         'form': form,
         'selectable_students': selectable_students,
         'selected_student_id': str(selected_dashboard_student.id) if selected_dashboard_student else '',
+        'is_quick_mode': is_quick_mode,
+        'dashboard_student': selected_dashboard_student,
+        'classrooms': classrooms,
     })
 
 @login_required

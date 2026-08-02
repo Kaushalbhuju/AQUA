@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'other_documents',
     'books',
     'japanese_exam',
+    'translation',
 
 ]
 AUTHENTICATION_BACKENDS = [

@@ -31,6 +31,7 @@ class CustomAdminSite(AdminSite):
             'other_documents': 9,
             'agreementdocx': 10,
             'jobd_letter': 11,
+            'translation': 12,
         }
 
         for app in app_list:

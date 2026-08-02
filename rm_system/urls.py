@@ -130,6 +130,13 @@ try:
 except ImportError:
     books_available = False
 
+try:
+    from translation.admin import DocumentAdmin, DocumentTypeAdmin, TranslationMemoryAdmin, TranslationHistoryAdmin
+    from translation.models import Document, DocumentType, TranslationMemory, TranslationHistory
+    translation_available = True
+except ImportError:
+    translation_available = False
+
 # Unregister from default admin if registered
 try:
     admin.site.unregister(User)
@@ -263,6 +270,24 @@ if books_available:
     except admin.sites.AlreadyRegistered:
         pass
 
+if translation_available:
+    try:
+        custom_admin_site.register(Document, DocumentAdmin)
+    except admin.sites.AlreadyRegistered:
+        pass
+    try:
+        custom_admin_site.register(DocumentType, DocumentTypeAdmin)
+    except admin.sites.AlreadyRegistered:
+        pass
+    try:
+        custom_admin_site.register(TranslationMemory, TranslationMemoryAdmin)
+    except admin.sites.AlreadyRegistered:
+        pass
+    try:
+        custom_admin_site.register(TranslationHistory, TranslationHistoryAdmin)
+    except admin.sites.AlreadyRegistered:
+        pass
+
 urlpatterns = [
     path('admin/', custom_admin_site.urls),
     path('favicon.ico', serve_media, {'path': '../static/images/logo.png'}),
@@ -291,6 +316,7 @@ urlpatterns = [
     path('other-documents/', include('other_documents.urls')),
     path('books/', include('books.urls', namespace='books')),
     path('japanese-exam/', include('japanese_exam.urls')),
+    path('translation/', include('translation.urls')),
 
 ]
 

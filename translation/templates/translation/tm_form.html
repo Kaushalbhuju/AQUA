@@ -1,0 +1,72 @@
+{% extends "translation/base.html" %}
+
+{% block title %}{{ title }} — Translation System{% endblock %}
+{% block nav_tm %}active{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="tr-card">
+      <div class="tr-card-header">
+        <h5>
+          {% if tm %}
+            <i class="bi bi-pencil-fill me-2" style="color: var(--tr-primary)"></i>Edit Translation Memory Pair
+          {% else %}
+            <i class="bi bi-plus-circle-fill me-2" style="color: var(--tr-primary)"></i>Add Translation Memory Pair
+          {% endif %}
+        </h5>
+      </div>
+      <div class="tr-card-body">
+        <form method="post" id="tm-form">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="id_tm_english" class="form-label fw-semibold">English Text <span class="text-danger">*</span></label>
+            {{ form.english_text }}
+            {% if form.english_text.errors %}
+              <div class="text-danger mt-1" style="font-size: 12px">{{ form.english_text.errors.0 }}</div>
+            {% endif %}
+            <div class="form-text" style="font-size: 11px">The English phrase, sentence, or paragraph to be matched.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="id_tm_japanese" class="form-label fw-semibold">Japanese Translation <span class="text-danger">*</span></label>
+            {{ form.japanese_text }}
+            {% if form.japanese_text.errors %}
+              <div class="text-danger mt-1" style="font-size: 12px">{{ form.japanese_text.errors.0 }}</div>
+            {% endif %}
+            <div class="form-text" style="font-size: 11px">The equivalent Japanese translation for matching English text.</div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="id_tm_doctype" class="form-label fw-semibold">Document Type</label>
+              {{ form.document_type }}
+              <div class="form-text" style="font-size: 11px">Select if this translation is specific to a document type.</div>
+            </div>
+            <div class="col-md-6 d-flex align-items-center">
+              <div class="form-check mt-3">
+                {{ form.is_verified }}
+                <label class="form-check-label fw-semibold" for="id_tm_verified" style="font-size: 13px">
+                  Mark as Verified
+                </label>
+                <div class="form-text" style="font-size: 11px">Verified translations are prioritized and checked by staff.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+            <a href="{% url 'translation:tm_list' %}" class="btn btn-tr-outline" id="btn-cancel-tm-form">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-tr-primary" id="btn-save-tm-form">
+              <i class="bi bi-save me-1"></i> Save Translation Pair
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+    @page {
+        size: A4;
+        margin: 0.45cm 1.0cm 0.5cm 1.0cm;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 8pt;
+        color: #000;
+        margin: 0;
+        padding: 0;
+        line-height: 1.2;
+    }
+    .header {
+        background-color: #E8E8E8;
+        text-align: center;
+        padding: 6px 0 5px;
+        margin-bottom: 3px;
+    }
+    .header h1 {
+        font-size: 14.5pt;
+        font-weight: bold;
+        margin: 0;
+        letter-spacing: 0.5px;
+    }
+    .header p {
+        font-size: 9pt;
+        font-weight: bold;
+        margin: 1px 0 0;
+    }
+    .cc-line {
+        font-size: 6pt;
+        font-weight: bold;
+        margin: 2px 0 1px 2px;
+        line-height: 1.3;
+    }
+    .section-bar {
+        background-color: #C7BFA3;
+        font-weight: bold;
+        font-size: 9pt;
+        text-align: center;
+        border: 1px solid #000;
+        padding: 3px 4px;
+        border-bottom: none;
+    }
+    .section-bar-standalone {
+        background-color: #C7BFA3;
+        font-weight: bold;
+        font-size: 9pt;
+        text-align: center;
+        border: 1px solid #000;
+        padding: 3px 4px;
+        margin-top: 3px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        border-spacing: 0;
+    }
+    td, th {
+        border: 1px solid #000;
+        padding: 2px 4px;
+        vertical-align: middle;
+        overflow: hidden;
+    }
+    #admission-top td { padding: 0; }
+    #admission-top td.photo-cell { padding: 1.5mm; }
+    .row-h {
+        height: 11.25mm;
+        overflow: hidden;
+        padding: 2px 4px;
+        display: flex;
+        align-items: center;
+    }
+    .center { text-align: center; justify-content: center; }
+    .td-left { padding-left: 6px; }
+    .bg-tan { background-color: #C7BFA3; font-weight: bold; text-align: center; }
+    .years-label {
+        position: absolute;
+        right: 3px;
+        bottom: 2px;
+        font-size: 6pt;
+    }
+    .photo-cell {
+        width: 35mm;
+        min-width: 35mm;
+        max-width: 35mm;
+        height: 45mm;
+        border: 1px solid #000;
+        vertical-align: middle;
+        padding: 1.5mm;
+        margin: 0;
+    }
+    .photo-inner {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        display: block;
+        background: #fff;
+    }
+    .photo-inner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .photo-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #c0392b;
+        font-size: 9pt;
+        font-weight: bold;
+    }
+    .sign-section {
+        overflow: hidden;
+        margin-top: 6px;
+    }
+    .declaration-text {
+        float: left;
+        width: 68%;
+        font-size: 6.8pt;
+        text-align: justify;
+        line-height: 1.25;
+        padding-right: 6px;
+    }
+    .sign-right {
+        float: right;
+        width: 30%;
+        text-align: right;
+    }
+    .date-line {
+        font-size: 7pt;
+        margin-bottom: 3px;
+        padding-right: 10px;
+    }
+    .sign-table {
+        width: 145px;
+        float: right;
+        border-collapse: collapse;
+        border: 1px solid #000;
+    }
+    .sign-table td {
+        border: 1px solid #000;
+        padding: 3px 5px;
+        vertical-align: middle;
+    }
+    .sign-label {
+        background-color: #C7BFA3;
+        font-weight: bold;
+        font-size: 9pt;
+        text-align: center;
+        width: 40px;
+    }
+    .sign-space { height: 30px; }
+    .clearfix::after { content: ""; clear: both; display: table; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>AQUA EDUCATION AND TRAINING ACADEMY</h1>
+    <p>Lazimpat-02, Kathmandu, Nepal</p>
+</div>
+<div class="cc-line">CC TO:<br>ZENSHO HOLDINGS / SUKIYA JAPAN / AEON GROUP / TOKYU GROUP / TOKYUSYUKAI JAPAN</div>
+
+<div class="section-bar">ADMISSION FORM FOR SSW AND WORKING</div>
+
+<table id="admission-top">
+    <colgroup>
+        <col style="width:13%">
+        <col style="width:22%">
+        <col style="width:9%">
+        <col style="width:15%">
+        <col style="width:9%">
+        <col style="width:14%">
+        <col style="width:18%">
+    </colgroup>
+    <tr>
+        <td><div class="row-h center" style="font-size:7.5pt;">Student ID NO</div></td>
+        <td><div class="row-h" style="font-size:8.5pt;">{{ student.student_id|default:'' }}</div></td>
+        <td><div class="row-h center" style="font-size:7.5pt;">A-CODE</div></td>
+        <td><div class="row-h" style="font-size:8pt;">{{ a_code }}</div></td>
+        <td><div class="row-h center" style="font-size:7.5pt;">Gender</div></td>
+        <td><div class="row-h" style="font-size:8pt;">{{ student.get_gender_display|default:'' }}</div></td>
+        <td rowspan="4" class="photo-cell">
+            <div class="photo-inner">{{ photo_html|safe }}</div>
+        </td>
+    </tr>
+    <tr>
+        <td><div class="row-h center" style="font-size:7.5pt;">Full Name</div></td>
+        <td colspan="3"><div class="row-h" style="font-size:10pt; font-weight:bold;">{{ student.full_name|default:'' }}</div></td>
+        <td><div class="row-h center" style="font-size:7.5pt;">Date of Birth</div></td>
+        <td><div class="row-h center" style="font-size:8pt;">{{ dob }}</div></td>
+    </tr>
+    <tr>
+        <td rowspan="2"><div class="row-h center" style="font-size:7.5pt; font-weight:bold; height:22.5mm;">Full<br>Address</div></td>
+        <td><div class="row-h center" style="font-size:6.8pt;">Permanent</div></td>
+        <td colspan="2"><div class="row-h" style="font-size:7.5pt;">{{ student.permanent_address|default:'' }}</div></td>
+        <td><div class="row-h center" style="font-size:7.5pt;">Age</div></td>
+        <td><div class="row-h center" style="font-size:8pt;">{{ student.age|default:'' }}</div></td>
+    </tr>
+    <tr>
+        <td><div class="row-h center" style="font-size:6.8pt;">Present</div></td>
+        <td colspan="2"><div class="row-h" style="font-size:7.5pt;">{{ student.present_address|default:'' }}</div></td>
+        <td><div class="row-h center" style="font-size:7.5pt;">Marital Status</div></td>
+        <td><div class="row-h center" style="font-size:8pt;">{{ student.get_marital_status_display|default:'' }}</div></td>
+    </tr>
+</table>
+
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:13%"><col style="width:27%"><col style="width:13%"><col style="width:17%"><col style="width:13%"><col style="width:17%">
+    </colgroup>
+    <tr style="height:24px;">
+        <td class="center" style="font-size:7.5pt;">Passport No.</td>
+        <td style="font-size:7.5pt;">{{ student.passport_no|default:'' }}</td>
+        <td class="center" style="font-size:7.5pt;">Date of Issue</td>
+        <td style="font-size:7.5pt;">{{ passport_issue }}</td>
+        <td class="center" style="font-size:7.5pt;">Date of Expiry</td>
+        <td style="font-size:7.5pt;">{{ passport_expiry }}</td>
+    </tr>
+</table>
+
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:12%"><col style="width:8%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:8%"><col style="width:9%"><col style="width:33%">
+    </colgroup>
+    <tr class="center" style="height:18px;">
+        <td rowspan="3" style="font-size:7pt;">Personal<br>Information</td>
+        <td style="font-size:7pt;">Height</td>
+        <td style="font-size:7pt;">Weight</td>
+        <td colspan="2" style="font-size:7pt;">Eye Lense</td>
+        <td style="font-size:7pt;">Blood Group</td>
+        <td style="font-size:7pt;">TB Status</td>
+        <td style="font-size:7pt;">Past Visa Apply</td>
+        <td style="font-size:7pt;">Visa Details (No. &amp; Result)</td>
+    </tr>
+    <tr class="center" style="height:18px;">
+        <td rowspan="2" style="font-size:7.5pt;">{{ student.height|default:'' }}</td>
+        <td rowspan="2" style="font-size:7.5pt;">{{ student.weight|default:'' }}</td>
+        <td style="font-size:7pt;">Right</td>
+        <td style="font-size:7pt;">Left</td>
+        <td rowspan="2" style="font-size:7.5pt;">{{ student.blood_group|default:'' }}</td>
+        <td rowspan="2" style="font-size:7.5pt;">{{ student.tb_status|default:'' }}</td>
+        <td rowspan="2" style="font-size:7.5pt;">{{ student.get_visa_apply_record_display|default:'' }}</td>
+        <td rowspan="2" style="font-size:7.5pt;">{{ student.visa_details|default:'' }}</td>
+    </tr>
+    <tr class="center" style="height:18px;">
+        <td style="font-size:7.5pt;">{{ student.eye_lens_right|default:'' }}</td>
+        <td style="font-size:7.5pt;">{{ student.eye_lens_left|default:'' }}</td>
+    </tr>
+</table>
+
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:13%"><col style="width:44%"><col style="width:13%"><col style="width:30%">
+    </colgroup>
+    <tr style="height:22px;">
+        <td class="center" style="font-size:7.5pt;">Email ID</td>
+        <td style="font-size:7.5pt;">{{ student.email|default:'' }}</td>
+        <td class="center" style="font-size:7.5pt;">Phone No.</td>
+        <td style="font-size:7.5pt;">{{ student.phone|default:'' }}</td>
+    </tr>
+    <tr style="height:22px;">
+        <td class="center" style="font-size:7.5pt;">Family Records</td>
+        <td colspan="3" style="font-size:7.5pt;">{{ student.family_records|default:'' }}</td>
+    </tr>
+    <tr style="height:22px;">
+        <td class="center" style="font-size:7.5pt;">Spouse Name</td>
+        <td style="font-size:7.5pt;">{{ student.spouse_name|default:'' }}</td>
+        <td class="center" style="font-size:7.5pt;">Contact No.</td>
+        <td style="font-size:7.5pt;">{{ student.spouse_contact|default:'' }}</td>
+    </tr>
+</table>
+
+<div class="section-bar-standalone" style="border-bottom:none; margin-top:3px;">EDUCATIONAL HISTORY</div>
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:17%"><col style="width:40%"><col style="width:7%"><col style="width:7%"><col style="width:7%"><col style="width:7%"><col style="width:15%">
+    </colgroup>
+    <tr class="center" style="height:20px;">
+        <th rowspan="2" style="font-size:7.5pt;">Pass Level</th>
+        <th rowspan="2" style="font-size:7.5pt;">Name of School</th>
+        <th colspan="4" style="font-size:7.5pt;">Admission &amp; Graduation</th>
+        <th rowspan="2" style="font-size:7.5pt;">Enrolled Years</th>
+    </tr>
+    <tr class="center" style="height:14px;">
+        <td style="font-size:6.8pt;">Year</td>
+        <td style="font-size:6.8pt;">Month</td>
+        <td style="font-size:6.8pt;">Year</td>
+        <td style="font-size:6.8pt;">Month</td>
+    </tr>
+    {% for e in education_rows %}
+    <tr style="height:21px;">
+        <td class="td-left" style="font-size:7.5pt;">{{ e.pass_level }}</td>
+        <td style="font-size:7.5pt;">{{ e.school_name|default:'' }}</td>
+        <td class="center" style="font-size:7.5pt;">{{ e.admission_year|default:'' }}</td>
+        <td class="center" style="font-size:7.5pt;">{{ e.admission_month|default:'' }}</td>
+        <td class="center" style="font-size:7.5pt;">{{ e.graduation_year|default:'' }}</td>
+        <td class="center" style="font-size:7.5pt;">{{ e.graduation_month|default:'' }}</td>
+        <td class="center" style="font-size:7.5pt; position:relative;">{{ e.enrolled_years|default:'' }}<span class="years-label">Years</span></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div class="section-bar-standalone" style="border-bottom:none; margin-top:3px;">WORKING EXPERIENCE</div>
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:17%"><col style="width:45%"><col style="width:23%"><col style="width:15%">
+    </colgroup>
+    <tr class="center" style="height:20px;">
+        <th style="font-size:7.5pt;">Type of Work</th>
+        <th style="font-size:7.5pt;">Name of Working Company</th>
+        <th style="font-size:7.5pt;">Date of Join &amp; Resign</th>
+        <th style="font-size:7.5pt;">Working Years</th>
+    </tr>
+    {% for w in work_rows %}
+    <tr style="height:22px;">
+        <td class="td-left" style="font-size:7.5pt;">{{ w.work_type|default:'' }}</td>
+        <td style="font-size:7.5pt;">{{ w.company_name|default:'' }}</td>
+        <td class="center" style="font-size:7.5pt;">{% if w %}{{ w.join_date|default:'' }} ~ {{ w.resign_date|default:'' }}{% endif %}</td>
+        <td class="center" style="font-size:7.5pt; position:relative;">{{ w.working_years|default:'' }}<span class="years-label">Years</span></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<table style="margin-top:3px;">
+    <colgroup>
+        <col style="width:50%"><col style="width:50%">
+    </colgroup>
+    <tr>
+        <td class="bg-tan" style="font-size:8pt; text-align:center;">LANGUAGE AND SKILLS PASSED CERTIFICATE</td>
+        <td class="bg-tan" style="font-size:8pt; text-align:center;">LANGUAGE &amp; SKILLS TRAINING STATUS</td>
+    </tr>
+    <tr>
+        <td style="padding:0;">
+            <table style="border:none; width:100%;">
+                <colgroup>
+                    <col style="width:28%"><col style="width:72%">
+                </colgroup>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-bottom:1px solid #000; font-size:6.5pt;">Pass Year &amp; Month</td>
+                    <td style="border:none; border-bottom:1px solid #000; font-size:6.5pt;">Name of Pass Exam</td>
+                </tr>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; font-size:7.5pt;">{{ student.certificate_pass_year|default:'' }}</td>
+                    <td style="border:none; font-size:7.5pt;">{{ student.certificate_name|default:'' }}</td>
+                </tr>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td>
+                    <td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td>
+                </tr>
+            </table>
+        </td>
+        <td style="padding:0;">
+            <table style="border:none; width:100%;">
+                <colgroup>
+                    <col style="width:32%"><col style="width:68%">
+                </colgroup>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-bottom:1px solid #000; font-size:6.5pt;">Join Year and Month</td>
+                    <td style="border:none; border-bottom:1px solid #000; font-size:6.5pt;">Organization</td>
+                </tr>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; font-size:7.5pt;">{{ student.language_join_year|default:'' }}</td>
+                    <td style="border:none; font-size:7.5pt;">{{ student.organization|default:'' }}</td>
+                </tr>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td>
+                    <td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:25%"><col style="width:37.5%"><col style="width:37.5%">
+    </colgroup>
+    <tr class="center" style="height:26px;">
+        <td rowspan="3" class="bg-tan" style="font-size:9pt; font-weight:bold;">DRIVING LICENSE</td>
+        <td style="font-size:6.8pt;">Pass Year &amp; Month</td>
+        <td style="font-size:6.8pt;">Type of License</td>
+    </tr>
+    <tr style="height:26px;" class="center">
+        <td style="font-size:7.5pt;">{{ student.license_pass_year|default:'' }}</td>
+        <td style="font-size:7.5pt;">{{ student.driving_license|default:'' }}</td>
+    </tr>
+    <tr style="height:26px;" class="center">
+        <td style="font-size:7.5pt;">{{ student.license_pass_year_2|default:'' }}</td>
+        <td style="font-size:7.5pt;">{{ student.license_type_2|default:'' }}</td>
+    </tr>
+</table>
+
+<table style="margin-top:-1px;">
+    <colgroup>
+        <col style="width:50%"><col style="width:50%">
+    </colgroup>
+    <tr style="height:18px;">
+        <td style="font-size:7.5pt; font-weight:bold;">Hobbies, Special skills, etc.</td>
+        <td style="font-size:7.5pt; font-weight:bold;">Motivation, Self-promotion</td>
+    </tr>
+    <tr style="height:45px; vertical-align:top;">
+        <td style="font-size:7.5pt;">{{ student.hobbies|default:'' }}</td>
+        <td style="font-size:7.5pt;">{{ student.motivation|default:'' }}</td>
+    </tr>
+</table>
+
+<div class="sign-section clearfix" style="margin-top:7px;">
+    <div class="declaration-text">
+        I hereby agree to study the Japanese language at the Aqua Education And Training Academy while strictly complying with all rules and regulations. After going to Japan, I promise to follow all Japanese rules and the immigration law. In the event that I fail to comply with company rules and law of Japan, I'm agree to accept all penalties in accordance with Japanese rules and Immigration Law.
+    </div>
+    <div class="sign-right">
+        <div class="date-line">Date : ________________</div>
+        <table class="sign-table">
+            <tr>
+                <td class="sign-label">SIGN</td>
+                <td class="sign-space"></td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

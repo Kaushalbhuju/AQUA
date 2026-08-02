@@ -86,6 +86,29 @@
                         </div>
 
                         <div class="wizard-content">
+                            {% if is_quick_mode %}
+                            <!-- QUICK MODE: Show Student Summary Card -->
+                            <div class="card mb-4 border-primary bg-light">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="bi bi-person-badge me-2"></i> Student Details (Pre-filled from Dashboard)
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2"><strong>Name:</strong> {{ dashboard_student.full_name }}</div>
+                                        <div class="col-md-4 mb-2"><strong>Email:</strong> {{ dashboard_student.email }}</div>
+                                        <div class="col-md-4 mb-2"><strong>Phone:</strong> {{ dashboard_student.phone }}</div>
+                                        <div class="col-md-4 mb-2"><strong>DOB:</strong> {{ dashboard_student.date_of_birth|default:"N/A" }}</div>
+                                        <div class="col-md-4 mb-2"><strong>Gender:</strong> {{ dashboard_student.get_gender_display|default:"N/A" }}</div>
+                                        <div class="col-md-4 mb-2"><strong>Blood Group:</strong> {{ dashboard_student.blood_group|default:"N/A" }}</div>
+                                    </div>
+                                    <!-- Hide the personal fields inputs in a hidden div so form submits successfully -->
+                                    <div class="d-none">
+                                        {{ form.full_name }}{{ form.email }}{{ form.phone }}
+                                        {{ form.date_of_birth }}{{ form.gender }}{{ form.blood_group }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
                             <div class="form-section" data-section="personal">
                                 <div class="section-header mb-4">
                                     <h5 class="text-primary fw-bold">
@@ -147,7 +170,9 @@
                                     </div>
                                 </div>
                             </div>
+                            {% endif %}
 
+                            {% if not is_quick_mode %}
                             <div class="form-section mt-4" data-section="address">
                                 <div class="section-header mb-4">
                                     <h5 class="text-primary fw-bold">
@@ -193,34 +218,59 @@
                                     </div>
                                 </div>
                             </div>
+                            {% else %}
+                            <div class="d-none">
+                                {{ form.address }}{{ form.city }}{{ form.state }}{{ form.pincode }}{{ form.country }}
+                            </div>
+                            {% endif %}
 
-                            <div class="form-section mt-4" data-section="academic">
+                            <div class="form-section {% if not is_quick_mode %}mt-4{% endif %}" data-section="academic">
                                 <div class="section-header mb-4">
                                     <h5 class="text-primary fw-bold">
-                                        <i class="bi bi-mortarboard-fill me-2"></i>Academic Information
+                                        <i class="bi bi-mortarboard-fill me-2"></i>{% if is_quick_mode %}Class & Purpose{% else %}Academic Information{% endif %}
                                     </h5>
                                 </div>
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label for="{{ form.course.id_for_label }}" class="form-label">Course <span class="text-danger">*</span></label>
+                                        <label for="{{ form.course.id_for_label }}" class="form-label">{% if is_quick_mode %}Select Class{% else %}Course{% endif %} <span class="text-danger">*</span></label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light"><i class="bi bi-book"></i></span>
+                                            {% if is_quick_mode %}
+                                            <select name="course" id="{{ form.course.id_for_label }}" class="form-select" required>
+                                                <option value="">-- Select Class --</option>
+                                                {% for cls in classrooms %}
+                                                    <option value="{{ cls.name }}" {% if form.course.value == cls.name %}selected{% endif %}>{{ cls.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            {% else %}
                                             {{ form.course }}
+                                            {% endif %}
                                         </div>
                                         {% if form.course.errors %}
                                         <div class="text-danger small mt-1">{{ form.course.errors }}</div>
                                         {% endif %}
+                                        {% if not is_quick_mode %}
                                         <small class="text-muted">Enter the course name</small>
+                                        {% endif %}
                                     </div>
                                     <div class="col-md-6">
+                                        {% if is_quick_mode %}
+                                        <label for="payment_purpose" class="form-label">Payment Purpose</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-tag"></i></span>
+                                            <input type="text" name="payment_purpose" id="payment_purpose" class="form-control" placeholder="e.g. Admission Fee, Tuition Fee">
+                                        </div>
+                                        {% else %}
                                         <label for="{{ form.batch.id_for_label }}" class="form-label">Batch</label>
                                         <div class="input-group">
                                             <span class="input-group-text bg-light"><i class="bi bi-calendar-range"></i></span>
                                             {{ form.batch }}
                                         </div>
                                         <small class="text-muted">e.g., 2024-25, Jan 2024, etc.</small>
+                                        {% endif %}
                                     </div>
                                 </div>
+                                {% if not is_quick_mode %}
                                 <div class="row g-3 mt-2">
                                     <div class="col-md-6">
                                         <label for="{{ form.qualification.id_for_label }}" class="form-label">Qualification</label>
@@ -237,6 +287,12 @@
                                         </div>
                                     </div>
                                 </div>
+                                {% else %}
+                                <!-- Hidden fields for non-rendered academic fields -->
+                                <div class="d-none">
+                                    {{ form.batch }}{{ form.qualification }}{{ form.previous_institution }}
+                                </div>
+                                {% endif %}
                             </div>
 
                             <div class="form-section mt-4" data-section="fee">

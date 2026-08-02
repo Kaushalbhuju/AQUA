@@ -1,0 +1,158 @@
+{% extends "translation/base.html" %}
+
+{% block title %}{{ document.title }} — Translation System{% endblock %}
+{% block nav_documents %}active{% endblock %}
+{% block page_title %}Document Detail{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+  <div>
+    <h4 class="fw-bold mb-2">{{ document.title }}</h4>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+      <span class="tr-badge tr-badge-{{ document.status }}">{{ document.get_status_display }}</span>
+      {% if document.document_type %}
+        <span class="tr-badge" style="background: #f0f9ff; color: #0369a1">
+          <i class="bi bi-tag me-1"></i>{{ document.document_type.name }}
+        </span>
+      {% endif %}
+      <span class="tr-badge" style="background: #fef3c7; color: #92400e">
+        <i class="bi bi-file-earmark me-1"></i>{{ document.get_file_type_display }}
+      </span>
+    </div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'translation:document_process' document.pk %}" class="btn btn-tr-primary" id="btn-goto-process">
+      <i class="bi bi-play-fill me-1"></i> Process
+    </a>
+    {% if document.translated_text %}
+      <a href="{% url 'translation:document_review' document.pk %}" class="btn btn-tr-outline" id="btn-goto-review">
+        <i class="bi bi-pencil-square me-1"></i> Review
+      </a>
+      <a href="{% url 'translation:document_download' document.pk %}" class="btn btn-tr-success" id="btn-goto-download">
+        <i class="bi bi-download me-1"></i> Download DOCX
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Metadata -->
+  <div class="col-lg-4">
+    <div class="tr-card mb-4">
+      <div class="tr-card-header">
+        <h5><i class="bi bi-info-circle-fill me-2" style="color: var(--tr-info)"></i>Details</h5>
+      </div>
+      <div class="tr-card-body">
+        <div class="mb-3">
+          <div class="text-muted" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px">File Size</div>
+          <div style="font-size: 14px; font-weight: 500">{{ document.file_size_display }}</div>
+        </div>
+        <div class="mb-3">
+          <div class="text-muted" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px">Uploaded By</div>
+          <div style="font-size: 14px; font-weight: 500">{{ document.uploaded_by.username|default:"—" }}</div>
+        </div>
+        {% if document.reviewed_by %}
+          <div class="mb-3">
+            <div class="text-muted" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px">Reviewed By</div>
+            <div style="font-size: 14px; font-weight: 500">{{ document.reviewed_by.username }}</div>
+          </div>
+        {% endif %}
+        <div class="mb-3">
+          <div class="text-muted" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px">Uploaded</div>
+          <div style="font-size: 14px; font-weight: 500">{{ document.created_at|date:"M d, Y H:i" }}</div>
+        </div>
+        <div class="mb-3">
+          <div class="text-muted" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px">Last Updated</div>
+          <div style="font-size: 14px; font-weight: 500">{{ document.updated_at|date:"M d, Y H:i" }}</div>
+        </div>
+        {% if document.auto_detected_type %}
+          <div class="mb-3">
+            <div class="text-muted" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px">Auto-Detected Type</div>
+            <div style="font-size: 14px; font-weight: 500">{{ document.auto_detected_type.name }}</div>
+          </div>
+        {% endif %}
+        {% if document.notes %}
+          <div>
+            <div class="text-muted" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px">Notes</div>
+            <div style="font-size: 13px; line-height: 1.6">{{ document.notes }}</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="tr-card">
+      <div class="tr-card-header">
+        <h5><i class="bi bi-clock-history me-2" style="color: var(--tr-accent)"></i>History</h5>
+      </div>
+      <div class="tr-card-body p-0">
+        {% if history %}
+          <div class="list-group list-group-flush">
+            {% for entry in history %}
+              <div class="list-group-item border-0 px-3 py-2">
+                <div class="d-flex justify-content-between" style="font-size: 12.5px">
+                  <span class="fw-semibold">{{ entry.get_action_display }}</span>
+                  <span class="text-muted">{{ entry.created_at|date:"M d, H:i" }}</span>
+                </div>
+                {% if entry.details %}
+                  <div class="text-muted" style="font-size: 11.5px">{{ entry.details|truncatechars:80 }}</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="text-muted text-center py-3" style="font-size: 13px">No history</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="col-lg-8">
+    {% if document.extracted_text %}
+      <div class="tr-card mb-4">
+        <div class="tr-card-header">
+          <h5><i class="bi bi-file-text-fill me-2" style="color: #3730a3"></i>English Text</h5>
+          <span class="text-muted" style="font-size: 12px">{{ document.extracted_text|length }} chars</span>
+        </div>
+        <div class="tr-card-body" style="max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-size: 13.5px; line-height: 1.8;">{{ document.extracted_text }}</div>
+      </div>
+    {% endif %}
+
+    {% if document.translated_text %}
+      <div class="tr-card">
+        <div class="tr-card-header">
+          <h5><i class="bi bi-translate me-2" style="color: #9d174d"></i>Japanese Translation</h5>
+          <span class="text-muted" style="font-size: 12px">{{ document.translated_text|length }} chars</span>
+        </div>
+        <div class="tr-card-body" style="max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-size: 14px; line-height: 1.8; font-family: 'MS Gothic', 'Yu Gothic', sans-serif;">{{ document.translated_text }}</div>
+      </div>
+    {% endif %}
+
+    {% if not document.extracted_text %}
+      <div class="tr-card">
+        <div class="tr-card-body tr-empty">
+          <i class="bi bi-file-earmark d-block"></i>
+          <h6>No content extracted yet</h6>
+          <p>Go to the Process page to extract and translate this document.</p>
+          <a href="{% url 'translation:document_process' document.pk %}" class="btn btn-tr-primary mt-2" id="btn-start-process">
+            <i class="bi bi-play-fill me-1"></i> Start Processing
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Delete -->
+<div class="mt-4 pt-3 border-top">
+  <form method="post" action="{% url 'translation:document_delete' document.pk %}"
+        onsubmit="return confirm('Are you sure you want to delete this document? This cannot be undone.');">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-tr-danger" id="btn-delete-doc">
+      <i class="bi bi-trash3 me-1"></i> Delete Document
+    </button>
+  </form>
+</div>
+{% endblock %}

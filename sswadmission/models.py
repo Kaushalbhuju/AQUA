@@ -5,6 +5,7 @@ from django.utils import timezone
 from decimal import Decimal
 import uuid
 from django.db.models import Sum
+import re
 
 class Student(models.Model):
     STATUS_CHOICES = [
@@ -128,6 +129,15 @@ class Student(models.Model):
         if effective_fee > 0:
             return (self.paid_amount / effective_fee) * 100
         return 0
+    
+    @property
+    def payment_purpose(self):
+        if self.remarks:
+            match = re.search(r'\[Payment Purpose: (.*?)\]', self.remarks)
+            if match:
+                return match.group(1)
+        return "-"
+
     
     def update_payment_status(self):
         """Update paid_amount from payments"""

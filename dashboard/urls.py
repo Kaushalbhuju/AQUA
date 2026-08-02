@@ -1,15 +1,15 @@
 # dashboard/urls.py
 from django.urls import path
-from .views.dashboard_views_fixed import *
-from .views.other_views import home_view, dashboard_view, profile_view, settings_view
-from .views.report_views import teacher_report, export_report_excel, export_report_pdf
-from .views.student_views import (
+from .views.dashboards import *
+from .views.students import (
     registration_success, student_registration, student_list, student_detail,
     student_application_detail, update_student_status,
     generate_student_pdf, generate_student_pdf_portal, generate_admission_fee_pdf, 
     generate_admission_fee_pdf_portal, approve_student, decline_student,
     approve_student_page, decline_student_page, biodata, approval_success
 )
+from .views.other_views import home_view, dashboard_view, profile_view, settings_view
+from .views.report_views import teacher_report, export_report_excel, export_report_pdf
 from .views.portal_views import (
     PortalStudentRegistrationView, portal_registration_success, portal_logout
 )

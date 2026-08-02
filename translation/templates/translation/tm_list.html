@@ -1,0 +1,152 @@
+{% extends "translation/base.html" %}
+
+{% block title %}Translation Memory — Translation System{% endblock %}
+{% block nav_tm %}active{% endblock %}
+{% block page_title %}Translation Memory{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Card -->
+<div class="tr-card mb-4">
+  <div class="tr-card-body">
+    <form method="get" class="row g-3 align-items-end" id="tm-search-form">
+      <div class="col-lg-5 col-md-4">
+        <label class="form-label fw-semibold" style="font-size: 12px">Search Text</label>
+        {{ form.q }}
+      </div>
+      <div class="col-lg-3 col-md-3">
+        <label class="form-label fw-semibold" style="font-size: 12px">Document Type</label>
+        {{ form.document_type }}
+      </div>
+      <div class="col-lg-2 col-md-3">
+        <div class="form-check mb-2">
+          {{ form.verified_only }}
+          <label class="form-check-label fw-semibold" style="font-size: 12px" for="id_tm_verified_only">
+            Verified Only
+          </label>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-2">
+        <button type="submit" class="btn btn-tr-primary w-100" id="btn-tm-search">
+          <i class="bi bi-search me-1"></i> Search
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Translation Memory Table -->
+<div class="tr-card">
+  <div class="tr-card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="bi bi-database-fill me-2" style="color: var(--tr-primary)"></i>Translation Pairs</h5>
+    <form method="post" action="{% url 'translation:tm_clear' %}" onsubmit="return confirm('Are you sure you want to delete ALL Translation Memory entries? This cannot be undone.');" style="display:inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger btn-sm">
+        <i class="bi bi-trash3 me-1"></i> Clear All
+      </button>
+    </form>
+    <div class="d-flex align-items-center gap-2">
+      <span class="text-muted" style="font-size: 12px">
+        {{ page_obj.paginator.count }} entries
+      </span>
+      <a href="{% url 'translation:tm_add' %}" class="btn btn-tr-primary btn-tr-sm" id="btn-new-tm">
+        <i class="bi bi-plus me-1"></i> Add Entry
+      </a>
+    </div>
+  </div>
+
+  {% if page_obj %}
+    <div class="table-responsive">
+      <table class="tr-table">
+        <thead>
+          <tr>
+            <th style="width: 40%">English Text</th>
+            <th style="width: 40%">Japanese Translation</th>
+            <th>Type</th>
+            <th>Source</th>
+            <th>Verified</th>
+            <th>Uses</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tm in page_obj %}
+            <tr>
+              <td>
+                <div style="max-height: 80px; overflow-y: auto; font-size: 13px; line-height: 1.5; white-space: pre-wrap;">{{ tm.english_text }}</div>
+              </td>
+              <td>
+                <div style="max-height: 80px; overflow-y: auto; font-size: 13px; line-height: 1.5; white-space: pre-wrap; font-family: 'MS Gothic', sans-serif;">{{ tm.japanese_text }}</div>
+              </td>
+              <td style="font-size: 12px">{{ tm.document_type.name|default:"—" }}</td>
+              <td>
+                <span class="badge" style="font-size: 11px; font-weight: 500; background: {% if tm.source == 'google' %}#eff6ff; color: #1d4ed8;{% else %}#f0fdf4; color: #166534;{% endif %}">
+                  {{ tm.get_source_display }}
+                </span>
+              </td>
+              <td>
+                {% if tm.is_verified %}
+                  <span class="text-success" title="Verified"><i class="bi bi-patch-check-fill fs-5"></i></span>
+                {% else %}
+                  <span class="text-muted" title="Unverified"><i class="bi bi-patch-minus fs-5"></i></span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge rounded-pill bg-light text-dark" style="font-size: 11px">{{ tm.usage_count }}</span>
+              </td>
+              <td class="text-end">
+                <div class="d-flex gap-1 justify-content-end">
+                  <a href="{% url 'translation:tm_edit' tm.pk %}" class="btn btn-tr-outline btn-tr-sm" title="Edit">
+                    <i class="bi bi-pencil-fill"></i>
+                  </a>
+                  <form method="post" action="{% url 'translation:tm_delete' tm.pk %}"
+                        onsubmit="return confirm('Are you sure you want to delete this translation memory pair?');" style="display: inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-tr-danger btn-tr-sm" title="Delete">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="tr-card-body tr-empty">
+      <i class="bi bi-database-exclamation d-block"></i>
+      <h6>No translation memory entries found</h6>
+      <p>Try a different search query or add a new entry manually.</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+  <nav class="mt-4 d-flex justify-content-center" aria-label="Translation Memory pagination">
+    <ul class="pagination tr-pagination mb-0">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}&document_type={{ request.GET.document_type }}&verified_only={{ request.GET.verified_only }}">&laquo;</a>
+        </li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}&q={{ request.GET.q }}&document_type={{ request.GET.document_type }}&verified_only={{ request.GET.verified_only }}">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}&document_type={{ request.GET.document_type }}&verified_only={{ request.GET.verified_only }}">&raquo;</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+{% endblock %}

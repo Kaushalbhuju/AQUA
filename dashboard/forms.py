@@ -138,7 +138,7 @@ class StudentForm(forms.ModelForm):
     report_file = forms.FileField(label="Medical Report", required=True, widget=forms.FileInput(attrs={'class': 'form-control'}))
     other_file = forms.FileField(label="Other PDF", required=False, widget=forms.FileInput(attrs={'class': 'form-control'}))
     
-    def _clean_file_field(self, field_name, label, max_mb=5):
+    def _clean_file_field(self, field_name, label, max_mb=10):
         file = self.cleaned_data.get(field_name)
         if file:
             valid_extensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']
@@ -175,7 +175,7 @@ class StudentForm(forms.ModelForm):
             'student_id': forms.TextInput(attrs={'class': 'form-control'}),
             'full_name': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'required': 'required'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'required': 'required', 'type': 'tel', 'pattern': '[0-9]{10}', 'placeholder': 'e.g. 9812345678'}),
             'height': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "e.g., 5'8\"", 'required': 'required'}),
             'weight': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 65 kg', 'required': 'required'}),
             'spouse_name': forms.TextInput(attrs={'class': 'form-control'}),

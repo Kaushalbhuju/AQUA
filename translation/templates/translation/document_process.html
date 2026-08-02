@@ -1,0 +1,413 @@
+{% extends "translation/base.html" %}
+
+{% block title %}Process: {{ document.title }} — Translation System{% endblock %}
+{% block nav_documents %}active{% endblock %}
+{% block page_title %}Process Document{% endblock %}
+
+{% block content %}
+<!-- Document Info -->
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+  <div>
+    <h4 class="fw-bold mb-1">{{ document.title }}</h4>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+      <span class="tr-badge tr-badge-{{ document.status }}">{{ document.get_status_display }}</span>
+      {% if document.document_type %}
+        <span class="tr-badge" style="background: #f0f9ff; color: #0369a1">
+          <i class="bi bi-tag me-1"></i>{{ document.document_type.name }}
+        </span>
+      {% endif %}
+      <span class="text-muted" style="font-size: 12px">
+        <i class="bi bi-calendar3 me-1"></i>{{ document.created_at|date:"M d, Y H:i" }}
+      </span>
+    </div>
+  </div>
+  <a href="{% url 'translation:document_detail' document.pk %}" class="btn btn-tr-outline btn-tr-sm" id="btn-view-detail">
+    <i class="bi bi-eye me-1"></i> View Detail
+  </a>
+</div>
+
+<!-- Process Steps -->
+{% with is_char_cert=document.document_type.name %}
+<div class="tr-steps">
+  <div class="tr-step {% if document.status == 'uploaded' %}active{% elif document.extracted_text %}done{% endif %}">
+    <span class="tr-step-num">
+      {% if document.extracted_text %}<i class="bi bi-check"></i>{% else %}1{% endif %}
+    </span>
+    Extract Text
+  </div>
+  <div class="tr-step {% if document.status == 'extracted' and not document.document_type %}active{% elif document.document_type %}done{% endif %}">
+    <span class="tr-step-num">
+      {% if document.document_type %}<i class="bi bi-check"></i>{% else %}2{% endif %}
+    </span>
+    Detect Type
+  </div>
+  {% if is_char_cert == "Character Certificate" %}
+    {# Character Certificate: Step 3 is "Generate Certificate" (template filling) #}
+    <div class="tr-step {% if document.extracted_text and document.document_type and not document.translated_file %}active{% elif document.translated_file or document.status == 'completed' %}done{% endif %}">
+      <span class="tr-step-num">
+        {% if document.translated_file or document.status == 'completed' %}<i class="bi bi-check"></i>{% else %}3{% endif %}
+      </span>
+      Generate Certificate
+    </div>
+  {% else %}
+    <div class="tr-step {% if document.status == 'extracted' and document.document_type %}active{% elif document.translated_text %}done{% endif %}">
+      <span class="tr-step-num">
+        {% if document.translated_text %}<i class="bi bi-check"></i>{% else %}3{% endif %}
+      </span>
+      Translate
+    </div>
+    <div class="tr-step {% if document.status == 'translated' %}active{% elif document.status == 'completed' %}done{% endif %}">
+      <span class="tr-step-num">
+        {% if document.status == 'completed' %}<i class="bi bi-check"></i>{% else %}4{% endif %}
+      </span>
+      Review
+    </div>
+  {% endif %}
+</div>
+{% endwith %}
+
+{% if document.error_message %}
+  <div class="alert alert-danger mb-4" id="error-display">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <strong>Error:</strong> {{ document.error_message }}
+  </div>
+{% endif %}
+
+<div class="row g-4">
+  <!-- Left: Actions Panel -->
+  <div class="col-lg-4">
+    <div class="tr-card">
+      <div class="tr-card-header">
+        <h5><i class="bi bi-lightning-fill me-2" style="color: var(--tr-accent)"></i>Actions</h5>
+      </div>
+      <div class="tr-card-body">
+
+        <!-- Step 1: Extract -->
+        {% if not document.extracted_text or document.status == 'uploaded' or document.status == 'failed' %}
+          <form method="post" class="mb-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="extract">
+            <button type="submit" class="btn btn-tr-primary w-100" id="btn-extract">
+              <i class="bi bi-file-earmark-text me-1"></i> Extract Text
+            </button>
+            <small class="text-muted d-block mt-1">Extract English text from the uploaded document</small>
+          </form>
+        {% else %}
+          <div class="d-flex align-items-center gap-2 mb-3 text-success" style="font-size: 13px">
+            <i class="bi bi-check-circle-fill"></i>
+            <span class="fw-semibold">Text Extracted</span>
+          </div>
+        {% endif %}
+
+        <!-- Step 2: Detect Type -->
+        {% if document.extracted_text and not document.document_type %}
+          <form method="post" class="mb-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="detect">
+            <button type="submit" class="btn btn-tr-primary w-100" id="btn-detect">
+              <i class="bi bi-magic me-1"></i> Auto-Detect Type
+            </button>
+            <small class="text-muted d-block mt-1">Identify document type from content</small>
+          </form>
+        {% elif document.document_type %}
+          <div class="d-flex align-items-center gap-2 mb-3 text-success" style="font-size: 13px">
+            <i class="bi bi-check-circle-fill"></i>
+            <span class="fw-semibold">Type: {{ document.document_type.name }}</span>
+          </div>
+        {% endif %}
+
+        <!-- Manual Type Override -->
+        {% if document.extracted_text %}
+          <div class="border-top pt-3 mb-3">
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="override_type">
+              <label class="form-label fw-semibold" style="font-size: 13px">Manual Type Override</label>
+              {{ override_form.document_type }}
+              <button type="submit" class="btn btn-tr-outline btn-tr-sm w-100 mt-2" id="btn-override-type">
+                <i class="bi bi-pencil me-1"></i> Set Type
+              </button>
+            </form>
+          </div>
+        {% endif %}
+
+        {% if document.document_type.name == "Character Certificate" %}
+          {# ─── CHARACTER CERTIFICATE WORKFLOW ─── #}
+          {# No translation needed — generate directly from template #}
+          {% if document.extracted_text and document.document_type %}
+            <div class="border-top pt-3">
+              <div class="alert alert-info py-2 px-3 mb-3" style="font-size: 12px; border: 1px solid #bfdbfe; background: #eff6ff;">
+                <i class="bi bi-info-circle-fill me-1"></i>
+                <strong>Template Mode:</strong> Character Certificate will be generated 
+                by filling the approved Japanese template — no translation step needed.
+              </div>
+              <a href="{% url 'translation:document_download' document.pk %}" class="btn btn-tr-success w-100 mb-2" id="btn-generate-cert"
+                 onclick="this.innerHTML='<span class=\'spinner-border spinner-border-sm me-1\'></span> Generating...'; return true;">
+                <i class="bi bi-file-earmark-check me-1"></i> Generate Certificate (DOCX)
+              </a>
+              <small class="text-muted d-block mt-1 mb-3">
+                <i class="bi bi-shield-check me-1"></i>
+                Opens the approved Japanese template, fills extracted fields, preserves all formatting
+              </small>
+              {% if document.status != 'completed' %}
+                <form method="post" action="{% url 'translation:document_complete' document.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-tr-outline w-100" id="btn-complete">
+                    <i class="bi bi-check2-all me-1"></i> Mark Complete
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          {% endif %}
+
+        {% else %}
+          {# ─── DEFAULT WORKFLOW (other document types) ─── #}
+          <!-- Step 3: Translate -->
+          {% if document.extracted_text and not document.translated_text %}
+            <form method="post" class="mb-3">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="translate">
+              <button type="submit" class="btn btn-tr-success w-100" id="btn-translate"
+                      onclick="this.disabled=true; this.innerHTML='<span class=\'spinner-border spinner-border-sm me-1\'></span> Translating...'; this.form.submit();">
+                <i class="bi bi-translate me-1"></i> Translate to Japanese
+              </button>
+              <small class="text-muted d-block mt-1">Uses Translation Memory first, then Google Translate</small>
+            </form>
+          {% elif document.translated_text %}
+            <div class="d-flex align-items-center gap-2 mb-3 text-success" style="font-size: 13px">
+              <i class="bi bi-check-circle-fill"></i>
+              <span class="fw-semibold">Translation Complete</span>
+            </div>
+          {% endif %}
+
+          <!-- Step 4: Review & Download -->
+          {% if document.translated_text %}
+            <div class="border-top pt-3">
+              <a href="{% url 'translation:document_review' document.pk %}" class="btn btn-tr-primary w-100 mb-2" id="btn-review">
+                <i class="bi bi-pencil-square me-1"></i> Review & Edit
+              </a>
+              <a href="{% url 'translation:document_download' document.pk %}" class="btn btn-tr-success w-100 mb-2" id="btn-download">
+                <i class="bi bi-download me-1"></i> Download DOCX
+              </a>
+              {% if document.parsed_layout.pages %}
+                <a href="{% url 'translation:document_bilingual_pdf' document.pk %}" class="btn btn-tr-primary w-100 mb-2" id="btn-bilingual-pdf">
+                  <i class="bi bi-filetype-pdf me-1"></i> Download Bilingual PDF
+                </a>
+                <small class="text-muted d-block mt-n1 mb-2" style="font-size: 11px">
+                  <i class="bi bi-info-circle me-1"></i> Japanese text at original positions, images preserved
+                </small>
+              {% endif %}
+              {% if document.status != 'completed' %}
+                <form method="post" action="{% url 'translation:document_complete' document.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-tr-outline w-100" id="btn-complete">
+                    <i class="bi bi-check2-all me-1"></i> Mark Complete
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Content Preview -->
+  <div class="col-lg-8">
+    {% if document.extracted_text %}
+      <div class="tr-card mb-4" id="extracted-text-card">
+        <div class="tr-card-header">
+          <h5><i class="bi bi-file-text me-2" style="color: #3730a3"></i>Extracted English Text</h5>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="text-muted" style="font-size: 12px">{{ document.extracted_text|length }} characters</span>
+            <button class="btn btn-tr-outline btn-tr-sm" id="btn-toggle-edit" onclick="toggleEdit()" style="font-size: 12px">
+              <i class="bi bi-pencil me-1"></i> Edit
+            </button>
+          </div>
+        </div>
+        <div class="tr-card-body" style="font-size: 13.5px; line-height: 1.8;">
+          <!-- Display mode -->
+          <div id="extracted-display">
+            <div style="white-space: pre-wrap; font-family: 'Inter', monospace; max-height: 350px; overflow-y: auto; padding: 8px; background: #fafafa; border-radius: 6px;">
+              {{ document.extracted_text }}
+            </div>
+            {% if document.parsed_layout.pages %}
+              {% for page in document.parsed_layout.pages %}
+                {% if page.images %}
+                  <div style="margin-top: 10px; padding: 6px 10px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; font-size: 12px;">
+                    <strong style="color: #991b1b;">Page {{ page.page_number }} — Images:</strong>
+                    {% for img in page.images %}
+                      <span style="display: inline-block; margin: 4px 4px 0 0; padding: 2px 8px; border: 1px dashed #e11d48; border-radius: 4px; color: #9f1239; background: #fff1f2;">
+                        <i class="bi bi-image"></i> {{ img.name }} ({{ img.width|floatformat:0 }}×{{ img.height|floatformat:0 }})
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </div>
+          <!-- Edit mode (hidden by default) -->
+          <form method="post" id="edit-extracted-form" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_extracted">
+            <textarea name="extracted_text" class="form-control" style="min-height: 300px; font-family: 'Inter', monospace; font-size: 13.5px; line-height: 1.8; white-space: pre-wrap;" rows="15">{{ document.extracted_text }}</textarea>
+            {% if document.parsed_layout.pages %}
+              {% for page in document.parsed_layout.pages %}
+                {% if page.images %}
+                  <div style="margin-top: 8px; padding: 6px 10px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; font-size: 12px;">
+                    <strong style="color: #991b1b;">Page {{ page.page_number }} images (read-only):</strong>
+                    {% for img in page.images %}
+                      <span style="display: inline-block; margin: 4px 4px 0 0; padding: 2px 8px; border: 1px dashed #e11d48; border-radius: 4px; color: #9f1239; background: #fff1f2;">
+                        <i class="bi bi-image"></i> {{ img.name }} ({{ img.width|floatformat:0 }}×{{ img.height|floatformat:0 }})
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            <div class="d-flex gap-2 mt-2">
+              <button type="submit" class="btn btn-tr-primary btn-tr-sm">
+                <i class="bi bi-check-lg me-1"></i> Save
+              </button>
+              <button type="button" class="btn btn-tr-outline btn-tr-sm" onclick="toggleEdit()">
+                <i class="bi bi-x-lg me-1"></i> Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <script>
+        function toggleEdit() {
+          const display = document.getElementById('extracted-display');
+          const form = document.getElementById('edit-extracted-form');
+          const btn = document.getElementById('btn-toggle-edit');
+          if (form.style.display === 'none') {
+            display.style.display = 'none';
+            form.style.display = 'block';
+            btn.innerHTML = '<i class="bi bi-eye me-1"></i> View';
+          } else {
+            display.style.display = 'block';
+            form.style.display = 'none';
+            btn.innerHTML = '<i class="bi bi-pencil me-1"></i> Edit';
+          }
+        }
+      </script>
+    {% endif %}
+
+    {% if document.translated_text %}
+      <div class="tr-card" id="translated-text-card">
+        <div class="tr-card-header">
+          <h5><i class="bi bi-translate me-2" style="color: #9d174d"></i>Japanese Translation</h5>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="text-muted" style="font-size: 12px">{{ document.translated_text|length }} characters</span>
+            <button class="btn btn-tr-outline btn-tr-sm" id="btn-toggle-translate-edit" onclick="toggleTranslationEdit()" style="font-size: 12px">
+              <i class="bi bi-pencil me-1"></i> Edit
+            </button>
+          </div>
+        </div>
+        <div class="tr-card-body" style="font-size: 14px; line-height: 1.8;">
+          <!-- Display mode -->
+          <div id="translated-display" style="max-height: 350px; overflow-y: auto; white-space: pre-wrap; font-family: 'MS Gothic', 'Yu Gothic', sans-serif; padding: 8px; background: #fafafa; border-radius: 6px;">
+            {{ document.translated_text|truncatechars:3000 }}
+          </div>
+          <!-- Edit mode (hidden by default) -->
+          <form method="post" id="edit-translated-form" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_translated">
+            <textarea name="translated_text" class="form-control" style="min-height: 300px; font-family: 'MS Gothic', 'Yu Gothic', sans-serif; font-size: 14px; line-height: 1.8; white-space: pre-wrap;" rows="15">{{ document.translated_text }}</textarea>
+            <div class="d-flex gap-2 mt-2">
+              <button type="submit" class="btn btn-tr-primary btn-tr-sm">
+                <i class="bi bi-check-lg me-1"></i> Save Changes
+              </button>
+              <button type="button" class="btn btn-tr-outline btn-tr-sm" onclick="toggleTranslationEdit()">
+                <i class="bi bi-x-lg me-1"></i> Cancel
+              </button>
+              <small class="text-muted ms-auto align-self-center" style="font-size: 11px">
+                <i class="bi bi-info-circle me-1"></i>Changes will be reflected in DOCX download
+              </small>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <script>
+        function toggleTranslationEdit() {
+          const display = document.getElementById('translated-display');
+          const form = document.getElementById('edit-translated-form');
+          const btn = document.getElementById('btn-toggle-translate-edit');
+          if (form.style.display === 'none') {
+            display.style.display = 'none';
+            form.style.display = 'block';
+            btn.innerHTML = '<i class="bi bi-eye me-1"></i> View';
+          } else {
+            display.style.display = 'block';
+            form.style.display = 'none';
+            btn.innerHTML = '<i class="bi bi-pencil me-1"></i> Edit';
+          }
+        }
+      </script>
+    {% endif %}
+
+    {% if document.parsed_layout.pages %}
+      <div class="tr-card mt-4">
+        <div class="tr-card-header">
+          <h5><i class="bi bi-layout-sidebar me-2" style="color: #0d9488"></i>Layout Preview — Image Positions</h5>
+          <span class="text-muted" style="font-size: 12px">{{ document.parsed_layout.pages|length }} page(s)</span>
+        </div>
+        <div class="tr-card-body" style="font-size: 13px; line-height: 1.7;">
+          {% for page in document.parsed_layout.pages %}
+            <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+              <div class="d-flex align-items-center gap-3 mb-2 flex-wrap">
+                <strong style="color: #0d9488">Page {{ page.page_number }}</strong>
+                <span class="badge" style="background: #e6fffa; color: #0d9488; font-size: 11px">
+                  <i class="bi bi-fonts me-1"></i>{{ page.text_blocks|length }} text blocks
+                </span>
+                {% if page.images %}
+                  <span class="badge" style="background: #fff1f2; color: #e11d48; font-size: 11px">
+                    <i class="bi bi-image me-1"></i>{{ page.images|length }} image(s)
+                  </span>
+                {% endif %}
+              </div>
+
+              {% if page.images %}
+                <div class="mb-2" style="font-size: 12px; color: #4b5563;">
+                  {% for img in page.images %}
+                    <div class="image-rectangle-preview d-flex align-items-center gap-2 mb-1 p-2" style="border: 1px solid #fecdd3; border-radius: 6px; background: #fff1f2;">
+                      <div style="min-width: 24px; height: 24px; border: 2px solid #e11d48; border-radius: 3px; display: flex; align-items: center; justify-content: center; background: #ffe4e6;">
+                        <i class="bi bi-image" style="color: #e11d48; font-size: 12px;"></i>
+                      </div>
+                      <div class="flex-grow-1">
+                        <strong>{{ img.name }}</strong>
+                        <span class="text-muted ms-2">{{ img.width|floatformat:0 }}×{{ img.height|floatformat:0 }} pts</span>
+                      </div>
+                      <div class="text-muted" style="font-size: 11px;">
+                        x={{ img.x0|floatformat:0 }}, y={{ img.y0|floatformat:0 }}
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              {% if not page.images and not page.text_blocks %}
+                <div class="text-muted" style="font-size: 12px">No content detected on this page.</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if not document.extracted_text and not document.translated_text %}
+      <div class="tr-card">
+        <div class="tr-card-body tr-empty">
+          <i class="bi bi-file-earmark-arrow-up d-block"></i>
+          <h6>Ready to Process</h6>
+          <p>Click "Extract Text" to begin processing this document.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

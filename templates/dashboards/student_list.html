@@ -573,7 +573,12 @@
                     <div class="student-header">
                         <div class="student-info">
                             <h3>
-                                <i class="fas fa-user-circle"></i>{{ student.full_name }}
+                                {% if student.photo %}
+                                <img src="{{ student.photo.url }}" alt="{{ student.full_name }}" class="student-avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-right: 10px; vertical-align: middle;">
+                                {% else %}
+                                <i class="fas fa-user-circle student-avatar" style="font-size: 36px; color: var(--gray-400); margin-right: 10px; vertical-align: middle;"></i>
+                                {% endif %}
+                                {{ student.full_name }}
                                 <span class="status-badge badge-{{ student.status }}">
                                     {{ student.status|upper }}
                                 </span>

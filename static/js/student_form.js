@@ -1,427 +1,442 @@
-<script>
-    class StudentForm {
-        constructor() {
-            this.currentSection = 0;
-            this.sections = document.querySelectorAll('.form-section');
-            this.init();
+document.addEventListener('DOMContentLoaded', function () {
+    const steps = document.querySelectorAll('.form-step');
+    const progressSteps = document.querySelectorAll('.progress-step');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const finalSubmitBtn = document.getElementById('finalSubmitBtn');
+    let currentStep = 0;
+
+    updateStepDisplay();
+
+    nextBtn.addEventListener('click', function () {
+        if (validateStep(currentStep)) {
+            currentStep++;
+            updateStepDisplay();
         }
+    });
+    prevBtn.addEventListener('click', function () {
+        currentStep--;
+        updateStepDisplay();
+    });
 
-        init() {
-            this.setupEventListeners();
-            this.setupValidation();
-            this.setupFileUploads();
-            this.updateProgressBar();
-            this.showSection(0);
-        }
-
-        setupEventListeners() {
-            // Date of birth age calculation
-            document.getElementById('id_date_of_birth').addEventListener('change', (e) => this.calculateAge(e));
-            
-            // Visa details toggle
-            document.getElementById('id_visa_apply_record').addEventListener('change', (e) => this.toggleVisaDetails(e));
-            
-            // Form submission
-            document.getElementById('studentForm').addEventListener('submit', (e) => this.handleSubmit(e));
-            
-            // Photo upload
-            document.getElementById('photoContainer').addEventListener('click', () => this.triggerFileInput());
-            document.getElementById('id_photo').addEventListener('change', (e) => this.handlePhotoUpload(e));
-            
-            // Drag and drop for photo
-            this.setupDragAndDrop();
-            
-            // Navigation buttons if you add multi-step form
-            this.setupNavigation();
-        }
-
-        setupValidation() {
-            const form = document.getElementById('studentForm');
-            const inputs = form.querySelectorAll('input, select, textarea');
-            
-            inputs.forEach(input => {
-                input.addEventListener('blur', (e) => this.validateField(e.target));
-                input.addEventListener('input', (e) => this.clearError(e.target));
-            });
-        }
-
-        setupFileUploads() {
-            const fileInputs = document.querySelectorAll('input[type="file"]');
-            fileInputs.forEach(input => {
-                input.addEventListener('change', (e) => this.handleFileUpload(e));
-            });
-        }
-
-        setupDragAndDrop() {
-            const photoContainer = document.getElementById('photoContainer');
-            
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                photoContainer.addEventListener(eventName, this.preventDefaults, false);
-            });
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                photoContainer.addEventListener(eventName, () => this.highlightArea(), false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                photoContainer.addEventListener(eventName, () => this.unhighlightArea(), false);
-            });
-
-            photoContainer.addEventListener('drop', (e) => this.handleDrop(e), false);
-        }
-
-        setupNavigation() {
-            // If you want to implement multi-step form navigation
-            const nextBtn = document.createElement('button');
-            nextBtn.type = 'button';
-            nextBtn.className = 'btn btn-success';
-            nextBtn.innerHTML = 'Next Section →';
-            nextBtn.addEventListener('click', () => this.nextSection());
-
-            const prevBtn = document.createElement('button');
-            prevBtn.type = 'button';
-            prevBtn.className = 'btn btn-secondary';
-            prevBtn.innerHTML = '← Previous Section';
-            prevBtn.addEventListener('click', () => this.previousSection());
-
-            const navContainer = document.createElement('div');
-            navContainer.className = 'form-navigation';
-            navContainer.appendChild(prevBtn);
-            navContainer.appendChild(nextBtn);
-
-            document.querySelector('.form-container form').appendChild(navContainer);
-        }
-
-        calculateAge(e) {
-            const dob = new Date(e.target.value);
-            if (isNaN(dob.getTime())) return;
-
-            const today = new Date();
-            let age = today.getFullYear() - dob.getFullYear();
-            const monthDiff = today.getMonth() - dob.getMonth();
-            
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-                age--;
-            }
-            
-            document.getElementById('id_age').value = age;
-        }
-
-        toggleVisaDetails(e) {
-            const visaDetailsContainer = document.getElementById('visaDetailsContainer');
-            if (e.target.value === 'yes') {
-                visaDetailsContainer.style.display = 'flex';
-                this.slideDown(visaDetailsContainer);
+    function updateStepDisplay() {
+        steps.forEach(step => step.classList.remove('active'));
+        progressSteps.forEach(step => step.classList.remove('active'));
+        steps[currentStep].classList.add('active');
+        progressSteps[currentStep].classList.add('active');
+        prevBtn.style.display = currentStep === 0 ? 'none' : 'inline-flex';
+        nextBtn.style.display = currentStep === steps.length - 1 ? 'none' : 'inline-flex';
+        submitBtn.style.display = currentStep === steps.length - 1 ? 'inline-flex' : 'none';
+        progressSteps.forEach((step, index) => {
+            if (index <= currentStep) {
+                step.classList.add('active');
             } else {
-                this.slideUp(visaDetailsContainer, () => {
-                    visaDetailsContainer.style.display = 'none';
-                });
+                step.classList.remove('active');
+            }
+        });
+    }
+
+    function validateStep(stepIndex) {
+        const currentStepElement = steps[stepIndex];
+        const visaRecord = document.getElementById('id_visa_apply_record');
+        const visaDetails = document.getElementById('id_visa_details');
+        if (visaRecord && visaDetails) {
+            if (visaRecord.value === 'yes') {
+                visaDetails.setAttribute('required', 'required');
+                const label = document.getElementById('label_visa_details');
+                if (label) label.classList.add('required');
+            } else {
+                visaDetails.removeAttribute('required');
+                const label = document.getElementById('label_visa_details');
+                if (label) label.classList.remove('required');
             }
         }
 
-        triggerFileInput() {
-            document.getElementById('id_photo').click();
-        }
-
-        handlePhotoUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (!file.type.match('image.*')) {
-                this.showError('Please select a valid image file.');
-                return;
-            }
-
-            if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                this.showError('Image size should be less than 5MB.');
-                return;
-            }
-
-            this.displayImagePreview(file);
-        }
-
-        handleFileUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const maxSize = 10 * 1024 * 1024; // 10MB
-            if (file.size > maxSize) {
-                this.showError(`File size should be less than ${maxSize / 1024 / 1024}MB.`);
-                e.target.value = '';
-                return;
-            }
-
-            this.showSuccess(`File "${file.name}" selected successfully.`);
-        }
-
-        displayImagePreview(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const photoContainer = document.getElementById('photoContainer');
-                const photoPreview = document.getElementById('photoPreview');
-                const photoPlaceholder = photoContainer.querySelector('.photo-placeholder');
-                
-                photoPlaceholder.style.display = 'none';
-                photoPreview.src = e.target.result;
-                photoPreview.style.display = 'block';
-                
-                this.showSuccess('Photo uploaded successfully!');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        highlightArea() {
-            document.getElementById('photoContainer').classList.add('dragover');
-        }
-
-        unhighlightArea() {
-            document.getElementById('photoContainer').classList.remove('dragover');
-        }
-
-        handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            document.getElementById('id_photo').files = files;
-            this.handlePhotoUpload({ target: { files: files } });
-        }
-
-        validateField(field) {
-            const value = field.value.trim();
-            const errorElement = field.parentNode.querySelector('.error-message');
-
-            // Clear previous error
-            this.clearError(field);
-
-            // Required field validation
-            if (field.hasAttribute('required') && !value) {
-                this.showFieldError(field, 'This field is required.');
-                return false;
-            }
-
-            // Email validation
-            if (field.type === 'email' && value) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(value)) {
-                    this.showFieldError(field, 'Please enter a valid email address.');
-                    return false;
-                }
-            }
-
-            // Phone validation
-            if (field.name === 'phone' && value) {
-                const phoneRegex = /^[0-9+\-\s()]{10,}$/;
-                if (!phoneRegex.test(value)) {
-                    this.showFieldError(field, 'Please enter a valid phone number.');
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        showFieldError(field, message) {
-            field.classList.add('error');
-            let errorElement = field.parentNode.querySelector('.error-message');
-            
-            if (!errorElement) {
-                errorElement = document.createElement('div');
-                errorElement.className = 'error-message';
-                field.parentNode.appendChild(errorElement);
-            }
-            
-            errorElement.textContent = message;
-        }
-
-        clearError(field) {
-            field.classList.remove('error');
-            const errorElement = field.parentNode.querySelector('.error-message');
-            if (errorElement) {
-                errorElement.textContent = '';
-            }
-        }
-
-        async handleSubmit(e) {
-            e.preventDefault();
-            
-            // Validate all fields
-            const isValid = this.validateForm();
-            
-            if (!isValid) {
-                this.showError('Please fix the errors in the form before submitting.');
-                this.scrollToFirstError();
-                return;
-            }
-
-            // Show loading state
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="loading"></span> Processing...';
-            submitBtn.disabled = true;
-
-            try {
-                // Simulate API call or form processing
-                await this.submitFormData(new FormData(e.target));
-                
-                this.showSuccess('Student registration submitted successfully!');
-                setTimeout(() => {
-                    window.location.href = "{% url 'student_list' %}";
-                }, 2000);
-                
-            } catch (error) {
-                this.showError('An error occurred while submitting the form. Please try again.');
-                console.error('Form submission error:', error);
-            } finally {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
-        }
-
-        validateForm() {
-            let isValid = true;
-            const form = document.getElementById('studentForm');
-            const requiredFields = form.querySelectorAll('[required]');
-            
-            requiredFields.forEach(field => {
-                if (!this.validateField(field)) {
-                    isValid = false;
+        const maritalStatus = document.getElementById('id_marital_status');
+        const spouseFields = {
+            'id_spouse_name': 'label_spouse_name',
+            'id_spouse_contact': 'label_spouse_contact'
+        };
+        if (maritalStatus) {
+            const isMarried = maritalStatus.value === 'married';
+            Object.keys(spouseFields).forEach(fieldId => {
+                const input = document.getElementById(fieldId);
+                const label = document.getElementById(spouseFields[fieldId]);
+                if (input) {
+                    if (isMarried) {
+                        input.setAttribute('required', 'required');
+                        if (label) label.classList.add('required');
+                    } else {
+                        input.removeAttribute('required');
+                        if (label) label.classList.remove('required');
+                    }
                 }
             });
-            
-            return isValid;
         }
 
-        scrollToFirstError() {
-            const firstError = document.querySelector('.error');
+        const requiredFields = currentStepElement.querySelectorAll('[required]');
+        let isValid = true;
+        requiredFields.forEach(field => { validateField(field); });
+
+        function validateField(field) {
+            let fieldValid = true;
+            const val = field.value.trim();
+            const isVisaDetails = field.id === 'id_visa_details';
+            const visaRecordVal = document.getElementById('id_visa_apply_record')?.value;
+            const isActuallyRequired = field.hasAttribute('required') || (isVisaDetails && visaRecordVal === 'yes');
+
+            if (isActuallyRequired && !val) {
+                fieldValid = false;
+            } else if (field.hasAttribute('pattern') && val) {
+                const regex = new RegExp('^' + field.getAttribute('pattern') + '$');
+                if (!regex.test(val)) {
+                    fieldValid = false;
+                }
+            }
+
+            let errorMsgOverride = null;
+            if (field.id === 'id_date_of_birth' && val) {
+                const dob = new Date(val);
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                const monthDiff = today.getMonth() - dob.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                    age--;
+                }
+                if (age < 18) {
+                    fieldValid = false;
+                    errorMsgOverride = "You must be at least 18 years old.";
+                }
+            }
+
+            if (!fieldValid) {
+                field.classList.add('error');
+                isValid = false;
+                let errorDiv = field.parentElement.querySelector('.field-error');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'field-error';
+                    field.parentElement.appendChild(errorDiv);
+                }
+                const errorMsg = errorMsgOverride || ((field.hasAttribute('pattern') && val)
+                    ? field.getAttribute('title') || 'Invalid format'
+                    : 'This field is required');
+                errorDiv.innerHTML = `<span>⚠️</span> ${errorMsg}`;
+            } else {
+                field.classList.remove('error');
+                const errorDiv = field.parentElement.querySelector('.field-error');
+                if (errorDiv) { errorDiv.remove(); }
+            }
+            return fieldValid;
+        }
+
+        const allInputs = currentStepElement.querySelectorAll('input, select, textarea');
+        allInputs.forEach(input => {
+            if (!input.dataset.validationAttached) {
+                input.addEventListener('blur', () => validateField(input));
+                input.addEventListener('input', () => {
+                    if (input.classList.contains('error')) {
+                        validateField(input);
+                    }
+                });
+                input.dataset.validationAttached = 'true';
+            }
+        });
+
+        if (!isValid) {
+            const firstError = currentStepElement.querySelector('.error');
             if (firstError) {
                 firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
+        return isValid;
+    }
 
-        async submitFormData(formData) {
-            // Simulate API call delay
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    console.log('Form data:', Object.fromEntries(formData));
-                    resolve();
-                }, 1500);
-            });
+    // Photo upload with drag & drop
+    const photoUploadArea = document.getElementById('photoUploadArea');
+    const photoInput = document.getElementById('id_photo');
+    const photoPreview = document.getElementById('photoPreview');
+
+    if (photoUploadArea && photoInput) {
+        photoUploadArea.addEventListener('click', () => photoInput.click());
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            photoUploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
-
-        showSuccess(message) {
-            this.showMessage(message, 'success');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            photoUploadArea.addEventListener(eventName, highlight, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            photoUploadArea.addEventListener(eventName, unhighlight, false);
+        });
+        function highlight() { photoUploadArea.classList.add('dragover'); }
+        function unhighlight() { photoUploadArea.classList.remove('dragover'); }
+        photoUploadArea.addEventListener('drop', handleDrop, false);
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
         }
+        photoInput.addEventListener('change', function () { handleFiles(this.files); });
 
-        showError(message) {
-            this.showMessage(message, 'error');
-        }
-
-        showMessage(message, type) {
-            // Remove existing messages
-            const existingMessages = document.querySelectorAll('.alert');
-            existingMessages.forEach(msg => msg.remove());
-
-            // Create new message
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `alert alert-${type}`;
-            messageDiv.innerHTML = `
-                <span>${type === 'success' ? '✓' : '⚠'}</span>
-                <span>${message}</span>
-            `;
-
-            // Insert at top of form
-            const form = document.getElementById('studentForm');
-            form.insertBefore(messageDiv, form.firstChild);
-
-            // Auto-remove success messages after 5 seconds
-            if (type === 'success') {
-                setTimeout(() => {
-                    messageDiv.remove();
-                }, 5000);
-            }
-        }
-
-        // Multi-section form methods
-        showSection(index) {
-            this.sections.forEach((section, i) => {
-                section.style.display = i === index ? 'block' : 'none';
-            });
-            this.currentSection = index;
-            this.updateProgressBar();
-        }
-
-        nextSection() {
-            if (this.currentSection < this.sections.length - 1) {
-                this.showSection(this.currentSection + 1);
-            }
-        }
-
-        previousSection() {
-            if (this.currentSection > 0) {
-                this.showSection(this.currentSection - 1);
-            }
-        }
-
-        updateProgressBar() {
-            const steps = document.querySelectorAll('.progress-step');
-            steps.forEach((step, index) => {
-                step.classList.remove('active', 'completed');
-                if (index === this.currentSection) {
-                    step.classList.add('active');
-                } else if (index < this.currentSection) {
-                    step.classList.add('completed');
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                if (!file.type.match('image.*')) {
+                    alert('Please upload an image file (JPEG, PNG, GIF)');
+                    return;
                 }
-            });
-        }
-
-        // Animation helpers
-        slideDown(element) {
-            element.style.height = 'auto';
-            const height = element.clientHeight + 'px';
-            element.style.height = '0px';
-            
-            setTimeout(() => {
-                element.style.height = height;
-            }, 10);
-        }
-
-        slideUp(element, callback) {
-            element.style.height = '0px';
-            element.addEventListener('transitionend', function handler() {
-                element.removeEventListener('transitionend', handler);
-                if (callback) callback();
-            });
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    photoPreview.src = e.target.result;
+                    photoUploadArea.classList.add('has-photo');
+                };
+                reader.readAsDataURL(file);
+            }
         }
     }
 
-    // Initialize the form when DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-        new StudentForm();
-        
-        // Initialize any existing values
-        const visaApplyRecord = document.getElementById('id_visa_apply_record');
-        if (visaApplyRecord && visaApplyRecord.value === 'yes') {
-            document.getElementById('visaDetailsContainer').style.display = 'flex';
-        }
+    // Medical report file upload
+    const medicalReportCard = document.querySelector('.document-card[data-doc="medical_report"]');
+    if (medicalReportCard) {
+        const medicalReportInput = medicalReportCard.querySelector('input[type="file"]');
+        medicalReportCard.addEventListener('click', () => medicalReportInput.click());
+        medicalReportInput.addEventListener('change', function () {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                const fileInfo = medicalReportCard.querySelector('.document-file-info');
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`"${file.name}" exceeds the 10MB limit.`);
+                    this.value = '';
+                    fileInfo.textContent = '';
+                    medicalReportCard.classList.remove('has-file');
+                    return;
+                }
+                fileInfo.textContent = `✓ ${file.name} (${formatFileSize(file.size)})`;
+                medicalReportCard.classList.add('has-file');
+            }
+        });
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            medicalReportCard.addEventListener(eventName, preventDefaults, false);
+        });
+        ['dragenter', 'dragover'].forEach(eventName => {
+            medicalReportCard.addEventListener(eventName, function () {
+                medicalReportCard.classList.add('dragover');
+            }, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            medicalReportCard.addEventListener(eventName, function () {
+                medicalReportCard.classList.remove('dragover');
+            }, false);
+        });
+        medicalReportCard.addEventListener('drop', function (e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                medicalReportInput.files = files;
+                medicalReportInput.dispatchEvent(new Event('change'));
+            }
+        }, false);
+    }
+
+    // Document upload functionality
+    const documentCards = document.querySelectorAll('.document-card');
+    documentCards.forEach(card => {
+        const input = card.querySelector('input[type="file"]');
+        card.addEventListener('click', () => input.click());
+        input.addEventListener('change', function () {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                const fileInfo = card.querySelector('.document-file-info');
+                const docType = card.getAttribute('data-doc');
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`"${file.name}" exceeds the 10MB limit.`);
+                    this.value = '';
+                    fileInfo.textContent = '';
+                    card.classList.remove('has-file');
+                    return;
+                }
+                fileInfo.textContent = `✓ ${file.name} (${formatFileSize(file.size)})`;
+                card.classList.add('has-file');
+                const checkBox = document.getElementById('check_documents');
+                if (checkBox) { checkBox.checked = true; }
+            }
+        });
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            card.addEventListener(eventName, preventDefaults, false);
+        });
+        ['dragenter', 'dragover'].forEach(eventName => {
+            card.addEventListener(eventName, function () {
+                card.classList.add('dragover');
+            }, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            card.addEventListener(eventName, function () {
+                card.classList.remove('dragover');
+            }, false);
+        });
+        card.addEventListener('drop', function (e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                input.files = files;
+                input.dispatchEvent(new Event('change'));
+            }
+        }, false);
     });
 
-    // Add progress bar HTML if you want multi-step form
-    function addProgressBar() {
-        const progressHTML = `
-            <div class="progress-bar">
-                <div class="progress-step">Personal Info</div>
-                <div class="progress-step">Family & Education</div>
-                <div class="progress-step">Work & Documents</div>
-                <div class="progress-step">Review</div>
-            </div>
-        `;
-        document.querySelector('.form-container').insertAdjacentHTML('afterbegin', progressHTML);
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-    // Uncomment to enable multi-step form
-    // addProgressBar();
-</script>
+    // Visa details toggle
+    const visaRecordField = document.getElementById('id_visa_apply_record');
+    const visaDetailsContainer = document.getElementById('visaDetailsContainer');
+    if (visaRecordField && visaDetailsContainer) {
+        visaRecordField.addEventListener('change', function () {
+            visaDetailsContainer.style.display = this.value === 'yes' ? 'block' : 'none';
+        });
+    }
+
+    // Spouse details toggle
+    const maritalStatusField = document.getElementById('id_marital_status');
+    const spouseNameContainer = document.getElementById('spouseNameContainer');
+    const spouseContactContainer = document.getElementById('spouseContactContainer');
+    function toggleSpouseFields() {
+        if (maritalStatusField.value === 'married') {
+            spouseNameContainer.style.display = 'block';
+            spouseContactContainer.style.display = 'block';
+        } else {
+            spouseNameContainer.style.display = 'none';
+            spouseContactContainer.style.display = 'none';
+        }
+    }
+    if (maritalStatusField && spouseNameContainer && spouseContactContainer) {
+        maritalStatusField.addEventListener('change', function () {
+            toggleSpouseFields();
+            if (typeof validateStep === 'function') { validateStep(currentStep); }
+        });
+        toggleSpouseFields();
+    }
+
+    // Review all information button
+    const reviewAllBtn = document.getElementById('reviewAllBtn');
+    if (reviewAllBtn) {
+        reviewAllBtn.addEventListener('click', function () {
+            currentStep = 0;
+            updateStepDisplay();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    // Form submission
+    const studentForm = document.getElementById('studentForm');
+    if (studentForm) {
+        studentForm.addEventListener('submit', function (e) {
+            let allValid = true;
+            for (let i = 0; i < steps.length - 1; i++) {
+                if (!validateStep(i)) {
+                    allValid = false;
+                    currentStep = i;
+                    updateStepDisplay();
+                    break;
+                }
+            }
+            if (!allValid) {
+                e.preventDefault();
+                alert('Please complete all required fields before submitting.');
+                return false;
+            }
+            const activeSubmitBtn = this.querySelector('#submitBtn, #finalSubmitBtn');
+            if (activeSubmitBtn) {
+                activeSubmitBtn.classList.add('loading');
+                activeSubmitBtn.disabled = true;
+                activeSubmitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+            }
+            return true;
+        });
+    }
+
+    // Auto-update checklist
+    function updateChecklist() {
+        const personalFields = ['full_name', 'date_of_birth', 'permanent_address', 'email', 'phone'];
+        let personalComplete = true;
+        personalFields.forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field && !field.value.trim()) { personalComplete = false; }
+        });
+        document.getElementById('check_personal').checked = personalComplete;
+
+        const mandatorySchools = ['school_primary_school', 'school_junior_h_school', 'school_higher_s_school'];
+        let educationComplete = true;
+        mandatorySchools.forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (!field || !field.value.trim()) { educationComplete = false; }
+        });
+        document.getElementById('check_education').checked = educationComplete;
+
+        const workFields = ['work_type_1', 'company_name_1'];
+        let experienceComplete = false;
+        workFields.forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field && field.value.trim()) { experienceComplete = true; }
+        });
+        document.getElementById('check_experience').checked = experienceComplete;
+
+        const docInputs = document.querySelectorAll('.document-card input[type="file"]');
+        let documentsComplete = false;
+        docInputs.forEach(input => {
+            if (input.files.length > 0) { documentsComplete = true; }
+        });
+        document.getElementById('check_documents').checked = documentsComplete;
+    }
+
+    document.querySelectorAll('input, select, textarea').forEach(field => {
+        field.addEventListener('change', updateChecklist);
+        field.addEventListener('input', updateChecklist);
+    });
+    updateChecklist();
+
+    // Phone input: strip non-numeric characters, max 10 digits
+    const phoneInput = document.getElementById('id_phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+    }
+
+    // Auto-calculate age from date of birth
+    const dobInput = document.getElementById('id_date_of_birth');
+    if (dobInput) {
+        dobInput.addEventListener('change', function () {
+            if (!this.value) {
+                const ageInput = document.getElementById('id_age');
+                if (ageInput) ageInput.value = '';
+                return;
+            }
+            const dob = new Date(this.value);
+            if (isNaN(dob.getTime())) return;
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) { age--; }
+            const ageInput = document.getElementById('id_age');
+            if (ageInput) ageInput.value = age;
+        });
+    }
+
+    // Passport expiry: minimum date is today
+    const passportExpiry = document.getElementById('id_passport_expiry_date');
+    if (passportExpiry) {
+        const today = new Date().toISOString().split('T')[0];
+        passportExpiry.setAttribute('min', today);
+    }
+});

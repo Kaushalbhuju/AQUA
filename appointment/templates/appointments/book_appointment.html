@@ -5,291 +5,666 @@
 
 {% block extra_css %}
 <style>
+    :root {
+        --brand: #e9394b;
+        --brand-dark: #c02636;
+        --brand-light: #fef2f4;
+        --brand-border: #fecdd3;
+        --ink: #1a1a2e;
+        --ink-soft: #16213e;
+        --muted: #64748b;
+        --success: #10b981;
+        --border: #e2e8f0;
+    }
+
     .required-label::after {
         content: " *";
-        color: #ef4444;
-        font-weight: 600;
+        color: var(--brand);
+        font-weight: 700;
     }
-    
+
+    /* ---------- PAGE HEADER ---------- */
+    .page-header {
+        background: linear-gradient(135deg, #fef2f4 0%, #fff5f6 50%, #f1f5f9 100%);
+        border-radius: 20px;
+        padding: 2.5rem 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid #fecdd3;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(233,57,75,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    /* ---------- STEP INDICATOR ---------- */
+    .stepper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .stepper::before {
+        content: "";
+        position: absolute;
+        top: 22px;
+        left: 8%;
+        right: 8%;
+        height: 2px;
+        background: var(--border);
+        z-index: 0;
+    }
+
+    .stepper-progress {
+        position: absolute;
+        top: 22px;
+        left: 8%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--brand) 0%, var(--brand-dark) 100%);
+        z-index: 1;
+        transition: width 0.4s ease;
+        width: 0%;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+        flex: 1;
+        cursor: pointer;
+    }
+
+    .step-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: var(--muted);
+        transition: all 0.3s ease;
+        margin-bottom: 8px;
+    }
+
+    .step.active .step-circle {
+        background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+        border-color: var(--brand);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(233, 57, 75, 0.3);
+        transform: scale(1.05);
+    }
+
+    .step.completed .step-circle {
+        background: var(--success);
+        border-color: var(--success);
+        color: #fff;
+    }
+
+    .step-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-align: center;
+    }
+
+    .step.active .step-label { color: var(--ink); }
+    .step.completed .step-label { color: var(--success); }
+
+    /* ---------- SECTION HEADERS ---------- */
+    .form-section {
+        padding: 1.75rem;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+        background: #fff;
+        transition: all 0.2s ease;
+    }
+
+    .form-section:hover {
+        border-color: #cbd5e1;
+    }
+
+    .form-section-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px dashed var(--border);
+    }
+
+    .form-section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--brand-light) 0%, #fce7e9 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--brand);
+        flex-shrink: 0;
+    }
+
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+    }
+
+    .form-section-subtitle {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin: 2px 0 0;
+    }
+
+    /* ---------- FIELDS ---------- */
+    .field-group {
+        position: relative;
+    }
+
+    .field-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 6px;
+    }
+
+    .field-input,
+    .field-select,
+    .field-textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--ink);
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .field-input:focus,
+    .field-select:focus,
+    .field-textarea:focus {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 4px rgba(233, 57, 75, 0.1);
+        background: #fff;
+    }
+
+    .field-input.is-invalid,
+    .field-select.is-invalid,
+    .field-textarea.is-invalid {
+        border-color: #dc3545;
+        background: #fff5f5;
+    }
+
+    .field-input.is-valid,
+    .field-select.is-valid,
+    .field-textarea.is-valid {
+        border-color: var(--success);
+    }
+
+    .field-hint {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-top: 6px;
+    }
+
+    .field-error {
+        display: none;
+        font-size: 0.75rem;
+        color: #dc3545;
+        margin-top: 6px;
+        font-weight: 500;
+    }
+
+    .field-error.show { display: block; }
+
+    .field-icon-suffix {
+        position: absolute;
+        right: 14px;
+        top: 38px;
+        color: var(--muted);
+        pointer-events: none;
+    }
+
+    /* ---------- ALERT / SLOT ---------- */
     .alert-slots {
         background: linear-gradient(135deg, #fef2f4 0%, #fce7e9 100%);
-        border: 1px solid #fecdd3;
-        border-radius: 12px;
+        border: 1px solid var(--brand-border);
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 1.5rem;
     }
-    
+
+    .alert-slots-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--brand);
+        flex-shrink: 0;
+    }
+
     .slot-card-info {
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 1rem;
     }
-    
+
     .help-card-header {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        background: linear-gradient(135deg, var(--ink) 0%, var(--ink-soft) 100%);
     }
-    
-    @media (min-width: 992px) {
-        .booking-form-wrapper {
-            max-width: 100%;
-        }
-        
-        .sidebar-wrapper {
-            max-width: 380px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+
+    /* ---------- CARD / BUTTONS ---------- */
+    .card {
+        border: 1px solid var(--border);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s ease;
     }
-    
-    @media (min-width: 1400px) {
-        .booking-form-wrapper {
-            max-width: 800px;
-        }
-        
-        .sidebar-wrapper {
-            max-width: 350px;
-        }
+
+    .card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+
+    .card-header {
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        font-weight: 700;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+        border: none;
+        transition: all 0.2s ease;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(233, 57, 75, 0.3);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--ink) 0%, var(--ink-soft) 100%);
+    }
+
+    /* ---------- TERMS ---------- */
+    .terms-box {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .terms-box input[type="checkbox"] {
+        margin-top: 4px;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--brand);
+        cursor: pointer;
+    }
+
+    .fade-in { animation: fadeIn 0.4s ease; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 576px) {
+        .stepper::before { left: 12%; right: 12%; }
+        .step-label { font-size: 0.7rem; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="display-5 fw-bold">
-        <i class="fas fa-calendar-plus me-3" style="color: #e9394b;"></i>Book Your Appointment
+<div class="page-header fade-in">
+    <h1 class="display-5 fw-bold mb-2" style="color: var(--ink);">
+        <i class="fas fa-calendar-plus me-3" style="color: var(--brand);"></i>Book Your Appointment
     </h1>
-    <p class="lead">Complete the form below to schedule your appointment</p>
-    <p class="text-secondary">Select your preferred date and time, then fill in your details.</p>
+    <p class="lead mb-1" style="color: var(--ink-soft);">Complete the form below to schedule your appointment</p>
+    <p class="mb-0" style="color: var(--muted);">Select your preferred date and time, then fill in your details.</p>
+</div>
+
+<!-- STEP INDICATOR -->
+<div class="stepper fade-in" id="stepper">
+    <div class="stepper-progress" id="stepperProgress"></div>
+    <div class="step active" data-step="1">
+        <div class="step-circle"><i class="fas fa-user"></i></div>
+        <span class="step-label">Personal</span>
+    </div>
+    <div class="step" data-step="2">
+        <div class="step-circle"><i class="fas fa-briefcase"></i></div>
+        <span class="step-label">Professional</span>
+    </div>
+    <div class="step" data-step="3">
+        <div class="step-circle"><i class="fas fa-calendar-check"></i></div>
+        <span class="step-label">Appointment</span>
+    </div>
+    <div class="step" data-step="4">
+        <div class="step-circle"><i class="fas fa-check"></i></div>
+        <span class="step-label">Confirm</span>
+    </div>
 </div>
 
 <div class="row g-4 justify-content-center">
+    <!-- MAIN FORM -->
     <div class="col-lg-8 col-xl-7">
-        <div class="card booking-form-wrapper">
+        <div class="card fade-in">
             <div class="card-header py-3">
-                <h5 class="mb-0"><i class="fas fa-user-edit me-2" style="color: #e9394b;"></i>Appointment Details</h5>
+                <h5 class="mb-0">
+                    <i class="fas fa-user-edit me-2" style="color: var(--brand);"></i>
+                    Appointment Details
+                </h5>
             </div>
             <div class="card-body">
                 {% if selected_slot %}
-                <div class="alert alert-slots d-flex align-items-center mb-4">
-                    <i class="fas fa-calendar-check fa-lg me-3" style="color: #e9394b;"></i>
-                    <div>
-                        <h6 class="mb-1 fw-semibold" style="color: #1a1a2e;">Selected Time Slot</h6>
-                        <p class="mb-0" style="color: #374151;">
-                            <strong>{{ selected_slot.start_time|date:"l, F j, Y" }}</strong> 
-                            &nbsp;•&nbsp; 
-                            <strong>{{ selected_slot.start_time|time:"g:i A" }}</strong> 
+                <div class="alert-slots">
+                    <div class="alert-slots-icon">
+                        <i class="fas fa-calendar-check fa-lg"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h6 class="mb-1 fw-semibold" style="color: var(--ink);">Selected Time Slot</h6>
+                        <p class="mb-0" style="color: #374151; font-size: 0.9rem;">
+                            <strong>{{ selected_slot.start_time|date:"l, F j, Y" }}</strong>
+                            &nbsp;•&nbsp;
+                            <strong>{{ selected_slot.start_time|time:"g:i A" }}</strong>
                             to {{ selected_slot.end_time|time:"g:i A" }}
                         </p>
                     </div>
                 </div>
                 {% endif %}
-                
+
                 <form method="post" id="appointmentForm" novalidate>
                     {% csrf_token %}
-                    
                     {% if selected_slot %}
                     <input type="hidden" name="appointment_slot" value="{{ selected_slot.id }}">
                     {% endif %}
-                    
-                    <div class="section-header mb-4">
-                        <h4><i class="fas fa-user-circle me-2" style="color: #e9394b;"></i>Personal Information</h4>
-                    </div>
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="id_name" class="form-label required-label fw-medium">Full Name</label>
-                            <input type="text" class="form-control form-control-lg" id="id_name" name="name" 
-                                   placeholder="Enter your full name" required>
-                            <div class="form-text">Your complete name</div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label for="id_email" class="form-label required-label fw-medium">Email Address</label>
-                            <input type="email" class="form-control form-control-lg" id="id_email" name="email" 
-                                   placeholder="example@gmail.com" required>
-                            <div class="form-text">Confirmation will be sent to this email</div>
-                        </div>
-                    </div>
-                    
-                    <div class="row g-3 mt-1">
-                        <div class="col-md-6">
-                            <label for="id_phone" class="form-label required-label fw-medium">Phone Number</label>
-                            <input type="tel" class="form-control form-control-lg" id="id_phone" name="phone" 
-                                   placeholder="+977 9876543210" required pattern="^\+?[1-9]\d{1,14}$">
-                            <div class="form-text">International format: +977</div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label for="id_address" class="form-label required-label fw-medium">Address</label>
-                            <textarea class="form-control form-control-lg" id="id_address" name="address" 
-                                      rows="2" placeholder="Enter your complete address" required></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="section-header mb-4 mt-4">
-                        <h4><i class="fas fa-briefcase me-2" style="color: #e9394b;"></i>Professional Information</h4>
-                    </div>
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="id_company_name" class="form-label required-label fw-medium">Company Name</label>
-                            <input type="text" class="form-control form-control-lg" id="id_company_name" 
-                                   name="company_name" placeholder="Enter company name" required>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label for="id_position" class="form-label required-label fw-medium">Position</label>
-                            <input type="text" class="form-control form-control-lg" id="id_position" 
-                                   name="position" placeholder="Your position in company" required>
-                        </div>
-                    </div>
-                    
-                    <div class="section-header mb-4 mt-4">
-                        <h4><i class="fas fa-calendar-check me-2" style="color: #e9394b;"></i>Appointment Details</h4>
-                    </div>
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="id_appointment_aim" class="form-label required-label fw-medium">Appointment Purpose</label>
-                            <select class="form-select form-select-lg" id="id_appointment_aim" name="appointment_aim" required>
-                                <option value="" selected disabled>Select appointment purpose</option>
-                                <option value="consultation">Consultation</option>
-                                <option value="meeting">Business Meeting</option>
-                                <option value="interview">Interview</option>
-                                <option value="demo">Study Tour</option>
-                                <option value="support">Technical Support</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label class="form-label fw-medium">Selected Date & Time</label>
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text" style="background: #f8fafc;">
-                                    <i class="fas fa-calendar-alt" style="color: #e9394b;"></i>
-                                </span>
-                                <input type="text" class="form-control" 
-                                       value="{% if selected_slot %}{{ selected_slot.start_time|date:'M j, Y' }} at {{ selected_slot.start_time|time:'g:i A' }}{% else %}No slot selected{% endif %}" 
-                                       disabled>
+
+                    <!-- SECTION 1: PERSONAL INFORMATION -->
+                    <section class="form-section" data-section="1">
+                        <div class="form-section-header">
+                            <div class="form-section-icon">
+                                <i class="fas fa-user-circle"></i>
                             </div>
-                            <small class="form-text">
-                                <a href="{% url 'available_slots' %}" class="text-decoration-none" style="color: #e9394b;">
-                                    <i class="fas fa-exchange-alt me-1"></i>Change time slot
-                                </a>
-                            </small>
+                            <div>
+                                <h6 class="form-section-title">Personal Information</h6>
+                                <p class="form-section-subtitle">Tell us who you are</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="mb-4 mt-3">
-                        <label for="id_message" class="form-label fw-medium">
-                            <i class="fas fa-comment-dots me-2" style="color: #e9394b;"></i>Additional Message
-                        </label>
-                        <textarea class="form-control form-control-lg" id="id_message" name="message" 
-                                  rows="4" placeholder="Any additional information, special requirements, or questions..."></textarea>
-                        <div class="form-text">Optional: Please provide any details that will help us prepare for your appointment</div>
-                    </div>
-                    
-                    <div class="border-top pt-4 mt-4">
-                        <div class="form-check mb-4">
-                            <input class="form-check-input" type="checkbox" id="terms" required>
-                            <label class="form-check-label" for="terms">
-                                I agree to the <a href="#" class="text-decoration-none" style="color: #e9394b;" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a> 
-                                and confirm that all information provided is accurate.
+
+                        <div class="row g-3">
+                            <div class="col-md-6 field-group">
+                                <label for="id_name" class="field-label required-label">Full Name</label>
+                                <input type="text" class="field-input" id="id_name" name="name"
+                                       placeholder="John Doe" required autocomplete="name" data-validate="name">
+                                <span class="field-error" data-for="id_name">Please enter your full name</span>
+                                <span class="field-hint">Your complete name as per official records</span>
+                            </div>
+
+                            <div class="col-md-6 field-group">
+                                <label for="id_email" class="field-label required-label">Email Address</label>
+                                <input type="email" class="field-input" id="id_email" name="email"
+                                       placeholder="you@example.com" required autocomplete="email" data-validate="email">
+                                <span class="field-error" data-for="id_email">Please enter a valid email address</span>
+                                <span class="field-hint">Confirmation &amp; reminders will be sent here</span>
+                            </div>
+
+                            <div class="col-md-6 field-group">
+                                <label for="id_phone" class="field-label required-label">Phone Number</label>
+                                <input type="tel" class="field-input" id="id_phone" name="phone"
+                                       placeholder="+977 9876543210" required pattern="^\+?[1-9]\d{1,14}$" autocomplete="tel" data-validate="phone">
+                                <span class="field-error" data-for="id_phone">Please enter a valid phone number</span>
+                                <span class="field-hint">International format preferred (e.g., +977)</span>
+                            </div>
+
+                            <div class="col-md-6 field-group">
+                                <label for="id_address" class="field-label required-label">Address</label>
+                                <textarea class="field-input" id="id_address" name="address"
+                                          rows="2" placeholder="Street, City, Country" required data-validate="address"></textarea>
+                                <span class="field-error" data-for="id_address">Please enter your address</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 2: PROFESSIONAL INFORMATION -->
+                    <section class="form-section" data-section="2">
+                        <div class="form-section-header">
+                            <div class="form-section-icon">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div>
+                                <h6 class="form-section-title">Professional Information</h6>
+                                <p class="form-section-subtitle">About your work &amp; company</p>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6 field-group">
+                                <label for="id_company_name" class="field-label required-label">Company / Organization</label>
+                                <input type="text" class="field-input" id="id_company_name"
+                                       name="company_name" placeholder="Company name" required data-validate="company">
+                                <span class="field-error" data-for="id_company_name">Please enter your company name</span>
+                            </div>
+
+                            <div class="col-md-6 field-group">
+                                <label for="id_position" class="field-label required-label">Position / Role</label>
+                                <input type="text" class="field-input" id="id_position"
+                                       name="position" placeholder="e.g. Senior Manager" required data-validate="position">
+                                <span class="field-error" data-for="id_position">Please enter your position</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 3: APPOINTMENT DETAILS -->
+                    <section class="form-section" data-section="3">
+                        <div class="form-section-header">
+                            <div class="form-section-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <h6 class="form-section-title">Appointment Details</h6>
+                                <p class="form-section-subtitle">Why are you visiting us?</p>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6 field-group">
+                                <label for="id_appointment_aim" class="field-label required-label">Appointment Purpose</label>
+                                <select class="field-select" id="id_appointment_aim" name="appointment_aim" required data-validate="aim">
+                                    <option value="" selected disabled>— Select a purpose —</option>
+                                    <option value="consultation">💬 Consultation</option>
+                                    <option value="meeting">🤝 Business Meeting</option>
+                                    <option value="interview">🎯 Interview</option>
+                                    <option value="demo">🏫 Study Tour</option>
+                                    <option value="support">🛠 Technical Support</option>
+                                    <option value="other">📝 Other</option>
+                                </select>
+                                <span class="field-error" data-for="id_appointment_aim">Please select a purpose</span>
+                            </div>
+
+                            <div class="col-md-6 field-group">
+                                <label class="field-label">Selected Date &amp; Time</label>
+                                <div class="field-input d-flex align-items-center" style="background:#f8fafc;">
+                                    <i class="fas fa-calendar-alt me-2" style="color: var(--brand);"></i>
+                                    <span class="flex-1" style="color: var(--ink); font-weight:500;">
+                                        {% if selected_slot %}
+                                            {{ selected_slot.start_time|date:'M j, Y' }} · {{ selected_slot.start_time|time:'g:i A' }}
+                                        {% else %}
+                                            <span style="color: var(--muted);">No slot selected</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <span class="field-hint">
+                                    <a href="{% url 'available_slots' %}" class="text-decoration-none fw-semibold" style="color: var(--brand);">
+                                        <i class="fas fa-exchange-alt me-1"></i>Change time slot
+                                    </a>
+                                </span>
+                            </div>
+
+                            <div class="col-12 field-group">
+                                <label for="id_message" class="field-label">
+                                    <i class="fas fa-comment-dots me-1" style="color: var(--brand);"></i>
+                                    Additional Message
+                                    <span class="fw-normal" style="color: var(--muted); font-size: 0.8rem;">(optional)</span>
+                                </label>
+                                <textarea class="field-input" id="id_message" name="message"
+                                          rows="4" placeholder="Any additional information, special requirements, or questions we should know about..."></textarea>
+                                <span class="field-hint">Helps us prepare better for your visit</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 4: CONFIRM & TERMS -->
+                    <section class="form-section" data-section="4">
+                        <div class="form-section-header">
+                            <div class="form-section-icon">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <div>
+                                <h6 class="form-section-title">Review &amp; Confirm</h6>
+                                <p class="form-section-subtitle">Final step — almost there!</p>
+                            </div>
+                        </div>
+
+                        <div class="terms-box">
+                            <input type="checkbox" id="terms" required data-validate="terms">
+                            <label for="terms" class="mb-0" style="font-size: 0.9rem; color: var(--ink); line-height: 1.5;">
+                                I have read and agree to the
+                                <a href="#" class="text-decoration-none fw-semibold" style="color: var(--brand);" data-bs-toggle="modal" data-bs-target="#termsModal">Terms &amp; Conditions</a>
+                                and confirm that all information provided above is accurate.
                             </label>
                         </div>
-                        
-                        <div class="d-flex flex-column flex-md-row gap-2">
+                        <span class="field-error" data-for="terms" style="margin-left: 38px;">You must accept the terms to continue</span>
+
+                        <div class="d-flex flex-column flex-md-row gap-2 mt-4 pt-4 border-top" style="border-color: var(--border);">
                             <a href="{% url 'available_slots' %}" class="btn btn-outline-secondary btn-lg order-2 order-md-1">
                                 <i class="fas fa-arrow-left me-2"></i>Back to Slots
                             </a>
-                            <button type="submit" class="btn btn-primary btn-lg order-1 order-md-2">
+                            <button type="submit" class="btn btn-primary btn-lg order-1 order-md-2 flex-md-grow-1">
                                 <i class="fas fa-calendar-check me-2"></i>Confirm Booking
                             </button>
                         </div>
-                    </div>
+                    </section>
                 </form>
             </div>
         </div>
     </div>
-    
+
+    <!-- SIDEBAR -->
     <div class="col-lg-4 col-xl-4">
-        <div class="card mb-4 sidebar-wrapper">
-        <div class="card mb-4">
-            <div class="card-header py-3" style="background: linear-gradient(135deg, #fef2f4 0%, #fce7e9 100%); border-color: #fecdd3;">
-                <h5 class="mb-0"><i class="fas fa-clock me-2" style="color: #e9394b;"></i>Selected Time Slot</h5>
+        <div class="fade-in">
+            <!-- Time Slot Card -->
+            <div class="card mb-4">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #fef2f4 0%, #fce7e9 100%); border-color: var(--brand-border);">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2" style="color: var(--brand);"></i>Selected Time Slot</h5>
+                </div>
+                <div class="card-body text-center py-4">
+                    {% if selected_slot %}
+                    <div class="mb-3">
+                        <i class="fas fa-calendar-day fa-3x" style="color: var(--brand);"></i>
+                    </div>
+                    <h4 class="mb-1" style="color: var(--ink);">{{ selected_slot.start_time|date:"M j, Y" }}</h4>
+                    <h3 class="fw-bold mb-1" style="color: var(--ink);">{{ selected_slot.start_time|time:"g:i A" }}</h3>
+                    <p class="mb-3" style="color: var(--muted);">to {{ selected_slot.end_time|time:"g:i A" }}</p>
+
+                    <div class="slot-card-info mt-4 p-3 text-start">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: var(--muted);">Duration:</span>
+                            <strong>{{ slot_duration }} min</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span style="color: var(--muted);">Available:</span>
+                            <strong class="{% if selected_slot.available_spots <= 2 %}text-danger{% else %}" style="color: var(--success);{% endif %}">
+                                {{ selected_slot.available_spots }} spots
+                            </strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span style="color: var(--muted);">Status:</span>
+                            {% if selected_slot.is_full %}
+                            <span class="badge bg-danger">Fully Booked</span>
+                            {% else %}
+                            <span class="badge" style="background: var(--success);">Available</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="py-3">
+                        <i class="fas fa-calendar-times fa-3x mb-3" style="color: #cbd5e1;"></i>
+                        <h5 class="mb-2" style="color: var(--muted);">No Slot Selected</h5>
+                        <p class="mb-3" style="color: var(--muted);">Please select a time slot first</p>
+                        <a href="{% url 'available_slots' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-calendar-alt me-2"></i>View Available Slots
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-            <div class="card-body text-center py-4">
-                {% if selected_slot %}
-                <div class="mb-3">
-                    <i class="fas fa-calendar-day fa-3x" style="color: #e9394b;"></i>
+
+            <!-- Help Card -->
+            <div class="card">
+                <div class="card-header py-3 help-card-header">
+                    <h5 class="mb-0 text-white"><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
                 </div>
-                <h4>{{ selected_slot.start_time|date:"M j, Y" }}</h4>
-                <h3 class="fw-bold" style="color: #1a1a2e;">{{ selected_slot.start_time|time:"g:i A" }}</h3>
-                <p class="text-secondary mb-3">to {{ selected_slot.end_time|time:"g:i A" }}</p>
-                
-                <div class="slot-card-info mt-4 p-3">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-secondary">Duration:</span>
-                        <strong>{{ slot_duration }} minutes</strong>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="d-flex align-items-center fw-semibold mb-1" style="color: var(--ink);">
+                            <i class="fas fa-phone-alt me-2" style="color: var(--brand);"></i>Phone Support
+                        </h6>
+                        <p class="mb-0" style="color: var(--muted); font-size: 0.9rem;">01-4519666</p>
                     </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-secondary">Available:</span>
-                        <strong class="{% if selected_slot.available_spots <= 2 %}text-danger{% else %}text-success{% endif %}">
-                            {{ selected_slot.available_spots }} remaining
-                        </strong>
+                    <div class="mb-3">
+                        <h6 class="d-flex align-items-center fw-semibold mb-1" style="color: var(--ink);">
+                            <i class="fas fa-envelope me-2" style="color: var(--brand);"></i>Email Support
+                        </h6>
+                        <p class="mb-0" style="color: var(--muted); font-size: 0.9rem;">ssw.edu.academy@gmail.com</p>
                     </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="text-secondary">Status:</span>
-                        {% if selected_slot.is_full %}
-                        <span class="badge bg-danger">Fully Booked</span>
-                        {% else %}
-                        <span class="badge bg-success">Available</span>
-                        {% endif %}
+                    <div>
+                        <h6 class="d-flex align-items-center fw-semibold mb-1" style="color: var(--ink);">
+                            <i class="fas fa-clock me-2" style="color: var(--brand);"></i>Business Hours
+                        </h6>
+                        <p class="mb-0" style="color: var(--muted); font-size: 0.9rem;">Mon-Fri: 9:00 AM - 6:00 PM</p>
                     </div>
                 </div>
-                {% else %}
-                <div class="py-3">
-                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                    <h5 class="text-secondary">No Slot Selected</h5>
-                    <p class="text-secondary mb-3">Please select a time slot first</p>
-                    <a href="{% url 'available_slots' %}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-calendar-alt me-2"></i>View Available Slots
-                    </a>
-                </div>
-                {% endif %}
             </div>
         </div>
-        
-        <div class="card">
-            <div class="card-header py-3" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
-                <h5 class="mb-0 text-white"><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <h6 class="d-flex align-items-center">
-                        <i class="fas fa-phone-alt me-2" style="color: #e9394b;"></i>Phone Support
-                    </h6>
-                    <p class="text-secondary mb-0">01-4519666</p>
-                </div>
-                <div class="mb-3">
-                    <h6 class="d-flex align-items-center">
-                        <i class="fas fa-envelope me-2" style="color: #e9394b;"></i>Email Support
-                    </h6>
-                    <p class="text-secondary mb-0">ssw.edu.academy@gmail.com</p>
-                </div>
-                <div>
-                    <h6 class="d-flex align-items-center">
-                        <i class="fas fa-clock me-2" style="color: #e9394b;"></i>Business Hours
-                    </h6>
-                    <p class="text-secondary mb-0">Mon-Fri: 9:00 AM - 6:00 PM</p>
-                </div>
-            </div>
-        </div>
-    </div>
     </div>
 </div>
 
+<!-- Terms Modal -->
 <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-lg">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+            <div class="modal-header">
                 <h5 class="modal-title text-white" id="termsModalLabel">
                     <i class="fas fa-file-contract me-2"></i>Terms and Conditions
                 </h5>
@@ -300,10 +675,10 @@
                     <li class="mb-3"><strong>Accuracy of Information</strong><br>The applicant must provide accurate and complete information while filling out the appointment form. Any false or misleading information may result in cancellation of the appointment.</li>
                     <li class="mb-3"><strong>Appointment Confirmation</strong><br>Submission of the form does not guarantee confirmation. The academy will confirm the appointment via phone, email, or SMS.</li>
                     <li class="mb-3"><strong>Punctuality</strong><br>Applicants are requested to arrive at least 10-15 minutes before the scheduled appointment time. Late arrival may result in rescheduling or cancellation.</li>
-                    <li class="mb-3"><strong>Rescheduling and Cancellation</strong><br>Appointments must be rescheduled or canceled at least 24 hours in advance.<br>The academy reserves the right to reschedule appointments due to unforeseen circumstances.</li>
+                    <li class="mb-3"><strong>Rescheduling and Cancellation</strong><br>Appointments must be rescheduled or canceled at least 24 hours in advance. The academy reserves the right to reschedule appointments due to unforeseen circumstances.</li>
                     <li class="mb-3"><strong>Code of Conduct</strong><br>Applicants are expected to maintain respectful behavior within the academy premises. Misconduct may lead to denial of services.</li>
                     <li class="mb-3"><strong>Document Requirement</strong><br>Applicants must bring all necessary documents (academic certificates, identification, etc.) at the time of the appointment.</li>
-                    <li class="mb-3"><strong>Privacy Policy</strong><br>Personal information provided will be kept confidential and used only for appointment and academic purposes, in accordance with applicable data protection regulations.</li>
+                    <li class="mb-3"><strong>Privacy Policy</strong><br>Personal information provided will be kept confidential and used only for appointment and academic purposes.</li>
                     <li class="mb-3"><strong>Health and Safety</strong><br>Applicants must follow all safety and health guidelines set by the academy.</li>
                     <li class="mb-3"><strong>Liability Disclaimer</strong><br>The academy shall not be responsible for any loss, damage, or injury occurring during the visit, except where required by law.</li>
                     <li class="mb-3"><strong>Changes to Terms</strong><br>Aqua Education and Training Academy reserves the right to update or modify these terms and conditions at any time without prior notice.</li>
@@ -321,84 +696,128 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('appointmentForm');
-    const phoneInput = document.getElementById('id_phone');
-    
-    phoneInput.addEventListener('input', function() {
-        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-        const isValid = phoneRegex.test(this.value);
-        
-        if (this.value && !isValid) {
-            this.classList.add('is-invalid');
-            this.classList.remove('is-valid');
-        } else if (isValid) {
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-        } else {
-            this.classList.remove('is-invalid', 'is-valid');
-        }
-    });
-    
-    const emailInput = document.getElementById('id_email');
-    emailInput.addEventListener('input', function() {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const isValid = emailRegex.test(this.value);
-        
-        if (this.value && !isValid) {
-            this.classList.add('is-invalid');
-            this.classList.remove('is-valid');
-        } else if (isValid) {
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-        } else {
-            this.classList.remove('is-invalid', 'is-valid');
-        }
-    });
-    
-    form.addEventListener('submit', function(e) {
+(function() {
+    'use strict';
+
+    const PHONE_REGEX = /^\+?[1-9]\d{1,14}$/;
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // ---------- VALIDATION HELPERS ----------
+    function showError(field, show) {
+        const errorEl = document.querySelector('.field-error[data-for="' + field.id + '"]');
+        if (errorEl) errorEl.classList.toggle('show', show);
+    }
+
+    function validateField(field) {
         let isValid = true;
-        
-        const requiredFields = form.querySelectorAll('[required]');
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                field.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                field.classList.remove('is-invalid');
+        const value = field.value.trim();
+
+        switch (field.dataset.validate) {
+            case 'email':
+                if (value) isValid = EMAIL_REGEX.test(value);
+                else isValid = true; // empty state handled by required
+                break;
+            case 'phone':
+                if (value) isValid = PHONE_REGEX.test(value);
+                else isValid = true;
+                break;
+            case 'terms':
+                isValid = field.checked;
+                break;
+            default:
+                // required text fields
+                if (field.hasAttribute('required')) {
+                    isValid = value.length > 0;
+                }
+        }
+
+        // Visual state
+        if (field.type !== 'checkbox') {
+            field.classList.toggle('is-invalid', !isValid && field.hasAttribute('required'));
+        }
+        showError(field, !isValid);
+
+        return isValid;
+    }
+
+    // ---------- STEPPER PROGRESS ----------
+    function updateStepper() {
+        const sections = document.querySelectorAll('.form-section');
+        const steps = document.querySelectorAll('.step');
+        let completedSections = 0;
+
+        sections.forEach((section, idx) => {
+            const fields = section.querySelectorAll('[data-validate]');
+            let sectionValid = true;
+            fields.forEach(f => {
+                if (!validateField(f)) sectionValid = false;
+            });
+            if (sectionValid) completedSections++;
+
+            steps[idx].classList.toggle('completed', sectionValid);
+            steps[idx].classList.toggle('active', idx === completedSections || (sectionValid && idx === completedSections - 1));
+        });
+
+        // Update progress bar
+        const progress = Math.min((completedSections / sections.length) * 100, 100);
+        const progressEl = document.getElementById('stepperProgress');
+        if (progressEl) progressEl.style.width = progress + '%';
+    }
+
+    // ---------- INIT ----------
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('appointmentForm');
+        if (!form) return;
+
+        // Live validation on blur + input
+        form.querySelectorAll('[data-validate]').forEach(field => {
+            field.addEventListener('blur', () => { validateField(field); updateStepper(); });
+            field.addEventListener('input', () => {
+                if (field.classList.contains('is-invalid')) {
+                    validateField(field);
+                    updateStepper();
+                }
+            });
+            if (field.type === 'checkbox') {
+                field.addEventListener('change', () => { validateField(field); updateStepper(); });
             }
         });
-        
-        const termsCheckbox = document.getElementById('terms');
-        if (!termsCheckbox.checked) {
-            termsCheckbox.classList.add('is-invalid');
-            isValid = false;
-        } else {
-            termsCheckbox.classList.remove('is-invalid');
-        }
-        
-        if (!isValid) {
-            e.preventDefault();
-            const firstError = form.querySelector('.is-invalid');
-            if (firstError) {
-                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                firstError.focus();
-            }
-            alert('Please fill in all required fields and accept the terms.');
-        }
-    });
-    
-    const inputs = form.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        input.addEventListener('blur', function() {
-            if (this.hasAttribute('required') && !this.value.trim()) {
-                this.classList.add('is-invalid');
-            } else {
-                this.classList.remove('is-invalid');
+
+        // Step click → scroll to section
+        document.querySelectorAll('.step').forEach(step => {
+            step.addEventListener('click', () => {
+                const sectionNum = step.dataset.step;
+                const section = document.querySelector('.form-section[data-section="' + sectionNum + '"]');
+                if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Submit
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            let firstInvalid = null;
+
+            form.querySelectorAll('[data-validate]').forEach(field => {
+                const ok = validateField(field);
+                if (!ok && !firstInvalid) firstInvalid = field;
+                if (!ok) isValid = false;
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                updateStepper();
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalid.focus();
+                }
+                alert('Please fill in all required fields and accept the terms to continue.');
             }
         });
+
+        // Initial stepper draw
+        updateStepper();
     });
-});
+})();
 </script>
 {% endblock %}
 {% endblock %}

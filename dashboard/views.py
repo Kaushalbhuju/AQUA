@@ -1,5 +1,7 @@
 # dashboard/views.py
 # This file is kept for backward compatibility and can import all views
+from .views.dashboards import *
+from .views.students import *
 from .views.dashboard_views import *
 from .views.student_views import *
 from .views.other_views import *
