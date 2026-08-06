@@ -29,3 +29,5 @@ def login_view(request):
     return render(request, 'accounts/login.html', {'form': form})
 
 
+def forgot_password(request):
+    return render(request, 'accounts/forgot_password.html')

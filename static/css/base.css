@@ -1,68 +1,193 @@
-/* Global Reset & Typography */
-body {
-    font-family: 'Inter', sans-serif;
-    /* Soft background: Professional blue-grey */
-    background-color: #f4f7fa; 
-    margin: 0;
-    color: #334155;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Global Reset & Modern Tokens */
+:root {
+    --bg-main: #f4f7fa;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --header-gradient: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 100%);
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    --card-shadow-hover: 0 20px 35px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -3px rgba(0, 0, 0, 0.03);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --accent-blue: #4f46e5;
+    --accent-purple: #7c3aed;
 }
 
-/* Professional Header with Blue/Purple Gradient */
+/* Smooth Scrolling & Custom Scrollbar */
+html {
+    scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Base Body Styling */
+body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-main);
+    margin: 0;
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== HEADER NAV ===== */
 .header-nav {
-    background: linear-gradient(135deg, #1e3a8a 0%, #4c1d95 100%);
+    background: var(--header-gradient);
     position: sticky;
     top: 0;
     z-index: 1000;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 30px rgba(15, 23, 42, 0.18);
+    padding: 0;
 }
 
-/* Language Dropdown Styling */
-.language-dropdown {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 6px 30px 6px 12px;
-    border-radius: 6px;
-    font-size: 0.85rem;
+.header-nav nav {
+    transition: var(--transition);
+    padding-top: 0.65rem !important;
+    padding-bottom: 0.65rem !important;
+}
+
+/* Brand Text */
+.brand-text-group {
+    line-height: 1.2;
+}
+.brand-title {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.2px;
+}
+.brand-subtitle {
+    color: rgba(255, 255, 255, 0.65);
     font-weight: 500;
+    font-size: 0.78rem;
+    letter-spacing: 0.2px;
+}
+
+/* Brand logo animation */
+.header-nav img {
+    transition: var(--transition);
+}
+.header-nav img:hover {
+    transform: scale(1.05) rotate(-2deg);
+}
+
+/* ===== LANGUAGE DROPDOWN ===== */
+.lang-dropdown-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.lang-icon {
+    position: absolute;
+    left: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.language-dropdown {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    padding: 9px 38px 9px 36px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
     cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 8px center;
-    transition: all 0.2s ease;
+    background-position: right 12px center;
+    transition: var(--transition);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-family: inherit;
 }
 
-.language-dropdown:hover {
-    background-color: rgba(255, 255, 255, 0.25);
+.language-dropdown:hover, .language-dropdown:focus {
+    background-color: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.45);
+    outline: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .language-dropdown option {
     color: #1e293b;
     background: white;
+    font-weight: 500;
 }
 
-/* Main Content centering */
-main {
-    min-height: 70vh;
+/* ===== MAIN CONTENT ===== */
+.main-content-area {
+    min-height: calc(100vh - 140px);
 }
 
-/* Footer Styling */
+/* ===== MODERN CARD UTILITIES ===== */
+.app-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    overflow: hidden;
+}
+.app-card:hover {
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-3px);
+}
+
+/* ===== FOOTER ===== */
 .footer {
-    background-color: white;
+    background-color: #ffffff;
     border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.02);
 }
 
-/* Responsive Font Sizes */
-@media (max-width: 768px) {
-    nav h2 {
-        font-size: 2.8rem !important;
-    }
+.footer-copy {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
 
-   
-    
+.footer-version {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .brand-title {
+        font-size: 0.95rem;
+    }
+    .brand-subtitle {
+        font-size: 0.7rem;
+    }
     .language-dropdown {
-        font-size: 0.8rem;
-        padding: 4px 25px 4px 10px;
+        font-size: 0.78rem;
+        padding: 7px 30px 7px 30px;
     }
 }

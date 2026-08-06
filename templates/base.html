@@ -7,54 +7,62 @@
   
   <title>{% block title %}{% trans "Recruitment Management System" %}{% endblock %}</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body class="d-flex flex-column min-vh-100 {% block body_class %}{% endblock %}">
   <header class="header-nav shadow-sm">
-    <nav class="container d-flex justify-content-between align-items-center py-3">
+    <nav class="container-fluid px-4 d-flex justify-content-between align-items-center py-2.5">
       <div class="d-flex align-items-center">
-        <img src="{% static 'images/logo.png' %}" alt="Aqua Logo" style="height: 40px; margin-right: 15px;">
-        <h2 class="m-0 fs-5 fw-bold text-white">
-          {% trans "Recruitment Management System" %}
-        </h2>
+        <img src="{% static 'images/logo.png' %}" alt="Aqua Logo" style="height: 38px; margin-right: 14px;">
+        <div class="brand-text-group">
+          <div class="brand-title">{% trans "Aqua Recruitment" %}</div>
+          <div class="brand-subtitle">{% trans "Management System" %}</div>
+        </div>
       </div>
       
       <div class="language-selector">
         <form action="{% url 'set_language' %}" method="post" class="m-0">
           {% csrf_token %}
-          <select name="language" class="language-dropdown" onchange="this.form.submit()">
-            {% get_current_language as CURRENT_LANG %}
-            {% get_available_languages as LANGUAGES %}
-            {% for lang in LANGUAGES %}
-              <option value="{{ lang.0 }}" {% if lang.0 == CURRENT_LANG %}selected{% endif %}>
-                {{ lang.1 }}
-              </option>
-            {% endfor %}
-          </select>
+          <div class="lang-dropdown-wrapper">
+            <i class="fas fa-globe lang-icon"></i>
+            <select name="language" class="language-dropdown" onchange="this.form.submit()">
+              {% get_current_language as CURRENT_LANG %}
+              {% get_available_languages as LANGUAGES %}
+              {% for lang in LANGUAGES %}
+                <option value="{{ lang.0 }}" {% if lang.0 == CURRENT_LANG %}selected{% endif %}>
+                  {{ lang.1 }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
         </form>
       </div>
     </nav>
   </header>
 
-  <main class="container my-auto py-5">
+  <main class="main-content-area flex-grow-1 d-flex align-items-center">
     {% block content %}{% endblock %}
   </main>
 
   <footer class="footer mt-auto py-3">
     <div class="container text-center">
-      <div class="mb-2">
-        <img src="{% static 'images/logo.png' %}" alt="Aqua Logo" style="height: 30px;">
+      <div class="mb-1">
+        <img src="{% static 'images/logo.png' %}" alt="Aqua Logo" style="height: 28px;">
       </div>
-      <small class="text-muted">
-        &copy; {{ now|date:"Y" }} {% trans "Aqua Group" %}. {% trans "All Rights Reserved." %}
-      </small>
+      <div class="footer-copy text-muted small">
+        &copy; {% now "Y" %} {% trans "Aqua Group. All Rights Reserved." %}
+      </div>
+      <div class="footer-version text-muted extra-small">
+        {% trans "Recruitment Management System" %} &bull; {% trans "Version 2.0" %}
+      </div>
     </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   {% block extra_js %}{% endblock %}
 </body>
-</html>
+</html>

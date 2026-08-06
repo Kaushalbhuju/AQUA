@@ -6,58 +6,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{% trans "Recruitment Management System" %}{% endblock %}</title>
   <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
-  {% block extra_css %}{% endblock %}
-</head>
-<body>
-  <header>
-    <nav>
-      <h2>{% trans "Recruitment Management System" %}</h2>
-      <form action="{% url 'set_language' %}" method="post">
-        {% csrf_token %}
-        <ul class="nav-links">
-          <li><a href="{% url 'student_registration' %}">{% trans "CANDIDATE REGISTRATION" %}</a></li>
-          <li><a href="{% url 'biodata' %}">{% trans "BIO-DATA MANAGE" %}</a></li>
-            <li><a href="#">{% trans "JOB DEMAND" %}</a></li>
-            <li><a href="#">{% trans "INFORMATION APPLICATION DOCUMENT" %}</a></li>
-            <li><a href="#">{% trans "COE & VISA RECORDS" %}</a></li>
-            <li><a href="#">{% trans "SCAN DOCUMENT" %}</a></li>
-          </ul>
-        <select name="language" onchange="this.form.submit()">
-          {% get_current_language as LANGUAGE_CODE %}
-          {% get_available_languages as LANGUAGES %}
-          {% for lang in LANGUAGES %}
-            <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
-              {{ lang.1 }}
-            </option>
-          {% endfor %}
-        </select>
-      </form>
-    </nav>
-  </header>
-
-  <main>
-    {% block content %}{% endblock %}
-  </main>
-</body>
-
-
-
-<style>
-    /* Additional styles for enhanced navigation */
+  <style>
+    /* Premium Navigation for Basetwo */
+    header {
+      background: #2c3e50;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
     nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 2rem;
-      background-color: #2c3e50;
-      color: white;
+      padding: 0.85rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
       flex-wrap: wrap;
+      gap: 1rem;
     }
-    
-    .nav-section {
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0;
       display: flex;
       align-items: center;
+      gap: 12px;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-title img {
+      height: 36px;
+      transition: transform 0.25s ease;
+    }
+    .brand-title img:hover {
+      transform: scale(1.06);
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
     
     .nav-links {
@@ -66,59 +63,119 @@
       margin: 0;
       padding: 0;
       flex-wrap: wrap;
-    }
-    
-    .nav-links li {
-      margin: 0 0.5rem;
+      gap: 0.4rem;
     }
     
     .nav-links a {
-      color: white;
+      color: rgba(255, 255, 255, 0.85);
       text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      transition: background-color 0.3s;
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     
-    .nav-links a:hover {
+    .nav-links a:hover, .nav-links a.active {
+      color: #ffffff;
       background-color: #34495e;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     }
     
-    .language-selector {
-      margin-left: 1rem;
+    .lang-select-box select {
+      padding: 6px 30px 6px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      transition: all 0.2s ease;
+    }
+    .lang-select-box select:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+    .lang-select-box select option {
+      color: #1e293b;
+      background: #ffffff;
     }
     
-    .language-selector select {
-      padding: 0.3rem;
-      border-radius: 4px;
-      border: none;
+    main {
+      min-height: 80vh;
+      padding: 2rem 0;
     }
-    
-    @media (max-width: 768px) {
+
+    @media (max-width: 992px) {
       nav {
         flex-direction: column;
         align-items: flex-start;
+        padding: 1rem;
       }
-      
-      .nav-section {
+      .nav-container {
         width: 100%;
-        margin-bottom: 1rem;
+        flex-direction: column;
+        align-items: stretch;
       }
-      
       .nav-links {
         flex-direction: column;
         width: 100%;
       }
-      
-      .nav-links li {
-        margin: 0.2rem 0;
-      }
-      
       .nav-links a {
         display: block;
         width: 100%;
       }
     }
   </style>
-</html> 
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="brand-title">
+        <img src="{% static 'images/logo.png' %}" alt="Logo">
+        <span>{% trans "Recruitment Management System" %}</span>
+      </div>
+      <div class="nav-container">
+        <form action="{% url 'set_language' %}" method="post" class="d-flex align-items-center m-0 gap-2">
+          {% csrf_token %}
+          <ul class="nav-links">
+            <li><a href="{% url 'student_registration' %}"><i class="fas fa-user-plus"></i> {% trans "CANDIDATE REGISTRATION" %}</a></li>
+            <li><a href="{% url 'biodata' %}"><i class="fas fa-address-card"></i> {% trans "BIO-DATA MANAGE" %}</a></li>
+            <li><a href="#"><i class="fas fa-briefcase"></i> {% trans "JOB DEMAND" %}</a></li>
+            <li><a href="#"><i class="fas fa-folder-open"></i> {% trans "INFORMATION APPLICATION DOCUMENT" %}</a></li>
+            <li><a href="#"><i class="fas fa-passport"></i> {% trans "COE & VISA RECORDS" %}</a></li>
+            <li><a href="#"><i class="fas fa-print"></i> {% trans "SCAN DOCUMENT" %}</a></li>
+          </ul>
+          <div class="lang-select-box">
+            <select name="language" onchange="this.form.submit()">
+              {% get_current_language as LANGUAGE_CODE %}
+              {% get_available_languages as LANGUAGES %}
+              {% for lang in LANGUAGES %}
+                <option value="{{ lang.0 }}" {% if lang.0 == LANGUAGE_CODE %}selected{% endif %}>
+                  {{ lang.1 }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
+ 

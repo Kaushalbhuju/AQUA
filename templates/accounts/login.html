@@ -1,26 +1,148 @@
 {% extends 'base.html' %}
 {% load i18n static %}
 
-{% block title %}{% trans "Login" %}{% endblock %}
+{% block title %}{% trans "Login - Aqua Recruitment Management System" %}{% endblock %}
+
+{% block body_class %}login-page-body{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/login.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="login-container">
-  <h2>{% trans "Login" %}</h2>
+<div class="login-page-container">
+  <!-- Left Column: Sign In Card -->
+  <div class="login-card-col">
+    <div class="login-card">
+      <div class="login-badge-icon">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      
+      <h2 class="login-title">{% trans "Welcome Back" %}</h2>
+      <p class="login-subtitle">{% trans "Sign in to continue to your account" %}</p>
 
-  <form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">{% trans "Log In" %}</button>
-  </form>
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-danger py-2 px-3 rounded-3 mb-3 small border-0 shadow-sm d-flex align-items-center" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <div>{{ message }}</div>
+          </div>
+        {% endfor %}
+      {% endif %}
 
-  {% if messages %}
-    {% for message in messages %}
-      <p class="error">{{ message }}</p>
-    {% endfor %}
-  {% endif %}
+      <form method="POST" action="" class="login-form">
+        {% csrf_token %}
+
+        <div class="form-group-item mb-3">
+          <label for="id_username" class="input-label">{% trans "Username" %}</label>
+          <div class="input-relative-wrapper">
+            <i class="fas fa-user field-icon"></i>
+            <input type="text" name="username" id="id_username" class="custom-input" placeholder="{% trans 'Enter your username' %}" required autofocus autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-group-item mb-3">
+          <label for="id_password" class="input-label">{% trans "Password" %}</label>
+          <div class="input-relative-wrapper">
+            <i class="fas fa-lock field-icon"></i>
+            <input type="password" name="password" id="id_password" class="custom-input" placeholder="{% trans 'Enter your password' %}" required autocomplete="current-password">
+            <i class="far fa-eye password-toggle-btn" id="togglePassword" title="{% trans 'Toggle password visibility' %}"></i>
+          </div>
+        </div>
+
+        <div class="form-options-row d-flex justify-content-between align-items-center mb-4">
+          <label class="remember-me-checkbox d-flex align-items-center m-0">
+            <input type="checkbox" name="remember_me" id="rememberMe" checked class="custom-checkbox me-2">
+            <span>{% trans "Remember Me" %}</span>
+          </label>
+          <a href="{% url 'accounts:forgot_password' %}" class="forgot-pass-link">{% trans "Forgot Password?" %}</a>
+        </div>
+
+        <button type="submit" class="btn-submit-login">
+          <i class="fas fa-right-to-bracket me-2"></i>{% trans "LOG IN" %}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right Column: Welcome Hero & Feature Cards -->
+  <div class="hero-content-col">
+    <div class="welcome-pill-badge">
+      <span class="pill-dot"></span> {% trans "WELCOME TO" %}
+    </div>
+
+    <h1 class="hero-gradient-title">
+      {% trans "Recruitment" %}<br>{% trans "Management System" %}
+    </h1>
+
+    <p class="hero-description">
+      {% trans "A complete solution for managing students, recruitment, interviews, and placement with ease and efficiency." %}
+    </p>
+
+    <!-- 4 Feature Cards Grid -->
+    <div class="features-cards-grid">
+      <div class="feature-card-item">
+        <div class="feature-icon-box bg-blue-tint">
+          <i class="fas fa-user-group"></i>
+        </div>
+        <h4 class="feature-card-title">{% trans "Student Management" %}</h4>
+        <p class="feature-card-desc">{% trans "Manage student profiles and applications" %}</p>
+      </div>
+
+      <div class="feature-card-item">
+        <div class="feature-icon-box bg-purple-tint">
+          <i class="fas fa-briefcase"></i>
+        </div>
+        <h4 class="feature-card-title">{% trans "Recruitment Tracking" %}</h4>
+        <p class="feature-card-desc">{% trans "Track recruitment pipeline and progress" %}</p>
+      </div>
+
+      <div class="feature-card-item">
+        <div class="feature-icon-box bg-blue-tint">
+          <i class="fas fa-file-signature"></i>
+        </div>
+        <h4 class="feature-card-title">{% trans "Interview Management" %}</h4>
+        <p class="feature-card-desc">{% trans "Schedule and manage interviews" %}</p>
+      </div>
+
+      <div class="feature-card-item">
+        <div class="feature-icon-box bg-purple-tint">
+          <i class="fas fa-shield-halved"></i>
+        </div>
+        <h4 class="feature-card-title">{% trans "Secure System" %}</h4>
+        <p class="feature-card-desc">{% trans "Your data is safe with our advanced security" %}</p>
+      </div>
+    </div>
+
+    <!-- Trust Banner -->
+    <div class="trust-quote-banner">
+      <div class="trust-shield-icon">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      <div class="trust-text-content">
+        <h5 class="trust-main-heading">{% trans "Trusted by education and recruitment institutions" %}</h5>
+        <p class="trust-sub-heading">{% trans "Streamline your workflow and improve placement success." %}</p>
+      </div>
+      <div class="trust-quote-mark">”</div>
+    </div>
+  </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('id_password');
+    if (togglePassword && passwordInput) {
+      togglePassword.addEventListener('click', function() {
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        this.classList.toggle('fa-eye', !isPassword);
+        this.classList.toggle('fa-eye-slash', isPassword);
+      });
+    }
+  });
+</script>
+{% endblock %}
+
