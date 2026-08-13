@@ -243,6 +243,64 @@
             font-size: 0.85rem;
             margin-top: 3rem;
         }
+
+        .btn-create-class {
+            background: linear-gradient(135deg, #004E89, #006ebc);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(0, 78, 137, 0.3);
+        }
+
+        .btn-create-class:hover {
+            background: linear-gradient(135deg, #003d6e, #004E89);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .modal-content {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #004E89, #006ebc);
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-header .btn-close {
+            filter: invert(1);
+        }
+
+        .alert-box {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-box.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-box.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
     </style>
 </head>
 
@@ -287,10 +345,28 @@
             <i class="fas fa-arrow-left"></i> {% trans "Back to Dashboard" %}
         </a>
 
-        <div class="page-header">
-            <h1><i class="fas fa-chalkboard-teacher" style="color: #004E89;"></i> {% trans "Student Attendance" %}</h1>
-            <p>{% trans "Select a class to view and mark attendance, or manage the class students." %}</p>
+        <div class="page-header d-flex justify-content-between align-items-start">
+            <div>
+                <h1><i class="fas fa-chalkboard-teacher" style="color: #004E89;"></i> {% trans "Student Attendance" %}</h1>
+                <p>{% trans "Select a class to view and mark attendance, or manage the class students." %}</p>
+            </div>
+            <button type="button" class="btn-create-class" data-bs-toggle="modal" data-bs-target="#createClassModal">
+                <i class="fas fa-plus"></i> {% trans "Create New Class" %}
+            </button>
         </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert-box {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+            {% if message.tags == 'success' %}
+            <i class="fas fa-check-circle"></i>
+            {% else %}
+            <i class="fas fa-exclamation-triangle"></i>
+            {% endif %}
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
 
         <div class="class-grid">
             {% for classroom in classrooms %}
@@ -315,9 +391,43 @@
             {% empty %}
             <div class="text-center text-muted py-5">
                 <i class="fas fa-inbox fa-3x mb-3"></i>
-                <p>{% trans "No classes found. They will be created automatically." %}</p>
+                <p>{% trans "No classes found. Click Create New Class to add one." %}</p>
             </div>
             {% endfor %}
+        </div>
+    </div>
+
+    <div class="modal fade" id="createClassModal" tabindex="-1" aria-labelledby="createClassModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createClassModalLabel">
+                        <i class="fas fa-chalkboard-teacher"></i> {% trans "Create New Class" %}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{% url 'dashboard:create_class' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <label for="className" class="form-label fw-semibold">
+                            {% trans "Class Name" %}
+                        </label>
+                        <input type="text" id="className" name="name" class="form-control form-control-lg"
+                            placeholder="{% trans 'e.g., Grade 12 - Section B' %}" required maxlength="100"
+                            autocomplete="off">
+                        <div class="form-text">{% trans "Enter a name to identify this class." %}</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            {% trans "Cancel" %}
+                        </button>
+                        <button type="submit" class="btn btn-primary" style="background: #004E89; border: none;">
+                            <i class="fas fa-plus"></i> {% trans "Create Class" %}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

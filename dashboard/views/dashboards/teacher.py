@@ -48,6 +48,27 @@ def class_list(request):
 
 @login_required(login_url='/')
 @check_role('teacher')
+def create_class(request):
+    """Create a new class with a teacher-provided name"""
+    if request.method != 'POST':
+        return redirect('dashboard:class_list')
+
+    name = (request.POST.get('name') or '').strip()
+    if not name:
+        messages.error(request, _('Class name cannot be empty.'))
+        return redirect('dashboard:class_list')
+
+    if Classroom.objects.filter(name__iexact=name).exists():
+        messages.error(request, _('A class named "%(name)s" already exists.') % {'name': name})
+        return redirect('dashboard:class_list')
+
+    Classroom.objects.create(name=name, teacher=request.user)
+    messages.success(request, _('Class "%(name)s" created successfully.') % {'name': name})
+    return redirect('dashboard:class_list')
+
+
+@login_required(login_url='/')
+@check_role('teacher')
 def class_attendance(request, classroom_id):
     """View for marking attendance inside a class"""
     classroom = get_object_or_404(Classroom, pk=classroom_id)

@@ -11,6 +11,7 @@ from .role_dashboards import (
 from .teacher import (
     student_attendance,
     class_list,
+    create_class,
     class_attendance,
     save_class_attendance,
     manage_class_students,
@@ -33,6 +34,7 @@ __all__ = [
     'teacher_dashboard',
     'student_attendance',
     'class_list',
+    'create_class',
     'class_attendance',
     'save_class_attendance',
     'manage_class_students',
