@@ -51,6 +51,10 @@ DEFAULT_DOCUMENT_TYPES = {
         'japanese language', 'nihongo', 'jlpt', 'japanese proficiency',
         'language certificate', 'japanese certificate', 'japanese course',
     ],
+    'NEB Certificate': [
+        'neb certificate', 'national examination board certificate',
+        'neb', 'council for the school leaving certificate',
+    ],
     'Late Issue of NEB Certificate': [
         'late issue', 'delay in issuance', 'late certificate',
         'delayed certificate', 'late issuance', 'duplicate certificate',

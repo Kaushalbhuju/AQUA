@@ -27,6 +27,7 @@ from translation.services.translator import translate_text, save_translation_mem
 from translation.services.docx_generator import generate_translated_docx
 from translation.services.layout_renderer import generate_bilingual_pdf
 from translation.services.parsers import get_parser_for_document
+from translation.services.parsers.character_certificate import parse_character_certificate
 
 logger = logging.getLogger(__name__)
 
@@ -134,14 +135,53 @@ def document_process(request, pk):
             return _handle_update_extracted(request, doc)
         elif action == 'update_translated':
             return _handle_update_translated(request, doc)
+        elif action == 'update_fields':
+            return _handle_update_fields(request, doc)
 
     override_form = DocumentTypeOverrideForm(
         initial={'document_type': doc.document_type}
     )
 
+    # Build structured Character Certificate context (second stage)
+    structured_fields = None
+    structured_flat = None
+    field_confidences = {}
+    try:
+        layout = doc.parsed_layout
+        sd = layout.get('structured_data', {})
+        # structured_data may be the new service format with flat/spec
+        if isinstance(sd, dict) and sd.get('flat'):
+            structured_flat = sd.get('flat')
+            # also expose per-field confidence if available
+            if sd.get('fields'):
+                field_confidences = sd.get('fields', {})
+        elif isinstance(sd, dict) and sd.get('fields'):
+            # legacy parser result format
+            raw = sd.get('fields', {})
+            # Re-run mapping to spec flat for display
+            from translation.services.parsers.character_certificate import _spec_mapped_fields  # noqa
+            structured_flat = _spec_mapped_fields(raw)
+            field_confidences = sd.get('fields', {})
+            # Also try to get detailed fields if present
+            if sd.get('metadata'):
+                pass
+        # If still empty, try live parse for Character Certificate types for preview
+        if not structured_flat:
+            doc_type_name = (doc.document_type.name if doc.document_type else '') or (doc.auto_detected_type.name if doc.auto_detected_type else '')
+            is_char = 'Character Certificate' in doc_type_name or 'character' in doc_type_name.lower() or 'NEB Certificate' in doc_type_name
+            if is_char and doc.extracted_text:
+                live = parse_character_certificate(doc.extracted_text)
+                structured_flat = live.get('flat', {})
+                field_confidences = live.get('fields', {})
+    except Exception:
+        pass
+
     context = {
         'document': doc,
         'override_form': override_form,
+        'structured_fields': structured_fields,
+        'structured_flat': structured_flat,
+        'field_confidences': field_confidences,
     }
     return render(request, 'translation/document_process.html', context)
 
@@ -181,25 +221,56 @@ def _handle_extraction(request, doc):
         # Get extraction statistics
         stats = get_extraction_stats(extracted_text)
         logger.info(f"Extraction stats: {stats}")
-        
-        # NEW: Parse with document-specific parser if document type is known
-        structured_data = {}
-        if doc.document_type:
+
+        # Auto-detect type if not set, so field extraction can run as second stage
+        if not doc.document_type and extracted_text:
             try:
-                parser = get_parser_for_document(doc.document_type.name)
-                parser_result = parser.parse(
-                    extracted_text,
-                    layout_data=doc.parsed_layout if hasattr(doc, 'parsed_layout') else None,
-                    tables=tables
-                )
-                structured_data = parser_result.to_dict()
-                logger.info(
-                    f"Parsed {doc.document_type.name}: "
-                    f"{len(parser_result.fields)} fields, "
-                    f"confidence: {parser_result.metadata.get('confidence', 0):.2f}"
-                )
+                auto = detect_document_type(extracted_text)
+                if auto:
+                    doc.auto_detected_type = auto
+                    doc.document_type = auto
+                    doc.save(update_fields=['auto_detected_type', 'document_type'])
+                    logger.info(f"Auto-detected during extraction: {auto.name}")
             except Exception as e:
-                logger.warning(f"Document parsing failed: {e}")
+                logger.debug(f"Auto-detect during extraction failed: {e}")
+
+        # SECOND STAGE: Character Certificate field extraction (RAW OCR -> structured)
+        # Runs for Character Certificate / NEB Certificate; keeps RAW OCR as extracted_text
+        structured_data = {}
+        doc_type_name = (doc.document_type.name if doc.document_type else '')
+        # Also treat NEB Certificate as Character Certificate for field extraction
+        is_character = ('Character Certificate' in doc_type_name or 'character' in doc_type_name.lower() or 'NEB Certificate' in doc_type_name)
+        # Fallback: if still unknown, try character parser speculatively and keep if confident
+        try_parse = is_character or not doc.document_type
+        if try_parse and extracted_text:
+            try:
+                # Use the position-independent service API
+                svc = parse_character_certificate(extracted_text)
+                # Store both flat spec and detailed fields for UI/editing
+                structured_data = {
+                    'fields': svc.get('raw_fields', {}),
+                    'flat': svc.get('flat', {}),
+                    'detailed': svc.get('fields', {}),
+                    'metadata': svc.get('metadata', {}),
+                }
+                # Also keep legacy parser path for compatibility
+                parser = get_parser_for_document('Character Certificate')
+                parser_result = parser.parse(extracted_text, layout_data=doc.parsed_layout if hasattr(doc, 'parsed_layout') else None, tables=tables)
+                # Merge legacy fields if svc missed something
+                for k, v in parser_result.fields.items():
+                    if k not in structured_data['fields'] and v:
+                        structured_data['fields'][k] = v
+                logger.info(f"Character Certificate field extraction: {len(structured_data['fields'])} fields, overall_conf={svc['metadata'].get('overall_confidence',0):.2f}")
+            except Exception as e:
+                logger.warning(f"Character Certificate field extraction failed: {e}")
+                # Fallback to legacy parser if service fails
+                if doc.document_type:
+                    try:
+                        parser = get_parser_for_document(doc.document_type.name)
+                        parser_result = parser.parse(extracted_text, layout_data=doc.parsed_layout if hasattr(doc, 'parsed_layout') else None, tables=tables)
+                        structured_data = parser_result.to_dict()
+                    except Exception as e2:
+                        logger.warning(f"Legacy parsing also failed: {e2}")
 
         # New: extract layout data for PDFs (text blocks with positions + images)
         if doc.file_type in ('pdf', 'scanned_pdf'):
@@ -272,6 +343,17 @@ def _handle_detection(request, doc):
             doc.document_type = detected
         doc.save(update_fields=['auto_detected_type', 'document_type'])
         messages.success(request, f'Document type detected: {detected.name}')
+        # If character/NEB, run field extraction as second stage immediately
+        if detected and ('Character Certificate' in detected.name or 'character' in detected.name.lower() or 'NEB Certificate' in detected.name):
+            if doc.extracted_text:
+                try:
+                    svc = parse_character_certificate(doc.extracted_text)
+                    layout = doc.parsed_layout
+                    layout['structured_data'] = {'fields': svc.get('raw_fields', {}), 'flat': svc.get('flat', {}), 'detailed': svc.get('fields', {}), 'metadata': svc.get('metadata', {})}
+                    doc.parsed_layout = layout
+                    doc.save(update_fields=['layout_data'])
+                except Exception as e:
+                    logger.warning(f"Field extraction after detect failed: {e}")
     else:
         messages.warning(request, 'Could not auto-detect document type. Please select manually.')
 
@@ -285,6 +367,18 @@ def _handle_type_override(request, doc):
         doc.document_type = form.cleaned_data['document_type']
         doc.save(update_fields=['document_type'])
         messages.success(request, f'Document type set to: {doc.document_type.name}')
+        # Run field extraction if character/NEB selected
+        name = doc.document_type.name if doc.document_type else ''
+        if 'Character Certificate' in name or 'character' in name.lower() or 'NEB Certificate' in name:
+            if doc.extracted_text:
+                try:
+                    svc = parse_character_certificate(doc.extracted_text)
+                    layout = doc.parsed_layout
+                    layout['structured_data'] = {'fields': svc.get('raw_fields', {}), 'flat': svc.get('flat', {}), 'detailed': svc.get('fields', {}), 'metadata': svc.get('metadata', {})}
+                    doc.parsed_layout = layout
+                    doc.save(update_fields=['layout_data'])
+                except Exception as e:
+                    logger.warning(f"Field extraction after override failed: {e}")
     return redirect('translation:document_process', pk=doc.pk)
 
 
@@ -364,6 +458,74 @@ def _handle_update_translated(request, doc):
     else:
         messages.warning(request, 'No translation text provided.')
 
+    return redirect('translation:document_process', pk=doc.pk)
+
+
+def _handle_update_fields(request, doc):
+    """Save edited Character Certificate structured fields (human review)."""
+    # Fields per spec - editable in second section
+    spec_keys = ['serial_number','registration_number','student_name','school_name','school_location','grade','gpa','examination_year_bs','examination_year_ad','certificate_date_bs','certificate_date_ad']
+    # Map spec -> internal for storage
+    flat = {}
+    for k in spec_keys:
+        v = request.POST.get(k, '').strip()
+        flat[k] = v if v else None
+
+    # Convert flat spec back to internal parser keys for template filler
+    internal = {}
+    if flat.get('serial_number'):
+        internal['serial_no'] = flat['serial_number']
+    if flat.get('registration_number'):
+        internal['reg_no'] = flat['registration_number']
+    if flat.get('student_name'):
+        internal['student_name'] = flat['student_name']
+    if flat.get('school_name'):
+        internal['school_name'] = flat['school_name']
+    if flat.get('school_location'):
+        internal['location'] = flat['school_location']
+    if flat.get('grade'):
+        internal['grade'] = flat['grade']
+    if flat.get('gpa'):
+        internal['gpa'] = flat['gpa']
+    if flat.get('examination_year_bs'):
+        internal['year_bs'] = flat['examination_year_bs']
+    if flat.get('examination_year_ad'):
+        internal['year_ad'] = flat['examination_year_ad']
+    # Recombine certificate dates into issue_date for parser
+    cert_bs = flat.get('certificate_date_bs') or ''
+    cert_ad = flat.get('certificate_date_ad') or ''
+    if cert_bs:
+        # store as "BS (AD)" if AD present, else just BS
+        if cert_ad:
+            # cert_ad is YYYY/MM/DD -> convert to M/D/YYYY for issue_date format
+            try:
+                y, m, d = cert_ad.split('/')
+                ad_paren = f'{int(m)}/{int(d)}/{y}'
+                internal['issue_date'] = f'{cert_bs} ({ad_paren})'
+            except Exception:
+                internal['issue_date'] = cert_bs
+        else:
+            internal['issue_date'] = cert_bs
+
+    layout = doc.parsed_layout
+    # Preserve existing structured_data metadata, overwrite flat/fields
+    existing = layout.get('structured_data', {})
+    if not isinstance(existing, dict):
+        existing = {}
+    existing['fields'] = internal
+    existing['flat'] = flat
+    existing['edited_by'] = request.user.username if request.user else 'unknown'
+    layout['structured_data'] = existing
+    doc.parsed_layout = layout
+    doc.save(update_fields=['layout_data'])
+
+    TranslationHistory.objects.create(
+        document=doc,
+        action='edit',
+        details=f'Character Certificate fields updated by {request.user}: {flat}',
+        user=request.user,
+    )
+    messages.success(request, 'Character Certificate fields saved. Generate DOCX to apply.')
     return redirect('translation:document_process', pk=doc.pk)
 
 

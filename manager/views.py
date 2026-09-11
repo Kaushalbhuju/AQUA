@@ -926,6 +926,12 @@ def language_skill_dashboard(request):
 
 from django.contrib.auth import get_user_model
 from staff.models import StaffTask
+from django.core.paginator import Paginator
+from django.utils import timezone
+from django.db.models import Q, Count
+from datetime import timedelta
+from .models import StaffActivityLog
+from .utils import log_staff_activity
 
 @login_required
 def manage_tasks(request):
@@ -947,21 +953,227 @@ def manage_tasks(request):
         description = request.POST.get('description', '').strip()
         if title and staff_id:
             target = get_object_or_404(User, id=staff_id, role='staff')
-            StaffTask.objects.create(
+            task = StaffTask.objects.create(
                 title=title,
                 description=description or None,
                 assigned_by=request.user,
                 assigned_to=target,
             )
+            log_staff_activity(
+                user=request.user,
+                action='task_assigned',
+                description=f"Assigned task '{title}' to {target.username}",
+                request=request,
+                extra_data={'task_id': task.pk, 'assigned_to': target.username, 'title': title}
+            )
+            # Also log for the target staff as an activity they can see?
+            log_staff_activity(
+                user=target,
+                action='task_assigned',
+                description=f"Received task '{title}' from {request.user.username}",
+                request=request,
+                extra_data={'task_id': task.pk, 'assigned_by': request.user.username}
+            )
             messages.success(request, f'Task assigned to {target.username}')
         return redirect('manager:manage_tasks')
+
+    # ── Activity Log section ──────────────────────────────────────────────
+    # Filters
+    activity_action = request.GET.get('activity_action', '').strip()
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
+    activity_search = request.GET.get('activity_search', '').strip()
+    activity_staff = request.GET.get('activity_staff', '').strip()  # separate from task filter
+
+    # Determine which staff to filter logs by: activity_staff overrides staff, else use staff filter if present
+    log_staff_filter = activity_staff or selected_staff_id
+
+    logs_qs = StaffActivityLog.objects.select_related('user').all()
+
+    if log_staff_filter:
+        try:
+            uid = int(log_staff_filter)
+            u = User.objects.get(id=uid)
+            logs_qs = logs_qs.filter(Q(user__id=uid) | Q(username_snapshot=u.username))
+        except Exception:
+            # fallback: try filtering by username snapshot string
+            logs_qs = logs_qs.filter(username_snapshot=log_staff_filter)
+
+    if activity_action:
+        logs_qs = logs_qs.filter(action=activity_action)
+
+    if activity_search:
+        logs_qs = logs_qs.filter(
+            Q(description__icontains=activity_search) |
+            Q(username_snapshot__icontains=activity_search) |
+            Q(path__icontains=activity_search) |
+            Q(user__username__icontains=activity_search)
+        )
+
+    # Date filtering
+    from django.utils.dateparse import parse_date
+    if date_from:
+        d = parse_date(date_from)
+        if d:
+            logs_qs = logs_qs.filter(timestamp__date__gte=d)
+    if date_to:
+        d = parse_date(date_to)
+        if d:
+            logs_qs = logs_qs.filter(timestamp__date__lte=d)
+
+    logs_qs = logs_qs.order_by('-timestamp')
+
+    # Pagination for logs
+    paginator = Paginator(logs_qs, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Stats for header cards
+    today = timezone.now().date()
+    week_ago = timezone.now() - timedelta(days=7)
+    # Counts
+    total_staff = staff_users.count()
+    logins_today = StaffActivityLog.objects.filter(action='login', timestamp__date=today).count()
+    active_today_users = StaffActivityLog.objects.filter(timestamp__date=today).values('user').distinct().count()
+    tasks_pending = StaffTask.objects.filter(status='pending').count()
+
+    # Recent logins for quick view (last 5 logins of staff)
+    recent_logins = StaffActivityLog.objects.filter(action='login').select_related('user').order_by('-timestamp')[:5]
 
     return render(request, 'manager/manage_tasks.html', {
         'staff_users': staff_users,
         'staff_tasks': staff_tasks,
         'selected_staff': selected_staff,
         'selected_staff_id': selected_staff_id,
+        # Activity log context
+        'page_obj': page_obj,
+        'activity_logs': page_obj.object_list,
+        'paginator': paginator,
+        'activity_action': activity_action,
+        'date_from': date_from,
+        'date_to': date_to,
+        'activity_search': activity_search,
+        'activity_staff': activity_staff,
+        'action_choices': StaffActivityLog.ACTION_CHOICES,
+        'total_staff': total_staff,
+        'logins_today': logins_today,
+        'active_today_users': active_today_users,
+        'tasks_pending': tasks_pending,
+        'recent_logins': recent_logins,
     })
+
+
+@login_required
+def staff_activity_log(request):
+    """Dedicated full-page activity log (also accessible via /manager/staff-activity/)."""
+    User = get_user_model()
+    staff_users = User.objects.filter(role='staff').order_by('username')
+    action = request.GET.get('action', '').strip()
+    staff_filter = request.GET.get('staff', '').strip()
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
+    search = request.GET.get('search', '').strip()
+
+    logs = StaffActivityLog.objects.select_related('user').order_by('-timestamp')
+    if staff_filter:
+        try:
+            uid = int(staff_filter)
+            # filter by user id or snapshot username
+            u = User.objects.get(id=uid)
+            logs = logs.filter(Q(user__id=uid) | Q(username_snapshot=u.username))
+        except Exception:
+            pass
+    if action:
+        logs = logs.filter(action=action)
+    if search:
+        logs = logs.filter(Q(description__icontains=search) | Q(username_snapshot__icontains=search) | Q(path__icontains=search))
+    from django.utils.dateparse import parse_date
+    if date_from:
+        d = parse_date(date_from)
+        if d:
+            logs = logs.filter(timestamp__date__gte=d)
+    if date_to:
+        d = parse_date(date_to)
+        if d:
+            logs = logs.filter(timestamp__date__lte=d)
+
+    paginator = Paginator(logs, 30)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'manager/staff_activity_log.html', {
+        'staff_users': staff_users,
+        'page_obj': page_obj,
+        'activity_logs': page_obj.object_list,
+        'paginator': paginator,
+        'selected_staff': staff_filter,
+        'action': action,
+        'date_from': date_from,
+        'date_to': date_to,
+        'search': search,
+        'action_choices': StaffActivityLog.ACTION_CHOICES,
+    })
+
+
+@login_required
+def staff_activity_export_csv(request):
+    """Export filtered activity logs as CSV."""
+    import csv
+    from django.http import HttpResponse
+    from django.db.models import Q
+    from django.utils.dateparse import parse_date
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    logs = StaffActivityLog.objects.select_related('user').order_by('-timestamp')
+    staff_filter = request.GET.get('staff', '').strip()
+    action = request.GET.get('action', '').strip()
+    search = request.GET.get('search', '').strip()
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
+    # also support activity_* param names from manage_tasks page
+    if not staff_filter:
+        staff_filter = request.GET.get('activity_staff', '').strip()
+    if not action:
+        action = request.GET.get('activity_action', '').strip()
+    if not search:
+        search = request.GET.get('activity_search', '').strip()
+
+    if staff_filter:
+        try:
+            uid = int(staff_filter)
+            u = User.objects.get(id=uid)
+            logs = logs.filter(Q(user__id=uid) | Q(username_snapshot=u.username))
+        except Exception:
+            pass
+    if action:
+        logs = logs.filter(action=action)
+    if search:
+        logs = logs.filter(Q(description__icontains=search) | Q(username_snapshot__icontains=search) | Q(path__icontains=search))
+    if date_from:
+        d = parse_date(date_from)
+        if d:
+            logs = logs.filter(timestamp__date__gte=d)
+    if date_to:
+        d = parse_date(date_to)
+        if d:
+            logs = logs.filter(timestamp__date__lte=d)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="staff_activity_log.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Timestamp', 'Staff', 'Role', 'Action', 'Description', 'IP Address', 'Path', 'Method'])
+    for log in logs.iterator():
+        writer.writerow([
+            log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            log.username_snapshot or (log.user.username if log.user else ''),
+            log.role_snapshot,
+            log.get_action_display(),
+            log.description,
+            log.ip_address or '',
+            log.path,
+            log.method,
+        ])
+    return response
 
 
 # Scan Documents Feature

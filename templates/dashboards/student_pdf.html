@@ -351,14 +351,12 @@
                     <td style="border:none; border-right:1px solid #000; border-bottom:1px solid #000; font-size:6.5pt;">Pass Year &amp; Month</td>
                     <td style="border:none; border-bottom:1px solid #000; font-size:6.5pt;">Name of Pass Exam</td>
                 </tr>
+                {% for c in cert_rows %}
                 <tr style="height:26px;" class="center">
-                    <td style="border:none; border-right:1px solid #000; font-size:7.5pt;">{{ student.certificate_pass_year|default:'' }}</td>
-                    <td style="border:none; font-size:7.5pt;">{{ student.certificate_name|default:'' }}</td>
+                    <td style="border:none; border-right:1px solid #000; {% if not forloop.last %}border-bottom:1px solid #000;{% else %}border-top:1px solid #000;{% endif %} font-size:7.5pt;">{{ c.pass_year|default:'' }}</td>
+                    <td style="border:none; {% if not forloop.last %}border-bottom:1px solid #000;{% else %}border-top:1px solid #000;{% endif %} font-size:7.5pt;">{{ c.certificate_name|default:'' }}</td>
                 </tr>
-                <tr style="height:26px;" class="center">
-                    <td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td>
-                    <td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td>
-                </tr>
+                {% endfor %}
             </table>
         </td>
         <td style="padding:0;">
@@ -370,14 +368,12 @@
                     <td style="border:none; border-right:1px solid #000; border-bottom:1px solid #000; font-size:6.5pt;">Join Year and Month</td>
                     <td style="border:none; border-bottom:1px solid #000; font-size:6.5pt;">Organization</td>
                 </tr>
+                {% for t in training_rows %}
                 <tr style="height:26px;" class="center">
-                    <td style="border:none; border-right:1px solid #000; font-size:7.5pt;">{{ student.language_join_year|default:'' }}</td>
-                    <td style="border:none; font-size:7.5pt;">{{ student.organization|default:'' }}</td>
+                    <td style="border:none; border-right:1px solid #000; {% if not forloop.last %}border-bottom:1px solid #000;{% else %}border-top:1px solid #000;{% endif %} font-size:7.5pt;">{{ t.join_year|default:'' }}</td>
+                    <td style="border:none; {% if not forloop.last %}border-bottom:1px solid #000;{% else %}border-top:1px solid #000;{% endif %} font-size:7.5pt;">{{ t.organization|default:'' }}</td>
                 </tr>
-                <tr style="height:26px;" class="center">
-                    <td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td>
-                    <td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td>
-                </tr>
+                {% endfor %}
             </table>
         </td>
     </tr>

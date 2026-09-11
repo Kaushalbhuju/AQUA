@@ -21,8 +21,22 @@ def update_task_status(request, task_id):
     if request.method == 'POST':
         status = request.POST.get('status')
         if status in dict(StaffTask.STATUS_CHOICES):
+            old_status = task.status
             task.status = status
+            task._skip_activity_log = True  # avoid duplicate signal
             task.save()
+            # Log staff activity
+            try:
+                from manager.utils import log_staff_activity
+                log_staff_activity(
+                    user=request.user,
+                    action='task_status_update',
+                    description=f"Updated task '{task.title}' from {old_status} to {status}",
+                    request=request,
+                    extra_data={'task_id': task.pk, 'old_status': old_status, 'new_status': status, 'title': task.title}
+                )
+            except Exception as e:
+                print(f"[update_task_status] log failed: {e}")
     next_url = request.POST.get('next', '')
     if next_url:
         return redirect(next_url)

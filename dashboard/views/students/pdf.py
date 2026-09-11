@@ -19,7 +19,7 @@ def _generate_student_pdf_internal(request, student_id):
     try:
         student = get_object_or_404(
             Student.objects.select_related('agent').prefetch_related(
-                'education_history', 'work_experience'
+                'education_history', 'work_experience', 'certificates'
             ),
             id=student_id
         )
@@ -71,6 +71,21 @@ def _generate_student_pdf_internal(request, student_id):
                 'working_years': w.working_years if w and w.working_years else '',
             })
 
+        # ── Certificates & Skills (multiple via StudentCertificate) ─────────
+        certs = list(student.certificates.all().order_by('pass_year', 'created_at'))
+        if certs:
+            cert_rows = [{'pass_year': c.pass_year or '', 'certificate_name': c.certificate_name or ''} for c in certs]
+            training_rows = [{'join_year': c.join_year or '', 'organization': c.organization or ''} for c in certs]
+        else:
+            # Fallback to legacy single fields on Student (so old data still shows)
+            cert_rows = [{'pass_year': student.certificate_pass_year or '', 'certificate_name': student.certificate_name or ''}]
+            training_rows = [{'join_year': student.language_join_year or '', 'organization': student.organization or ''}]
+        # Ensure at least 2 rows rendered to keep table height consistent (pad empty)
+        while len(cert_rows) < 2:
+            cert_rows.append({'pass_year': '', 'certificate_name': ''})
+        while len(training_rows) < 2:
+            training_rows.append({'join_year': '', 'organization': ''})
+
         context = {
             'student': student,
             'photo_html': photo_html,
@@ -80,6 +95,8 @@ def _generate_student_pdf_internal(request, student_id):
             'a_code': student.agent.agent_code if student.agent else "",
             'education_rows': education_rows,
             'work_rows': work_rows,
+            'cert_rows': cert_rows,
+            'training_rows': training_rows,
         }
 
         html_content = render_to_string('dashboards/student_pdf.html', context, request=request)

@@ -31,3 +31,16 @@ def login_view(request):
 
 def forgot_password(request):
     return render(request, 'accounts/forgot_password.html')
+
+
+def logout_view(request):
+    """Proper logout that fires user_logged_out signal for activity tracking."""
+    if request.user.is_authenticated:
+        logout(request)
+        messages.success(request, "You have been logged out.")
+    return redirect('accounts:login')
+
+
+# Keep alias for backwards compatibility
+def custom_logout(request):
+    return logout_view(request)

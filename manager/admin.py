@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import (
     StaffRegistration, EducationalHistory, WorkingExperience,
-    CertificateOfSkills, SkillsTrainingStatus, DrivingLicense, ScannedDocument
+    CertificateOfSkills, SkillsTrainingStatus, DrivingLicense, ScannedDocument,
+    StaffActivityLog
 )
 
 class EducationalHistoryInline(admin.TabularInline):
@@ -51,3 +52,13 @@ admin.site.register(WorkingExperience)
 admin.site.register(CertificateOfSkills)
 admin.site.register(SkillsTrainingStatus)
 admin.site.register(DrivingLicense)
+
+
+@admin.register(StaffActivityLog)
+class StaffActivityLogAdmin(admin.ModelAdmin):
+    list_display = ['timestamp', 'username_snapshot', 'role_snapshot', 'action', 'description', 'ip_address', 'path']
+    list_filter = ['action', 'role_snapshot', 'timestamp']
+    search_fields = ['username_snapshot', 'description', 'ip_address', 'path']
+    readonly_fields = ['timestamp']
+    list_per_page = 30
+    date_hierarchy = 'timestamp'

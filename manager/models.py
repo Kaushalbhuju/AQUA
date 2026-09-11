@@ -1,5 +1,6 @@
 
 from django.db import models
+from django.conf import settings
 from django.core.validators import RegexValidator
 import base64
 import mimetypes
@@ -300,3 +301,63 @@ class ScannedDocument(models.Model):
     
     def __str__(self):
         return f"{self.document_name} - {self.get_document_type_display()}"
+
+
+class StaffActivityLog(models.Model):
+    """
+    Tracks login, logout and all significant actions performed by staff (and other) users.
+    Managers can view this on /manager/staff-tasks/ to audit staff behaviour.
+    """
+    ACTION_CHOICES = [
+        ('login', 'Login'),
+        ('logout', 'Logout'),
+        ('task_assigned', 'Task Assigned'),
+        ('task_status_update', 'Task Status Update'),
+        ('create', 'Create'),
+        ('update', 'Update'),
+        ('delete', 'Delete'),
+        ('view', 'View'),
+        ('export', 'Export'),
+        ('scan', 'Scan / Upload'),
+        ('other', 'Other'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='activity_logs',
+        null=True,
+        blank=True,
+    )
+    username_snapshot = models.CharField(max_length=150, blank=True, help_text='Username at time of activity')
+    role_snapshot = models.CharField(max_length=20, blank=True, help_text='Role at time of activity')
+    action = models.CharField(max_length=30, choices=ACTION_CHOICES, default='other')
+    description = models.TextField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    path = models.CharField(max_length=500, blank=True)
+    method = models.CharField(max_length=10, blank=True)
+    extra_data = models.JSONField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = 'Staff Activity Log'
+        verbose_name_plural = 'Staff Activity Logs'
+        indexes = [
+            models.Index(fields=['user', '-timestamp']),
+            models.Index(fields=['action']),
+            models.Index(fields=['-timestamp']),
+        ]
+
+    def __str__(self):
+        who = self.username_snapshot or (self.user.username if self.user else 'Unknown')
+        return f"[{self.timestamp:%Y-%m-%d %H:%M}] {who} - {self.get_action_display()}: {self.description[:50]}"
+
+    @property
+    def is_login(self):
+        return self.action == 'login'
+
+    @property
+    def is_logout(self):
+        return self.action == 'logout'

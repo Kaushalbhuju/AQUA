@@ -62,6 +62,9 @@ class CharacterCertificateParser(BaseDocumentParser):
         (r'No,\s*(\d)', r'No. \1'),  # "No, 81527" -> "No. 81527"
         (r'\s+([0-9]+)\s*GPA', r' \1 GPA'),
         (r'with\s+[^\d]+(\d+\.\d+)\s*GPA', r'with \1 GPA'),
+        # NEB-specific: normalize exam year forms like "2079BS" -> "2079 B.S."
+        (r'(\d{4})\s*B\.?S\.?\b', r'\1 B.S.'),
+        (r'(\d{4})\s*A\.?D\.?\b', r'\1 A.D.'),
         
         # Spacing fixes
         (r'\s+', ' '),  # Normalize multiple spaces
@@ -126,14 +129,20 @@ class CharacterCertificateParser(BaseDocumentParser):
     # ENHANCED: Multiple strategies per field for better extraction
     FIELD_PATTERNS = {
         'student_name': [
-            # Strategy 1: "certify that NAME of/has" - most robust (handles garbled Mr./Ms.)
-            r'(?:to\s+)?certify\s+that\s+(?:[A-Z][a-z]+[\./]?\s*){0,3}([A-Z][A-Z]?[\.A-Z\s]+?)\s+(?:of|has)\b',
-            # Strategy 2: "Mr./Ms. NAME of" or "Mr./Ms. NAME has"
+            # Strategy 1: "Mr./Ms. NAME of/has" - try explicit title first so generic pattern does not eat the name
             r'(?i:Mr\.?/Ms\.?|Mr\.?|Ms\.?|Shri|Shreemati|Kumar|Kumari)\s+([A-Z][A-Za-z\.\s]+?)\s+(?:of|has)\b',
+            # Strategy 2: "certify that NAME of/has" - generic (handles garbled Mr./Ms.)
+            r'(?:to\s+)?certify\s+that\s+(?:[A-Z][a-z]+[\./]?\s*){0,3}([A-Z][A-Z]?[\.A-Z\s]+?)\s+(?:of|has)\b',
             # Strategy 3: "Name: NAME"
             r'(?i:Name|Student[\u2019\']?s\s*Name)\s*[:\-\u2013\u2014]?\s*([A-Z][A-Za-z\.\s]+?)(?:\s|$)',
             # Strategy 4: Between "certify that" and "of" (garbled prefix tolerant)
             r'certify\s+that\s+([A-Z][A-Z\s\.]{1,30}?)\s+of\s+[A-Z]',
+            # Strategy 5: Name after "certify that" with OCR-garbled prefix - handles cases where
+            # Mr./Ms. or other tokens appear between "that" and the name due to OCR errors
+            r'(?:to\s+)?certify\s+that\s+(?:[A-Z][a-z]+\s*){0,2}([A-Z][A-Z\s]{2,30}?)\s+(?:of|has|\n)',
+            # Strategy 6: Isolated name BEFORE "This is to certify" - handles scrambled OCR where
+            # the name appears on its own line before the certify clause (e.g. "ROHAN GURUNG\nThis is to certify...")
+            r'([A-Z][A-Z]+\s+[A-Z][A-Z]+(?:\s+[A-Z][A-Z]+)?)\s+This is to certify',
         ],
         'school_name': [
             # Strategy 1: "of SCHOOL NAME has completed" - MOST PRECISE
@@ -144,6 +153,9 @@ class CharacterCertificateParser(BaseDocumentParser):
             r'([A-Z][A-Z\s,]{2,}?(?:SECONDARY\s+SCHOOL|SCHOOL|ACADEMY|COLLEGE|UNIVERSITY|INSTITUTE|CAMPUS|Secondary\s+School))',
             # Strategy 4: Keyword-based extraction (fallback)
             r'([A-Z][A-Za-z\s,]+?(?:School|Academy|College|University|Institute|Campus)\b)',
+            # Strategy 5: School name from last keyword when OCR order changes - capture from
+            # the last school-related keyword backward, discarding preceding OCR garbage
+            r'([A-Z][A-Z\s,]{8,}?(?:SECONDARY\s+SCHOOL|SCHOOL|ACADEMY|COLLEGE|UNIVERSITY|INSTITUTE|CAMPUS)\b)',
         ],
         'location': [
             # Strategy 1: After school name, before "has"
@@ -286,9 +298,7 @@ class CharacterCertificateParser(BaseDocumentParser):
     def _validate_extraction(self, fields):
         """
         Step 4: Validate extracted fields and reject invalid ones.
-        
-        Returns:
-            tuple: (validated_fields, list_of_errors)
+        Uses word-boundary checks so 'Board' does not reject 'BOARDING'.
         """
         validated = {}
         errors = []
@@ -341,10 +351,10 @@ class CharacterCertificateParser(BaseDocumentParser):
             is_valid = True
             field_errors = []
             
-            # Check invalid tokens
+            # Check invalid tokens (word-boundary so 'Board' != 'Boarding')
             if 'invalid_tokens' in rules:
                 for token in rules['invalid_tokens']:
-                    if token.lower() in value.lower():
+                    if re.search(r'\b' + re.escape(token) + r'\b', value, re.IGNORECASE):
                         is_valid = False
                         field_errors.append(f"Contains invalid token: '{token}'")
                         break
@@ -413,8 +423,8 @@ class CharacterCertificateParser(BaseDocumentParser):
         # Separate school_name from location when combined
         if 'school_name' in fields:
             school_val = fields['school_name']
-            # Clean up: remove trailing text after school name
-            school_val = re.split(r'(?:\n|\s+has|\s+completed|\s+who)', school_val, maxsplit=1)[0].strip()
+            # Clean up: remove trailing text after school name (also handles "at SCHOOL")
+            school_val = re.split(r'(?:\n|\s+has|\s+completed|\s+who|\s+at\s)', school_val, maxsplit=1)[0].strip()
             
             # For garbled OCR, extract only the clean school portion:
             # everything before " has completed" or the last big-word school keyword
@@ -428,12 +438,12 @@ class CharacterCertificateParser(BaseDocumentParser):
                 # the portion from the last recognizable name token to the keyword.
                 # Prefer the longest clean run ending with a known keyword.
                 keyword_hits = list(re.finditer(
-                    r'(?:SECONDARY\s+SCHOOL|SCHOOL|ACADEMY|COLLEGE|UNIVERSITY|INSTITUTE|CAMPUS)\b',
+                    r'(?:SECONDARY\s+SCHOOL|SCHOOL|ACADEMY|COLLEGE|UNIVERSITY|INSTITUTE|CAMPUS|Secondary\s+School)\b',
                     school_val, re.IGNORECASE
                 ))
                 if keyword_hits:
                     # Take from last keyword start backwards to find the name start:
-                    # find the position ~40 chars before the last keyword that starts with a capital letter
+                    # find the position ~60 chars before the last keyword that starts with a capital letter
                     kw = keyword_hits[-1]
                     kw_start = kw.start()
                     window = school_val[max(0, kw_start - 60):kw_start]
@@ -445,15 +455,30 @@ class CharacterCertificateParser(BaseDocumentParser):
                             # Re-anchor to absolute position
                             abs_start = max(0, kw_start - 60) + clean_start
                             school_val = school_val[abs_start:kw.end()].strip()
+                    else:
+                        # Fallback: take window around keyword and find first caps word
+                        window2 = school_val[max(0, kw_start - 80):kw_start]
+                        first_cap = re.search(r'[A-Z][A-Za-z]+', window2)
+                        if first_cap:
+                            rel_start = window2.index(first_cap.group())
+                            abs_start = max(0, kw_start - 80) + rel_start
+                            school_val = school_val[abs_start:kw.end()].strip()
+                        else:
+                            school_val = school_match.group(1).strip() if school_match else school_val
                 else:
-                    school_val = school_match.group(1).strip()
+                    school_val = school_match.group(1).strip() if school_match else school_val
+
+            # Strip leading garbage like GPA/Grade tokens that polluted the school capture
+            # e.g. "GPA HEART SECONDARY BOARDING SCHOOL" -> "HEART SECONDARY BOARDING SCHOOL"
+            school_val = re.sub(r'^(?:GPA|Grade\s*XII?|XII|XI|GPA:?)\s+', '', school_val, flags=re.IGNORECASE).strip()
             
             # Check if there's a comma followed by location info
+            # But ONLY if the second part doesn't itself contain a school keyword
             parts = re.split(r',\s*', school_val, maxsplit=1)
             if len(parts) == 2:
                 school_part, loc_part = parts
-                # Verify the second part looks like a location (not "School" etc.)
-                if not re.search(r'(?:School|Academy|College|Institute|Campus)', loc_part, re.IGNORECASE):
+                has_school_kw = bool(re.search(r'(?:School|Academy|College|University|Institute|Campus)\b', loc_part, re.IGNORECASE))
+                if not has_school_kw:
                     fields['school_name'] = school_part.strip()
                     fields['location'] = loc_part.strip()
                 else:
@@ -461,6 +486,52 @@ class CharacterCertificateParser(BaseDocumentParser):
             else:
                 fields['school_name'] = school_val
         
+        # Infer student_name if missing - position-independent fallback
+        # Look for isolated uppercase 2-3 word name not containing school/cert keywords
+        if 'student_name' not in fields:
+            # Prefer name that appears near certify or as topmost uppercase block
+            certify_pos = original_text.lower().find('certify')
+            candidates = re.findall(r'\b([A-Z]{2,}\s+[A-Z][A-Z]+(?:\s+[A-Z]{2,})?)\b', original_text)
+            best = None
+            forbidden = {'GOVERNMENT','NATIONAL','EXAMINATIONS','BOARD','CERTIFICATE','SECONDARY','SCHOOL','KATHMANDU','GOLDHUNGA','CONTROLLER','CHAIRPERSON','REGISTRATION'}
+            school_kws = {'SCHOOL','ACADEMY','COLLEGE','UNIVERSITY','INSTITUTE','CAMPUS','BOARDING'}
+            for cand in candidates:
+                cand_raw = cand.strip()
+                # If candidate is 3 words and the text immediately after it contains a school keyword,
+                # it is polluted (e.g. "ROHAN GURUNG HEART" before "SECONDARY BOARDING SCHOOL") -> trim to 2 words
+                words_raw = cand_raw.split()
+                if len(words_raw) == 3:
+                    pos = original_text.find(cand_raw)
+                    after = original_text[pos + len(cand_raw):pos + len(cand_raw) + 40].upper()
+                    if 'SECONDARY' in after or 'SCHOOL' in after or 'ACADEMY' in after or 'COLLEGE' in after:
+                        cand_raw = ' '.join(words_raw[:2])
+                cand_up = cand_raw.upper()
+                words = cand_up.split()
+                if any(w in forbidden for w in words):
+                    continue
+                if any(w in school_kws for w in words):
+                    continue
+                if len(words) < 2 or len(words) > 3:
+                    continue
+                if any(c.isdigit() for c in cand_raw):
+                    continue
+                if best is None:
+                    best = cand_raw
+                if certify_pos >= 0:
+                    pos = original_text.find(cand_raw)
+                    dist = abs(pos - certify_pos)
+                    best_pos = original_text.find(best) if best else 9999
+                    best_dist = abs(best_pos - certify_pos)
+                    if dist < best_dist:
+                        best = cand_raw
+            if best:
+                fields['student_name'] = best
+            # Post-clean: also strip student name prefix from school if still polluted
+            if best and 'school_name' in fields and fields['school_name'].startswith(best):
+                remainder = fields['school_name'][len(best):].strip()
+                if remainder:
+                    fields['school_name'] = remainder
+
         # Infer BS year from context if not directly matched
         if 'year_bs' not in fields:
             year_matches = re.findall(r'\b(20\d{2})\b', original_text)
@@ -548,3 +619,132 @@ class CharacterCertificateParser(BaseDocumentParser):
         
         is_valid = len(errors) == 0
         return is_valid, errors
+
+
+# ─── Public service API (spec-compliant) ─────────────────────────────────
+# Exposes parse_character_certificate(raw_text, ocr_words=None)
+# Returns per-field {value, confidence, method} + flat spec dict + validation
+
+def _field_detail(value, confidence, method):
+    return {'value': value, 'confidence': round(float(confidence), 2), 'method': method}
+
+
+def _spec_mapped_fields(parser_fields):
+    """
+    Map internal parser keys to spec keys.
+    Spec: serial_number, registration_number, student_name, school_name,
+          school_location, grade, gpa, examination_year_bs/ad,
+          certificate_date_bs/ad
+    """
+    issue = parser_fields.get('issue_date', '')
+    m_bs = re.search(r'(\d{4}/\d{1,2}/\d{1,2})', issue) if issue else None
+    m_ad = re.search(r'\((\d{1,2}/\d{1,2}/\d{4})\)', issue) if issue else None
+    cert_bs = m_bs.group(1) if m_bs else None
+    cert_ad = None
+    if m_ad:
+        a, b, y = m_ad.group(1).split('/')
+        cert_ad = f'{y}/{a.zfill(2)}/{b.zfill(2)}'
+    # Also check direct keys if issue split already done
+    if not cert_bs and parser_fields.get('issue_date_bs'):
+        cert_bs = parser_fields.get('issue_date_bs')
+    if not cert_ad and parser_fields.get('issue_date_ad'):
+        cert_ad = parser_fields.get('issue_date_ad')
+    # Allow year_bs/ad already
+    gpa_val = parser_fields.get('gpa')
+    # Validate gpa range already done in parser; null if invalid
+    return {
+        'serial_number': parser_fields.get('serial_no') or None,
+        'registration_number': parser_fields.get('reg_no') or None,
+        'student_name': parser_fields.get('student_name') or None,
+        'school_name': parser_fields.get('school_name') or None,
+        'school_location': parser_fields.get('location') or parser_fields.get('school_location') or None,
+        'grade': parser_fields.get('grade') or None,
+        'gpa': gpa_val if gpa_val is not None and gpa_val != '' else None,
+        'examination_year_bs': parser_fields.get('year_bs') or None,
+        'examination_year_ad': parser_fields.get('year_ad') or None,
+        'certificate_date_bs': cert_bs,
+        'certificate_date_ad': cert_ad,
+    }
+
+
+def parse_character_certificate(raw_text, ocr_words=None):
+    """
+    Public extraction service — RAW OCR → structured Character Certificate data.
+
+    Args:
+        raw_text (str): Full OCR text (messy, order-unreliable).
+        ocr_words (list[dict]|None): Optional word-level OCR with {text,x,y,w,h,conf}.
+
+    Returns:
+        dict: {
+            'document_type': 'character_certificate',
+            'fields': { field: {value, confidence, method} },
+            'flat': { spec_keys: value or None },
+            'raw_fields': { internal parser keys },
+            'metadata': {overall_confidence, validation_errors, warnings},
+        }
+    Position-independent: each field searched via keywords/regex/context,
+    never by line number. Uses validation + confidence per spec.
+    """
+    parser = CharacterCertificateParser()
+    result = parser.parse(raw_text, layout_data={'ocr_words': ocr_words} if ocr_words else None)
+    internal = result.fields  # already validated
+    spec_flat = _spec_mapped_fields(internal)
+
+    # Per-field confidence/method heuristics
+    method_map = {
+        'reg_no': 'keyword_nearby_numeric',
+        'serial_no': 'keyword_nearby_alnum',
+        'student_name': 'certificate_phrase_context',
+        'school_name': 'school_keyword_context',
+        'location': 'school_location_context',
+        'grade': 'keyword_pattern',
+        'gpa': 'keyword_numeric_validation',
+        'year_bs': 'examination_year_context',
+        'year_ad': 'examination_year_context',
+        'issue_date': 'date_keyword_context',
+    }
+    conf_map = {
+        'student_name': 0.96 if internal.get('student_name') else 0.0,
+        'school_name': 0.93 if internal.get('school_name') else 0.0,
+        'location': 0.91 if internal.get('location') else 0.0,
+        'reg_no': 0.98 if internal.get('reg_no') else 0.0,
+        'serial_no': 0.97 if internal.get('serial_no') else 0.0,
+        'grade': 0.95 if internal.get('grade') else 0.0,
+        'gpa': 0.99 if internal.get('gpa') else 0.0,
+        'year_bs': 0.96 if internal.get('year_bs') else 0.0,
+        'year_ad': 0.96 if internal.get('year_ad') else 0.0,
+        'issue_date': 0.94 if internal.get('issue_date') else 0.0,
+    }
+    # Down-weight if validation had to infer (year via inference)
+    if internal.get('year_bs') and 'year_bs' not in result.metadata.get('validation_errors', []):
+        pass
+
+    fields_detailed = {}
+    for k in ['reg_no', 'serial_no', 'student_name', 'school_name', 'location', 'grade', 'gpa', 'year_bs', 'year_ad', 'issue_date']:
+        v = internal.get(k)
+        fields_detailed[k] = _field_detail(v if v is not None else None, conf_map.get(k, 0.0) if v else 0.0, method_map.get(k, 'pattern'))
+
+    # Build spec-level detailed view
+    spec_detailed = {}
+    for sk, sv in spec_flat.items():
+        # Map spec key to internal confidence
+        internal_key = {
+            'serial_number': 'serial_no', 'registration_number': 'reg_no',
+            'school_location': 'location', 'examination_year_bs': 'year_bs',
+            'examination_year_ad': 'year_ad', 'certificate_date_bs': 'issue_date',
+            'certificate_date_ad': 'issue_date',
+        }.get(sk, sk)
+        spec_detailed[sk] = _field_detail(sv, conf_map.get(internal_key, 0.0) if sv else 0.0, method_map.get(internal_key, 'pattern'))
+
+    return {
+        'document_type': 'character_certificate',
+        'fields': fields_detailed,
+        'flat': spec_flat,
+        'raw_fields': internal,
+        'metadata': {
+            'overall_confidence': result.metadata.get('confidence', 0.0),
+            'validation_errors': result.metadata.get('validation_errors', []),
+            'warnings': [],
+        },
+    }

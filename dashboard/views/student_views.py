@@ -183,7 +183,7 @@ def _generate_student_pdf_internal(request, student_id):
     try:
         student = get_object_or_404(
             Student.objects.select_related('agent').prefetch_related(
-                'education_history', 'work_experience'
+                'education_history', 'work_experience', 'certificates'
             ),
             id=student_id
         )
@@ -245,6 +245,47 @@ def _generate_student_pdf_internal(request, student_id):
             </tr>"""
 
         a_code = student.agent.agent_code if student.agent else ""
+
+        # ── Certificate & Training rows (multiple via StudentCertificate) ────
+        certs = list(student.certificates.all().order_by('pass_year', 'created_at'))
+        if certs:
+            cert_rows_html = ""
+            training_rows_html = ""
+            for c in certs:
+                cert_rows_html += f"""
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-bottom:1px solid #000; font-size:7.5pt;">{c.pass_year or ''}</td>
+                    <td style="border:none; border-bottom:1px solid #000; font-size:7.5pt;">{c.certificate_name or ''}</td>
+                </tr>"""
+                training_rows_html += f"""
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-bottom:1px solid #000; font-size:7.5pt;">{c.join_year or ''}</td>
+                    <td style="border:none; border-bottom:1px solid #000; font-size:7.5pt;">{c.organization or ''}</td>
+                </tr>"""
+            # pad to at least 2 rows to keep layout
+            for _ in range(max(0, 2 - len(certs))):
+                cert_rows_html += '<tr style="height:26px;" class="center"><td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td><td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td></tr>'
+                training_rows_html += '<tr style="height:26px;" class="center"><td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td><td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td></tr>'
+        else:
+            # Fallback to legacy single fields
+            cert_rows_html = f"""
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; font-size:7.5pt;">{student.certificate_pass_year or ''}</td>
+                    <td style="border:none; font-size:7.5pt;">{student.certificate_name or ''}</td>
+                </tr>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td>
+                    <td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td>
+                </tr>"""
+            training_rows_html = f"""
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; font-size:7.5pt;">{student.language_join_year or ''}</td>
+                    <td style="border:none; font-size:7.5pt;">{student.organization or ''}</td>
+                </tr>
+                <tr style="height:26px;" class="center">
+                    <td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td>
+                    <td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td>
+                </tr>"""
 
         html_content = f"""<!DOCTYPE html>
 <html>
@@ -637,14 +678,7 @@ def _generate_student_pdf_internal(request, student_id):
                     <td style="border:none; border-right:1px solid #000; border-bottom:1px solid #000; font-size:6.5pt;">Pass Year &amp; Month</td>
                     <td style="border:none; border-bottom:1px solid #000; font-size:6.5pt;">Name of Pass Exam</td>
                 </tr>
-                <tr style="height:26px;" class="center">
-                    <td style="border:none; border-right:1px solid #000; font-size:7.5pt;">{student.certificate_pass_year or ''}</td>
-                    <td style="border:none; font-size:7.5pt;">{student.certificate_name or ''}</td>
-                </tr>
-                <tr style="height:26px;" class="center">
-                    <td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td>
-                    <td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td>
-                </tr>
+                {cert_rows_html}
             </table>
         </td>
         <!-- Right: training table -->
@@ -658,14 +692,7 @@ def _generate_student_pdf_internal(request, student_id):
                     <td style="border:none; border-right:1px solid #000; border-bottom:1px solid #000; font-size:6.5pt;">Join Year and Month</td>
                     <td style="border:none; border-bottom:1px solid #000; font-size:6.5pt;">Organization</td>
                 </tr>
-                <tr style="height:26px;" class="center">
-                    <td style="border:none; border-right:1px solid #000; font-size:7.5pt;">{student.language_join_year or ''}</td>
-                    <td style="border:none; font-size:7.5pt;">{student.organization or ''}</td>
-                </tr>
-                <tr style="height:26px;" class="center">
-                    <td style="border:none; border-right:1px solid #000; border-top:1px solid #000; font-size:7.5pt;"></td>
-                    <td style="border:none; border-top:1px solid #000; font-size:7.5pt;"></td>
-                </tr>
+                {training_rows_html}
             </table>
         </td>
     </tr>

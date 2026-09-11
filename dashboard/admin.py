@@ -1,6 +1,6 @@
 # dashboard/admin.py
 from django.contrib import admin
-from .models import Student, EducationalHistory, WorkExperience, StudentDocument
+from .models import Student, EducationalHistory, WorkExperience, StudentDocument, StudentCertificate
 from candidate_portal.models import Agent, Candidate
 
 
@@ -100,6 +100,14 @@ class StudentDocumentInline(admin.TabularInline):
     readonly_fields = ['uploaded_at']
 
 
+class StudentCertificateInline(admin.TabularInline):
+    model = StudentCertificate
+    extra = 1
+    fields = ['certificate_name', 'pass_year', 'join_year', 'organization']
+    verbose_name = 'Certificate & Skill'
+    verbose_name_plural = 'Certificates & Skills'
+
+
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     list_display = ['student_id', 'full_name', 'agent', 'email', 'phone', 'status', 'created_at']
@@ -107,7 +115,7 @@ class StudentAdmin(admin.ModelAdmin):
     search_fields = ['student_id', 'full_name', 'email', 'agent__agent_code']
     readonly_fields = ['student_id', 'created_at', 'updated_at']
     list_per_page = 20
-    inlines = [EducationalHistoryInline, WorkExperienceInline, StudentDocumentInline]
+    inlines = [EducationalHistoryInline, WorkExperienceInline, StudentCertificateInline, StudentDocumentInline]
     
     fieldsets = (
         ('Personal Information', {
@@ -136,15 +144,12 @@ class StudentAdmin(admin.ModelAdmin):
             'fields': ('marital_status', 'spouse_name', 'spouse_contact', 'family_records'),
             'classes': ('collapse',)
         }),
-        ('Certificates & Skills', {
+        ('Driving License, Hobbies & Motivation', {
             'fields': (
-                'certificate_pass_year', 'certificate_name', 
-                'language_join_year', 'organization',
                 'driving_license', 'license_pass_year',
                 'license_type_2', 'license_pass_year_2',
                 'hobbies', 'motivation'
             ),
-            'classes': ('collapse',)
         }),
         ('Relationships', {
             'fields': ('agent', 'candidate')
@@ -179,5 +184,13 @@ class StudentDocumentAdmin(admin.ModelAdmin):
     list_display = ['student', 'document_type', 'uploaded_at']
     list_filter = ['document_type', 'uploaded_at']
     search_fields = ['student__full_name']
+    list_per_page = 20
+
+
+@admin.register(StudentCertificate)
+class StudentCertificateAdmin(admin.ModelAdmin):
+    list_display = ['student', 'certificate_name', 'pass_year', 'organization', 'created_at']
+    list_filter = ['pass_year', 'created_at']
+    search_fields = ['student__full_name', 'certificate_name', 'organization']
     list_per_page = 20
 

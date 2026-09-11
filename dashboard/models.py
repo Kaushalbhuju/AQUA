@@ -363,12 +363,28 @@ class StudentDocument(models.Model):
             return f"/media/{self.document_file.name}"
         return None
 
-  # Add get_display methods
-    def get_gender_display(self):
-        return dict(self._meta.get_field('gender').choices).get(self.gender, self.gender)
-    
-    def get_marital_status_display(self):
-        return dict(self._meta.get_field('marital_status').choices).get(self.marital_status, self.marital_status)
+
+class StudentCertificate(models.Model):
+    """
+    Multiple Certificates & Skills per student.
+    Allows admin to add unlimited certificates/skills via inline (extra=3).
+    Legacy single fields on Student (certificate_name, certificate_pass_year, etc.)
+    are kept for backward compatibility and fallback in PDFs.
+    """
+    student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='certificates')
+    certificate_name = models.CharField(max_length=200, blank=True, verbose_name='Name of Certificate / Exam')
+    pass_year = models.CharField(max_length=50, blank=True, verbose_name='Pass Year & Month')
+    join_year = models.CharField(max_length=50, blank=True, verbose_name='Join Year & Month')
+    organization = models.CharField(max_length=200, blank=True, verbose_name='Organization / Training Center')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-pass_year', '-created_at']
+        verbose_name = 'Student Certificate & Skill'
+        verbose_name_plural = 'Student Certificates & Skills'
+
+    def __str__(self):
+        return f"{self.student.full_name} - {self.certificate_name or 'Certificate'} ({self.pass_year or '—'})"
 
 
 class SharedMaterial(models.Model):

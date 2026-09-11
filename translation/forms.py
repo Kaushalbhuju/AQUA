@@ -130,6 +130,21 @@ class TranslationMemoryForm(forms.ModelForm):
         self.fields['document_type'].empty_label = '-- Any type --'
 
 
+class CharacterCertificateFieldsForm(forms.Form):
+    """Editable structured fields for Character Certificate (second stage)."""
+    serial_number = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. C0034274'}))
+    registration_number = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 785275160009'}))
+    student_name = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    school_name = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    school_location = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'GOLDHUNGA, KATHMANDU'}))
+    grade = forms.ChoiceField(required=False, choices=[('', '--'), ('XII','XII'), ('XI','XI'), ('12','12'), ('11','11')], widget=forms.Select(attrs={'class': 'form-select'}))
+    gpa = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 3.14'}))
+    examination_year_bs = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    examination_year_ad = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    certificate_date_bs = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '2082/12/18'}))
+    certificate_date_ad = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '2026/04/01'}))
+
+
 class TranslationMemorySearchForm(forms.Form):
     """Form for searching Translation Memory."""
 

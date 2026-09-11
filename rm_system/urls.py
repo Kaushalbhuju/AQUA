@@ -27,8 +27,8 @@ def serve_media(request, path):
 # Register all models with the custom admin site
 from accounts.admin import UserAdmin
 from accounts.models import User
-from dashboard.admin import StudentAdmin, EducationalHistoryAdmin, WorkExperienceAdmin, StudentDocumentAdmin, AgentAdmin
-from dashboard.models import Student, EducationalHistory, WorkExperience, StudentDocument, Agent
+from dashboard.admin import StudentAdmin, EducationalHistoryAdmin, WorkExperienceAdmin, StudentDocumentAdmin, StudentCertificateAdmin, AgentAdmin
+from dashboard.models import Student, EducationalHistory, WorkExperience, StudentDocument, StudentCertificate, Agent
 
 # Import models defensively
 try:
@@ -166,6 +166,11 @@ except admin.sites.AlreadyRegistered:
 
 try:
     custom_admin_site.register(StudentDocument, StudentDocumentAdmin)
+except admin.sites.AlreadyRegistered:
+    pass
+
+try:
+    custom_admin_site.register(StudentCertificate, StudentCertificateAdmin)
 except admin.sites.AlreadyRegistered:
     pass
 

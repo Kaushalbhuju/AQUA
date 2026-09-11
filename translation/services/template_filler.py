@@ -302,37 +302,77 @@ def generate_character_certificate_from_template(document):
     """
     Generate a Character Certificate DOCX by filling the Japanese template.
     
-    This is the main entry point called from docx_generator.py.
-    
-    Instead of translating paragraphs, this:
-    1. Parses the extracted English text to get fields
-    2. Opens the approved Japanese template
-    3. Fills placeholders with extracted values
-    4. Returns the filled DOCX
-    
-    Args:
-        document: Document model instance with extracted_text
-    
-    Returns:
-        ContentFile with filled DOCX, or None on error
+    Uses VALIDATED STRUCTURED FIELDS (human-reviewed) if available in
+    document.parsed_layout['structured_data'], otherwise parses RAW OCR.
+    Never uses raw OCR paragraph as Japanese translation.
     """
     from translation.services.parsers.registry import get_parser_for_document
-    
+
     extracted = document.extracted_text or ''
-    
     if not extracted:
         logger.error("No extracted text available for template filling")
         return None
-    
-    # Parse extracted text to get structured fields
-    parser = get_parser_for_document('Character Certificate')
-    parse_result = parser.parse(extracted)
-    
-    fields = parse_result.fields
-    confidence = parse_result.metadata.get('confidence', 0.0)
-    
-    logger.info(f"Template filler: {len(fields)} fields extracted with {confidence:.0%} confidence")
-    logger.info(f"Fields: {fields}")
-    
-    # Fill the template
-    return fill_character_certificate(fields)
+
+    # Prefer human-reviewed structured fields stored in layout_data
+    fields = None
+    try:
+        layout = document.parsed_layout if hasattr(document, 'parsed_layout') else {}
+        sd = layout.get('structured_data') if isinstance(layout, dict) else None
+        if isinstance(sd, dict):
+            # New service format stores fields/flat; use internal fields
+            if sd.get('fields'):
+                fields = sd.get('fields')
+                logger.info(f"Using stored structured fields (edited): {fields}")
+            elif sd.get('flat'):
+                # Reconstruct internal from flat spec
+                flat = sd.get('flat')
+                fields = {}
+                if flat.get('serial_number'):
+                    fields['serial_no'] = flat['serial_number']
+                if flat.get('registration_number'):
+                    fields['reg_no'] = flat['registration_number']
+                if flat.get('student_name'):
+                    fields['student_name'] = flat['student_name']
+                if flat.get('school_name'):
+                    fields['school_name'] = flat['school_name']
+                if flat.get('school_location'):
+                    fields['location'] = flat['school_location']
+                if flat.get('grade'):
+                    fields['grade'] = flat['grade']
+                if flat.get('gpa'):
+                    fields['gpa'] = flat['gpa']
+                if flat.get('examination_year_bs'):
+                    fields['year_bs'] = flat['examination_year_bs']
+                if flat.get('examination_year_ad'):
+                    fields['year_ad'] = flat['examination_year_ad']
+                if flat.get('certificate_date_bs'):
+                    # recombine for issue_date parser compatibility
+                    cbs = flat['certificate_date_bs']
+                    cad = flat.get('certificate_date_ad') or ''
+                    if cad:
+                        try:
+                            y, m, d = cad.split('/')
+                            fields['issue_date'] = f"{cbs} ({int(m)}/{int(d)}/{y})"
+                        except Exception:
+                            fields['issue_date'] = cbs
+                    else:
+                        fields['issue_date'] = cbs
+                logger.info(f"Reconstructed fields from flat spec: {fields}")
+    except Exception as e:
+        logger.warning(f"Failed to load stored structured fields: {e}")
+
+    if not fields:
+        # Fallback: parse RAW OCR with position-independent service
+        try:
+            from translation.services.parsers.character_certificate import parse_character_certificate
+            svc = parse_character_certificate(extracted)
+            fields = svc.get('raw_fields', {})
+            logger.info(f"Template filler parsed RAW OCR: {len(fields)} fields")
+        except Exception:
+            parser = get_parser_for_document('Character Certificate')
+            parse_result = parser.parse(extracted)
+            fields = parse_result.fields
+            logger.info(f"Template filler legacy parse: {len(fields)} fields")
+
+    logger.info(f"Fields for template: {fields}")
+    return fill_character_certificate(fields or {})
