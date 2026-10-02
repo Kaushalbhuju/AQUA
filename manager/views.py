@@ -9,7 +9,8 @@ from django.db import transaction
 from .models import StaffRegistration, DrivingLicense
 from .forms import (
     StaffRegistrationForm, EducationalHistoryFormSet, WorkingExperienceFormSet,
-    CertificateFormSet, TrainingFormSet, DrivingLicenseForm, BankFormSet
+    CertificateFormSet, TrainingFormSet, DrivingLicenseForm, BankFormSet,
+    StaffSelfRegistrationForm
 
 )
 from .models import (
@@ -31,13 +32,14 @@ from django.utils.dateparse import parse_date
 from .models import StaffAttendance
 
 
-def staff_registration_create(request):
+def staff_registration_create(request, self_registration=False):
+    registration_form = StaffSelfRegistrationForm if self_registration else StaffRegistrationForm
     form_valid = education_valid = work_valid = certificate_valid = training_valid = license_valid = bank_valid = True
     if request.method == 'POST':
         print("POST Data:", request.POST)  # Debug
         print("FILES Data:", request.FILES)  # Debug
         
-        form = StaffRegistrationForm(request.POST, request.FILES)
+        form = registration_form(request.POST, request.FILES)
         education_formset = EducationalHistoryFormSet(request.POST, prefix='education')
         work_formset = WorkingExperienceFormSet(request.POST, prefix='work')
         certificate_formset = CertificateFormSet(request.POST, prefix='certificate')
@@ -123,6 +125,8 @@ def staff_registration_create(request):
                         bank.save()
 
                     
+                if self_registration:
+                    return render(request, 'dashboards/staff_self_registration_success.html')
                 messages.success(request, 'Staff registration completed successfully!')
                 return redirect('staff_detail', pk=staff.pk)
             except Exception as e:
@@ -131,7 +135,7 @@ def staff_registration_create(request):
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
-        form = StaffRegistrationForm()
+        form = registration_form()
         education_formset = EducationalHistoryFormSet(prefix='education', queryset=EducationalHistory.objects.none())
         work_formset = WorkingExperienceFormSet(prefix='work', queryset=WorkingExperience.objects.none())
         certificate_formset = CertificateFormSet(prefix='certificate', queryset=CertificateOfSkills.objects.none())
@@ -153,6 +157,11 @@ def staff_registration_create(request):
     }
     
     return render(request, 'dashboards/staff_registration.html', context)
+
+
+@login_required(login_url='/')
+def staff_self_registration(request):
+    return staff_registration_create(request, self_registration=True)
 
 
 def staff_registration_update(request, pk):

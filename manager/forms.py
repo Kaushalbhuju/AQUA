@@ -67,6 +67,14 @@ class StaffRegistrationForm(forms.ModelForm):
             if qs.exists():
                 raise forms.ValidationError("This email is already registered.")
         return email
+
+
+class StaffSelfRegistrationForm(StaffRegistrationForm):
+    """Staff profile form for the Join Us flow, without a role selector."""
+    class Meta(StaffRegistrationForm.Meta):
+        exclude = ['created_at', 'updated_at', 'role']
+
+
 class BankInformationForm(forms.ModelForm):
     class Meta:
         model = BankInformation
