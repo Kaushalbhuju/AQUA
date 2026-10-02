@@ -224,6 +224,7 @@
                                 <th>Photo</th>
                                 <th>Staff ID</th>
                                 <th>Full Name</th>
+                                <th>Role</th>
                                 <th>Gender</th>
                                 <th>Phone</th>
                                 <th>Email</th>
@@ -248,6 +249,7 @@
                                     </td>
                                     <td><strong>{{ staff.staff_id }}</strong></td>
                                     <td>{{ staff.full_name }}</td>
+                                    <td><span class="badge bg-primary badge-custom">{{ staff.get_role_display }}</span></td>
                                     <td>
                                         {% if staff.gender == 'M' %}
                                             <span class="badge bg-primary badge-custom">Male</span>

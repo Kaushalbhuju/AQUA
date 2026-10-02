@@ -315,19 +315,56 @@ def _generate_default_docx(document, doc):
     """
     from docx.shared import Pt
     from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    def set_japanese_font(run, size=None):
+        """Set both the Latin and East Asian font so Word renders Japanese reliably."""
+        run.font.name = 'MS Gothic'
+        if size is not None:
+            run.font.size = Pt(size)
+        r_pr = run._element.get_or_add_rPr()
+        r_fonts = r_pr.rFonts
+        if r_fonts is None:
+            r_fonts = OxmlElement('w:rFonts')
+            r_pr.insert(0, r_fonts)
+        r_fonts.set(qn('w:ascii'), 'MS Gothic')
+        r_fonts.set(qn('w:hAnsi'), 'MS Gothic')
+        r_fonts.set(qn('w:eastAsia'), 'MS Gothic')
+
+    def add_page_number(paragraph):
+        """Insert a Word PAGE field, which updates when the document is opened."""
+        field = OxmlElement('w:fldSimple')
+        field.set(qn('w:instr'), 'PAGE')
+        field_run = OxmlElement('w:r')
+        run_properties = OxmlElement('w:rPr')
+        fonts = OxmlElement('w:rFonts')
+        fonts.set(qn('w:ascii'), 'MS Gothic')
+        fonts.set(qn('w:hAnsi'), 'MS Gothic')
+        fonts.set(qn('w:eastAsia'), 'MS Gothic')
+        run_properties.append(fonts)
+        font_size = OxmlElement('w:sz')
+        font_size.set(qn('w:val'), '16')
+        run_properties.append(font_size)
+        field_run.append(run_properties)
+        displayed_value = OxmlElement('w:t')
+        displayed_value.text = '1'
+        field_run.append(displayed_value)
+        field.append(field_run)
+        paragraph._p.append(field)
 
     # Add title
     title = doc.add_heading(level=1)
     title_run = title.add_run(document.title)
-    title_run.font.name = 'MS Gothic'
+    set_japanese_font(title_run, 18)
+    title.paragraph_format.space_after = Pt(8)
 
     # Add document type if available
     if document.document_type:
         subtitle = doc.add_paragraph()
         subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
         run = subtitle.add_run(f'Document Type: {document.document_type.name}')
-        run.font.size = Pt(9)
-        run.font.name = 'MS Gothic'
+        set_japanese_font(run, 9)
 
     doc.add_paragraph()  # Spacer
 
@@ -346,23 +383,25 @@ def _generate_default_docx(document, doc):
            (len(para_text) < 80 and para_text.endswith(':')):
             heading = doc.add_heading(level=2)
             run = heading.add_run(para_text)
-            run.font.name = 'MS Gothic'
+            set_japanese_font(run, 13)
+            heading.paragraph_format.keep_with_next = True
         else:
             p = doc.add_paragraph()
             run = p.add_run(para_text)
-            run.font.name = 'MS Gothic'
-            run.font.size = Pt(11)
+            set_japanese_font(run, 11)
+            p.paragraph_format.line_spacing = 1.25
+            p.paragraph_format.space_after = Pt(6)
 
-    # Add footer with metadata
-    doc.add_paragraph()
-    footer_para = doc.add_paragraph()
+    # Keep metadata in the actual page footer instead of after the translated body.
+    footer = doc.sections[0].footer
+    footer_para = footer.paragraphs[0]
     footer_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     footer_run = footer_para.add_run(
-        f'Translated on: {document.updated_at.strftime("%Y-%m-%d %H:%M")}'
+        f'Translated on: {document.updated_at.strftime("%Y-%m-%d %H:%M")}  |  Page '
     )
-    footer_run.font.size = Pt(8)
-    footer_run.font.name = 'MS Gothic'
-    footer_run.font.italic = True
+    set_japanese_font(footer_run, 8)
+    footer_run.italic = True
+    add_page_number(footer_para)
 
     # Save to bytes
     buffer = io.BytesIO()

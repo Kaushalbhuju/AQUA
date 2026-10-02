@@ -255,8 +255,10 @@ def _map_parser_fields_to_template(fields):
     mapped['reg_no'] = fields.get('reg_no', '')
     mapped['student_name'] = fields.get('student_name', '')
     mapped['school_name'] = fields.get('school_name', '')
-    mapped['school_location'] = fields.get('location', fields.get('school_location', ''))
-    mapped['grade'] = fields.get('grade', '')
+    school_location = (fields.get('location') or fields.get('school_location') or '').strip(' ,、（）()')
+    mapped['school_location'] = f'（{school_location}）' if school_location else ''
+    grade = str(fields.get('grade', '')).strip()
+    mapped['grade'] = {'XI': '11', 'XII': '12'}.get(grade.upper(), grade)
     mapped['gpa'] = fields.get('gpa', '')
     
     # Year mappings

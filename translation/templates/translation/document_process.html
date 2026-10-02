@@ -82,6 +82,16 @@
       </div>
       <div class="tr-card-body">
 
+        {% if document.file_type == 'image' and document.original_file %}
+          <div class="mb-3 pb-3 border-bottom">
+            <div class="text-muted mb-2" style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px">Uploaded Image</div>
+            <a href="{{ document.original_file.url }}" target="_blank" rel="noopener" aria-label="Open uploaded image in a new tab">
+              <img src="{{ document.original_file.url }}" alt="Uploaded image: {{ document.title }}" loading="lazy"
+                   style="display: block; width: 100%; max-width: 180px; max-height: 160px; object-fit: contain; object-position: left center; border: 1px solid #e5e7eb; border-radius: 6px; background: #f9fafb;">
+            </a>
+          </div>
+        {% endif %}
+
         <!-- Step 1: Extract -->
         {% if not document.extracted_text or document.status == 'uploaded' or document.status == 'failed' %}
           <form method="post" class="mb-3">

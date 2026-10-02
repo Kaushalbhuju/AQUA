@@ -3,7 +3,7 @@
 # ============================================
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db import transaction
 from .models import StaffRegistration, DrivingLicense
@@ -26,6 +26,9 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
 from io import BytesIO
 from datetime import datetime
+from django.utils import timezone
+from django.utils.dateparse import parse_date
+from .models import StaffAttendance
 
 
 def staff_registration_create(request):
@@ -252,6 +255,282 @@ def staff_list(request):
     staff_list = StaffRegistration.objects.all()
     context = {'staff_list': staff_list}
     return render(request, 'dashboards/staff_list.html', context)
+
+
+@login_required
+def staff_attendance(request):
+    selected_date = parse_date(request.GET.get('date', '')) or timezone.localdate()
+    staff_members = StaffRegistration.objects.all().order_by('full_name')
+    existing = {
+        record.staff_id: record
+        for record in StaffAttendance.objects.filter(attendance_date=selected_date)
+    }
+    for staff in staff_members:
+        staff.attendance_record = existing.get(staff.pk)
+
+    if request.method == 'POST':
+        submitted_date = parse_date(request.POST.get('date', ''))
+        if not submitted_date:
+            messages.error(request, 'Choose a valid attendance date.')
+            return redirect('manager:staff_attendance')
+        for staff in staff_members:
+            status = request.POST.get(f'status_{staff.pk}', '')
+            if status not in dict(StaffAttendance.STATUS_CHOICES):
+                continue
+            StaffAttendance.objects.update_or_create(
+                staff=staff,
+                attendance_date=submitted_date,
+                defaults={
+                    'status': status,
+                    'note': request.POST.get(f'note_{staff.pk}', '').strip()[:500],
+                    'marked_by': request.user,
+                },
+            )
+        messages.success(request, f'Attendance saved for {submitted_date:%B %d, %Y}.')
+        return redirect(f"/manager/staff-attendance/?date={submitted_date.isoformat()}")
+
+    return render(request, 'dashboards/staff_attendance.html', {
+        'staff_members': staff_members,
+        'attendance': existing,
+        'selected_date': selected_date,
+        'status_choices': StaffAttendance.STATUS_CHOICES,
+    })
+
+
+@login_required
+def staff_attendance_export_excel(request):
+    import openpyxl
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
+    from openpyxl.worksheet.table import Table, TableStyleInfo
+
+    selected_date = parse_date(request.GET.get('date', '')) or timezone.localdate()
+    date_from = parse_date(request.GET.get('date_from', ''))
+    date_to = parse_date(request.GET.get('date_to', ''))
+    if not date_from and not date_to:
+        date_from = date_to = selected_date
+    else:
+        date_from = date_from or date_to
+        date_to = date_to or date_from
+
+    if date_from > date_to:
+        messages.error(request, 'The start date must be on or before the end date.')
+        return redirect(f'/manager/staff-attendance/?date={selected_date.isoformat()}')
+
+    records = list(
+        StaffAttendance.objects.filter(
+            attendance_date__range=(date_from, date_to)
+        ).select_related('staff', 'marked_by').order_by('attendance_date', 'staff__full_name')
+    )
+    staff_members = StaffRegistration.objects.all().order_by('full_name')
+    status_counts = {value: 0 for value, _label in StaffAttendance.STATUS_CHOICES}
+    per_staff = {
+        staff.pk: {
+            'staff': staff,
+            'present': 0,
+            'late': 0,
+            'absent': 0,
+            'leave': 0,
+            'record_count': 0,
+        }
+        for staff in staff_members
+    }
+    for record in records:
+        status_counts[record.status] = status_counts.get(record.status, 0) + 1
+        summary = per_staff.get(record.staff_id)
+        if summary is not None:
+            summary[record.status] = summary.get(record.status, 0) + 1
+            summary['record_count'] += 1
+
+    workbook = openpyxl.Workbook()
+    summary_sheet = workbook.active
+    summary_sheet.title = 'Summary'
+    detail_sheet = workbook.create_sheet('Attendance Log')
+    matrix_sheet = workbook.create_sheet('Daily Overview')
+    navy, blue, light_blue = '17365D', '2F75B5', 'D9EAF7'
+    light_gray, white = 'F3F6FA', 'FFFFFF'
+    thin_gray = Side(style='thin', color='D9E1EA')
+    border = Border(bottom=thin_gray)
+
+    # Staff-by-day matrix for scanning a month or custom date range.
+    from datetime import timedelta
+    report_dates = []
+    current_date = date_from
+    while current_date <= date_to:
+        report_dates.append(current_date)
+        current_date += timedelta(days=1)
+    matrix_headers = ['Staff ID', 'Staff Name'] + report_dates + ['Present', 'Late', 'Absent', 'On Leave']
+    matrix_sheet.append(['AQUA | DAILY ATTENDANCE OVERVIEW'])
+    matrix_sheet.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(matrix_headers))
+    matrix_sheet['A1'].font = Font(name='Aptos Display', size=16, bold=True, color='FFFFFF')
+    matrix_sheet['A1'].fill = PatternFill('solid', fgColor=navy)
+    matrix_sheet.append([f'{date_from:%d %b %Y} – {date_to:%d %b %Y}; blank = not recorded'])
+    matrix_sheet.merge_cells(start_row=2, start_column=1, end_row=2, end_column=len(matrix_headers))
+    matrix_sheet.append(matrix_headers)
+    for cell in matrix_sheet[3]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor=blue)
+        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    by_staff_date = {(record.staff_id, record.attendance_date): record for record in records}
+    status_fills = {
+        'Present': 'E2F0D9',
+        'Late': 'FFF2CC',
+        'Absent': 'FCE4D6',
+        'On leave': 'DDEBF7',
+    }
+    for staff in staff_members:
+        row = [staff.staff_id or '', staff.full_name]
+        for day in report_dates:
+            record = by_staff_date.get((staff.pk, day))
+            row.append(record.get_status_display() if record else '')
+        staff_counts = per_staff[staff.pk]
+        row.extend([staff_counts['present'], staff_counts['late'], staff_counts['absent'], staff_counts['leave']])
+        matrix_sheet.append(row)
+        for cell in matrix_sheet[matrix_sheet.max_row]:
+            cell.alignment = Alignment(horizontal='center' if cell.column > 2 else 'left', vertical='center')
+            cell.border = border
+            if cell.value in status_fills:
+                cell.fill = PatternFill('solid', fgColor=status_fills[cell.value])
+    matrix_sheet.freeze_panes = 'C4'
+    matrix_sheet.sheet_view.showGridLines = False
+    matrix_sheet.column_dimensions['A'].width = 16
+    matrix_sheet.column_dimensions['B'].width = 28
+    for column in range(3, 3 + len(report_dates)):
+        matrix_sheet.cell(3, column).number_format = 'dd mmm'
+        matrix_sheet.column_dimensions[get_column_letter(column)].width = 13
+    for column in range(3 + len(report_dates), len(matrix_headers) + 1):
+        matrix_sheet.column_dimensions[get_column_letter(column)].width = 12
+    matrix_sheet.auto_filter.ref = f'A3:{get_column_letter(len(matrix_headers))}{matrix_sheet.max_row}'
+    matrix_sheet.sheet_properties.pageSetUpPr.fitToPage = True
+    matrix_sheet.page_setup.orientation = 'landscape'
+    matrix_sheet.page_setup.fitToWidth = 1
+    matrix_sheet.page_setup.fitToHeight = 0
+    matrix_sheet.print_title_rows = '1:3'
+
+    # Summary sheet
+    summary_sheet.merge_cells('A1:F1')
+    summary_sheet['A1'] = 'AQUA | STAFF ATTENDANCE REPORT'
+    summary_sheet['A1'].font = Font(name='Aptos Display', size=18, bold=True, color=white)
+    summary_sheet['A1'].fill = PatternFill('solid', fgColor=navy)
+    summary_sheet['A1'].alignment = Alignment(vertical='center')
+    summary_sheet.row_dimensions[1].height = 34
+    summary_sheet.merge_cells('A2:F2')
+    summary_sheet['A2'] = f'Attendance period: {date_from:%d %b %Y} – {date_to:%d %b %Y}'
+    summary_sheet['A2'].font = Font(name='Aptos', size=11, bold=True, color=navy)
+    summary_sheet['A2'].fill = PatternFill('solid', fgColor=light_blue)
+    summary_sheet['A2'].alignment = Alignment(vertical='center')
+    summary_sheet.row_dimensions[2].height = 24
+    summary_sheet.append([])
+    summary_sheet.append(['Report metric', 'Value'])
+    for cell in summary_sheet[4][:2]:
+        cell.font = Font(name='Aptos', bold=True, color=white)
+        cell.fill = PatternFill('solid', fgColor=blue)
+        cell.alignment = Alignment(vertical='center')
+    generated_at = timezone.localtime(timezone.now()).replace(tzinfo=None)
+    metrics = [
+        ('Registered staff', len(staff_members)),
+        ('Attendance entries', len(records)),
+        ('Present', status_counts.get('present', 0)),
+        ('Late', status_counts.get('late', 0)),
+        ('Absent', status_counts.get('absent', 0)),
+        ('On leave', status_counts.get('leave', 0)),
+        ('Generated at', generated_at),
+    ]
+    for label, value in metrics:
+        summary_sheet.append([label, value])
+        for cell in summary_sheet[summary_sheet.max_row][:2]:
+            cell.border = border
+            cell.alignment = Alignment(vertical='center')
+        summary_sheet.cell(summary_sheet.max_row, 1).font = Font(name='Aptos', bold=True, color=navy)
+    summary_sheet['B11'].number_format = 'dd mmm yyyy hh:mm'
+    summary_sheet.column_dimensions['A'].width = 28
+    summary_sheet.column_dimensions['B'].width = 28
+    summary_sheet.sheet_view.showGridLines = False
+    summary_sheet.freeze_panes = 'A5'
+
+    # Per-staff roll-up for the selected range
+    summary_headers = ['Staff ID', 'Staff Name', 'Present', 'Late', 'Absent', 'On Leave', 'Recorded Days']
+    summary_sheet.append([])
+    summary_sheet.append(summary_headers)
+    staff_header_row = summary_sheet.max_row
+    for cell in summary_sheet[staff_header_row]:
+        cell.font = Font(name='Aptos', bold=True, color=white)
+        cell.fill = PatternFill('solid', fgColor=blue)
+        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    for staff_summary in per_staff.values():
+        staff = staff_summary['staff']
+        summary_sheet.append([
+            staff.staff_id or '', staff.full_name, staff_summary['present'],
+            staff_summary['late'], staff_summary['absent'], staff_summary['leave'],
+            staff_summary['record_count'],
+        ])
+        for cell in summary_sheet[summary_sheet.max_row]:
+            cell.border = border
+            cell.alignment = Alignment(vertical='center')
+    for column, width in enumerate([18, 30, 13, 13, 13, 13, 17], start=1):
+        summary_sheet.column_dimensions[get_column_letter(column)].width = width
+
+    # Detailed, filterable attendance log
+    detail_headers = ['Date', 'Staff ID', 'Staff Name', 'Status', 'Note', 'Marked By', 'Last Updated']
+    detail_sheet.merge_cells('A1:G1')
+    detail_sheet['A1'] = 'AQUA | ATTENDANCE ENTRIES'
+    detail_sheet['A1'].font = Font(name='Aptos Display', size=16, bold=True, color=white)
+    detail_sheet['A1'].fill = PatternFill('solid', fgColor=navy)
+    detail_sheet['A1'].alignment = Alignment(vertical='center')
+    detail_sheet.row_dimensions[1].height = 32
+    detail_sheet.merge_cells('A2:G2')
+    detail_sheet['A2'] = f'{date_from:%d %b %Y} – {date_to:%d %b %Y}  |  {len(records)} attendance entries'
+    detail_sheet['A2'].font = Font(name='Aptos', size=10, italic=True, color='526174')
+    detail_sheet.append([])
+    detail_sheet.append(detail_headers)
+    detail_header_row = 4
+    for cell in detail_sheet[detail_header_row]:
+        cell.font = Font(name='Aptos', bold=True, color=white)
+        cell.fill = PatternFill('solid', fgColor=blue)
+        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    detail_sheet.row_dimensions[detail_header_row].height = 28
+    for row_number, record in enumerate(records, start=detail_header_row + 1):
+        marked_by = record.marked_by
+        updated_at = timezone.localtime(record.updated_at).replace(tzinfo=None)
+        values = [
+            record.attendance_date, record.staff.staff_id or '', record.staff.full_name,
+            record.get_status_display(), record.note or '',
+            (marked_by.get_full_name() or marked_by.username) if marked_by else '', updated_at,
+        ]
+        detail_sheet.append(values)
+        for cell in detail_sheet[row_number]:
+            cell.font = Font(name='Aptos', size=10, color='263445')
+            cell.border = border
+            cell.alignment = Alignment(vertical='top', wrap_text=cell.column == 5)
+            if row_number % 2:
+                cell.fill = PatternFill('solid', fgColor=light_gray)
+        detail_sheet.cell(row_number, 1).number_format = 'dd mmm yyyy'
+        detail_sheet.cell(row_number, 7).number_format = 'dd mmm yyyy hh:mm'
+
+    if records:
+        table = Table(displayName='StaffAttendanceLog', ref=f'A{detail_header_row}:G{detail_sheet.max_row}')
+        table.tableStyleInfo = TableStyleInfo(name='TableStyleMedium2', showRowStripes=True, showColumnStripes=False)
+        detail_sheet.add_table(table)
+    else:
+        detail_sheet.auto_filter.ref = f'A{detail_header_row}:G{detail_header_row}'
+    for column, width in enumerate([18, 18, 30, 18, 44, 24, 22], start=1):
+        detail_sheet.column_dimensions[get_column_letter(column)].width = width
+    detail_sheet.freeze_panes = 'A5'
+    detail_sheet.sheet_view.showGridLines = False
+    detail_sheet.sheet_properties.pageSetUpPr.fitToPage = True
+    detail_sheet.page_setup.orientation = 'landscape'
+    detail_sheet.page_setup.fitToWidth = 1
+    detail_sheet.page_setup.fitToHeight = 0
+    detail_sheet.print_title_rows = '1:4'
+    workbook.properties.title = 'AQUA Staff Attendance Report'
+    workbook.properties.subject = f'Staff attendance from {date_from} through {date_to}'
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="staff_attendance_{date_from:%Y-%m-%d}_to_{date_to:%Y-%m-%d}.xlsx"'
+    workbook.save(response)
+    return response
 
 
 def staff_detail(request, pk):
@@ -1063,42 +1342,66 @@ def manage_tasks(request):
     })
 
 
+def can_view_staff_activity(user):
+    return user.is_authenticated and getattr(user, 'role', '') in {'manager', 'admin', 'superuser', 'operation_head'}
+
+
 @login_required
+@user_passes_test(can_view_staff_activity, login_url='dashboard:manager_dashboard')
 def staff_activity_log(request):
     """Dedicated full-page activity log (also accessible via /manager/staff-activity/)."""
     User = get_user_model()
-    staff_users = User.objects.filter(role='staff').order_by('username')
     action = request.GET.get('action', '').strip()
     staff_filter = request.GET.get('staff', '').strip()
     date_from = request.GET.get('date_from', '').strip()
     date_to = request.GET.get('date_to', '').strip()
     search = request.GET.get('search', '').strip()
-
-    logs = StaffActivityLog.objects.select_related('user').order_by('-timestamp')
-    if staff_filter:
-        try:
-            uid = int(staff_filter)
-            # filter by user id or snapshot username
-            u = User.objects.get(id=uid)
-            logs = logs.filter(Q(user__id=uid) | Q(username_snapshot=u.username))
-        except Exception:
-            pass
-    if action:
+    action_values = {value for value, _label in StaffActivityLog.ACTION_CHOICES}
+    logs = StaffActivityLog.objects.select_related('user').all()
+    invalid_filter = False
+    if action and action not in action_values:
+        messages.error(request, 'Choose a valid activity action.')
+        invalid_filter = True
+    if action in action_values:
         logs = logs.filter(action=action)
+    if staff_filter:
+        logs = logs.filter(Q(username_snapshot=staff_filter) | Q(user__username=staff_filter))
     if search:
-        logs = logs.filter(Q(description__icontains=search) | Q(username_snapshot__icontains=search) | Q(path__icontains=search))
-    from django.utils.dateparse import parse_date
-    if date_from:
-        d = parse_date(date_from)
-        if d:
-            logs = logs.filter(timestamp__date__gte=d)
-    if date_to:
-        d = parse_date(date_to)
-        if d:
-            logs = logs.filter(timestamp__date__lte=d)
+        logs = logs.filter(
+            Q(description__icontains=search) | Q(username_snapshot__icontains=search) |
+            Q(path__icontains=search) | Q(ip_address__icontains=search) |
+            Q(method__icontains=search) | Q(user_agent__icontains=search) |
+            Q(user__username__icontains=search)
+        )
+    parsed_from = parse_date(date_from) if date_from else None
+    parsed_to = parse_date(date_to) if date_to else None
+    if date_from and not parsed_from:
+        messages.error(request, 'The start date is invalid.')
+        invalid_filter = True
+    if date_to and not parsed_to:
+        messages.error(request, 'The end date is invalid.')
+        invalid_filter = True
+    if parsed_from and parsed_to and parsed_from > parsed_to:
+        messages.error(request, 'The start date must be on or before the end date.')
+        invalid_filter = True
+    if parsed_from:
+        logs = logs.filter(timestamp__date__gte=parsed_from)
+    if parsed_to:
+        logs = logs.filter(timestamp__date__lte=parsed_to)
+    if invalid_filter:
+        logs = logs.none()
+    logs = logs.order_by('-timestamp', '-pk')
+
+    # Include past staff accounts from their immutable log snapshots, even if
+    # the account itself has since been removed.
+    usernames = set(StaffActivityLog.objects.filter(role_snapshot='staff').exclude(username_snapshot='').values_list('username_snapshot', flat=True))
+    usernames.update(User.objects.filter(role='staff').values_list('username', flat=True))
+    staff_users = [{'username': username, 'display': username} for username in sorted(usernames, key=str.casefold)]
 
     paginator = Paginator(logs, 30)
     page_obj = paginator.get_page(request.GET.get('page'))
+    filter_query = request.GET.copy()
+    filter_query.pop('page', None)
 
     return render(request, 'manager/staff_activity_log.html', {
         'staff_users': staff_users,
@@ -1111,10 +1414,12 @@ def staff_activity_log(request):
         'date_to': date_to,
         'search': search,
         'action_choices': StaffActivityLog.ACTION_CHOICES,
+        'filter_query': filter_query.urlencode(),
     })
 
 
 @login_required
+@user_passes_test(can_view_staff_activity, login_url='dashboard:manager_dashboard')
 def staff_activity_export_csv(request):
     """Export filtered activity logs as CSV."""
     import csv
@@ -1124,7 +1429,7 @@ def staff_activity_export_csv(request):
     from django.contrib.auth import get_user_model
     User = get_user_model()
 
-    logs = StaffActivityLog.objects.select_related('user').order_by('-timestamp')
+    logs = StaffActivityLog.objects.select_related('user').all()
     staff_filter = request.GET.get('staff', '').strip()
     action = request.GET.get('action', '').strip()
     search = request.GET.get('search', '').strip()
@@ -1139,32 +1444,36 @@ def staff_activity_export_csv(request):
         search = request.GET.get('activity_search', '').strip()
 
     if staff_filter:
-        try:
-            uid = int(staff_filter)
-            u = User.objects.get(id=uid)
-            logs = logs.filter(Q(user__id=uid) | Q(username_snapshot=u.username))
-        except Exception:
-            pass
+        logs = logs.filter(Q(username_snapshot=staff_filter) | Q(user__username=staff_filter))
+    valid_actions = {value for value, _label in StaffActivityLog.ACTION_CHOICES}
     if action:
-        logs = logs.filter(action=action)
+        logs = logs.filter(action=action) if action in valid_actions else logs.none()
     if search:
-        logs = logs.filter(Q(description__icontains=search) | Q(username_snapshot__icontains=search) | Q(path__icontains=search))
-    if date_from:
-        d = parse_date(date_from)
-        if d:
-            logs = logs.filter(timestamp__date__gte=d)
-    if date_to:
-        d = parse_date(date_to)
-        if d:
-            logs = logs.filter(timestamp__date__lte=d)
+        logs = logs.filter(
+            Q(description__icontains=search) | Q(username_snapshot__icontains=search) |
+            Q(path__icontains=search) | Q(ip_address__icontains=search) |
+            Q(method__icontains=search) | Q(user_agent__icontains=search) |
+            Q(user__username__icontains=search)
+        )
+    parsed_from = parse_date(date_from) if date_from else None
+    parsed_to = parse_date(date_to) if date_to else None
+    if (date_from and not parsed_from) or (date_to and not parsed_to) or (parsed_from and parsed_to and parsed_from > parsed_to):
+        logs = logs.none()
+    else:
+        if parsed_from:
+            logs = logs.filter(timestamp__date__gte=parsed_from)
+        if parsed_to:
+            logs = logs.filter(timestamp__date__lte=parsed_to)
+    logs = logs.order_by('-timestamp', '-pk')
 
-    response = HttpResponse(content_type='text/csv')
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="staff_activity_log.csv"'
+    response.write('\ufeff')
     writer = csv.writer(response)
-    writer.writerow(['Timestamp', 'Staff', 'Role', 'Action', 'Description', 'IP Address', 'Path', 'Method'])
+    writer.writerow(['Timestamp', 'Staff', 'Role', 'Action', 'Description', 'IP Address', 'Path', 'Method', 'User Agent'])
     for log in logs.iterator():
-        writer.writerow([
-            log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+        values = [
+            timezone.localtime(log.timestamp).strftime('%Y-%m-%d %H:%M:%S'),
             log.username_snapshot or (log.user.username if log.user else ''),
             log.role_snapshot,
             log.get_action_display(),
@@ -1172,7 +1481,10 @@ def staff_activity_export_csv(request):
             log.ip_address or '',
             log.path,
             log.method,
-        ])
+            log.user_agent,
+        ]
+        # Prevent spreadsheet applications from evaluating log text as formulas.
+        writer.writerow([("'" + value if isinstance(value, str) and value.lstrip(' \t\r\n')[:1] in ('=', '+', '-', '@') else value) for value in values])
     return response
 
 

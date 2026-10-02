@@ -14,6 +14,7 @@ class StaffRegistrationForm(forms.ModelForm):
             'staff_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Auto-generated if left blank'}),
             'gender': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
             'full_name': forms.TextInput(attrs={'class': 'form-control', 'required': 'required'}),
+            'role': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
             'marital_status': forms.Select(attrs={'class': 'form-control', 'required': 'required'}),
             'permanent_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'required': 'required'}),
             'present_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'required': 'required'}),

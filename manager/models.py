@@ -6,6 +6,14 @@ import base64
 import mimetypes
 
 class StaffRegistration(models.Model):
+    ROLE_CHOICES = [
+        ('teacher', 'Teacher'),
+        ('receptionist', 'Receptionist'),
+        ('manager', 'Manager'),
+        ('office_helper', 'Office Helper'),
+        ('chairman', 'Chairman'),
+    ]
+
     GENDER_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
@@ -34,6 +42,7 @@ class StaffRegistration(models.Model):
     staff_id = models.CharField(max_length=50, unique=True, blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     full_name = models.CharField(max_length=200)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='teacher')
     marital_status = models.CharField(max_length=20, choices=MARITAL_STATUS_CHOICES)
     permanent_address = models.TextField()
     present_address = models.TextField()
@@ -324,7 +333,7 @@ class StaffActivityLog(models.Model):
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='activity_logs',
         null=True,
         blank=True,
@@ -353,6 +362,31 @@ class StaffActivityLog(models.Model):
     def __str__(self):
         who = self.username_snapshot or (self.user.username if self.user else 'Unknown')
         return f"[{self.timestamp:%Y-%m-%d %H:%M}] {who} - {self.get_action_display()}: {self.description[:50]}"
+
+
+class StaffAttendance(models.Model):
+    STATUS_CHOICES = [
+        ('present', 'Present'),
+        ('late', 'Late'),
+        ('absent', 'Absent'),
+        ('leave', 'On leave'),
+    ]
+
+    staff = models.ForeignKey(StaffRegistration, on_delete=models.CASCADE, related_name='attendance_records')
+    attendance_date = models.DateField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='present')
+    note = models.CharField(max_length=500, blank=True)
+    marked_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-attendance_date', 'staff__full_name']
+        constraints = [
+            models.UniqueConstraint(fields=['staff', 'attendance_date'], name='unique_staff_attendance_per_day'),
+        ]
+
+    def __str__(self):
+        return f"{self.staff.full_name} - {self.attendance_date} ({self.get_status_display()})"
 
     @property
     def is_login(self):

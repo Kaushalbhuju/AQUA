@@ -1,13 +1,23 @@
 from django.utils import timezone
+from django.conf import settings
+from ipaddress import ip_address
 
 def get_client_ip(request):
-    """Extract client IP respecting X-Forwarded-For."""
+    """Return the client IP, trusting forwarded headers only behind configured proxies."""
     if not request:
         return None
-    xff = request.META.get('HTTP_X_FORWARDED_FOR')
-    if xff:
-        return xff.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR')
+    remote_addr = request.META.get('REMOTE_ADDR', '').strip()
+    trusted_proxy_count = getattr(settings, 'TRUSTED_PROXY_COUNT', 0)
+    if trusted_proxy_count:
+        forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
+        chain = [part.strip() for part in forwarded.split(',') if part.strip()]
+        chain.append(remote_addr)
+        if len(chain) > trusted_proxy_count:
+            remote_addr = chain[-(trusted_proxy_count + 1)]
+    try:
+        return str(ip_address(remote_addr)) if remote_addr else None
+    except ValueError:
+        return None
 
 def log_staff_activity(user, action, description='', request=None, extra_data=None):
     """
@@ -18,14 +28,6 @@ def log_staff_activity(user, action, description='', request=None, extra_data=No
     import traceback
     try:
         ip = get_client_ip(request) if request else None
-        # Validate IP: GenericIPAddressField will reject non-IP like 'testserver'
-        if ip:
-            # Simple validation: if not containing '.' or ':' treat as invalid
-            if ip == 'testserver' or ip == 'localhost':
-                ip = '127.0.0.1'
-            # If ip contains port like 127.0.0.1:8000 strip port for ipv4
-            if ip and ':' in ip and ip.count(':') == 1 and '.' in ip:
-                ip = ip.split(':')[0]
         ua = ''
         path = ''
         method = ''

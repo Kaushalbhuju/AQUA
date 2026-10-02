@@ -230,20 +230,19 @@ def create_character_certificate_template():
     main_para.paragraph_format.line_spacing = 1.8
     
     add_run(main_para, 'これは、', font_size=12)
-    add_run(main_para, '{{SCHOOL_NAME}}', font_size=12)
-    add_run(main_para, '、', font_size=12)
-    add_run(main_para, '{{SCHOOL_LOCATION}}', font_size=12)
-    add_run(main_para, ' の', font_size=12)
     add_run(main_para, '{{STUDENT_NAME}}', font_size=12)
-    add_run(main_para, ' 氏が、ネパール暦', font_size=12)
+    add_run(main_para, '\u6c0f\u304c', font_size=12)
+    add_run(main_para, '{{SCHOOL_NAME}}', font_size=12)
+    add_run(main_para, '{{SCHOOL_LOCATION}}', font_size=12)
+    add_run(main_para, '\u306b\u5728\u7c4d\u3057\u3001\u30cd\u30d1\u30fc\u30eb\u66a6', font_size=12)
     add_run(main_para, '{{EXAM_YEAR_BS}}', font_size=12)
-    add_run(main_para, '年（西暦', font_size=12)
+    add_run(main_para, '\u5e74\uff08\u897f\u66a6', font_size=12)
     add_run(main_para, '{{EXAM_YEAR_AD}}', font_size=12)
-    add_run(main_para, '年）に国家試験委員会によって実施された卒業証明書試験（グレード', font_size=12)
+    add_run(main_para, '\u5e74\uff09\u306b\u56fd\u5bb6\u8a66\u9a13\u59d4\u54e1\u4f1a\u304c\u5b9f\u65bd\u3057\u305f\u7b2c', font_size=12)
     add_run(main_para, '{{GRADE}}', font_size=12)
-    add_run(main_para, '）を', font_size=12)
+    add_run(main_para, '\u5b66\u5e74\u4fee\u4e86\u8a66\u9a13\u306b\u304a\u3044\u3066\u3001GPA ', font_size=12)
     add_run(main_para, '{{GPA}}', font_size=12)
-    add_run(main_para, ' GPAで卒業したことを証明するものです。', font_size=12)
+    add_run(main_para, '\u3092\u53d6\u5f97\u3057\u305f\u3053\u3068\u3092\u8a3c\u660e\u3057\u307e\u3059\u3002', font_size=12)
     
     # ─── Spacers ───
     doc.add_paragraph()
