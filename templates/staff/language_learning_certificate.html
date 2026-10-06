@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Language Learning Certificate</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 28px; background: #eef2f5; color: #183047; font-family: Georgia, 'Times New Roman', serif; }
+    .form-panel { max-width: 680px; margin: 0 auto 28px; padding: 26px; border-radius: 12px; background: white; box-shadow: 0 8px 28px #17334d1c; font-family: Arial, sans-serif; }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .intro { margin: 0 0 22px; color: #526477; }
+    label { display: block; margin: 15px 0 6px; font-weight: 700; }
+    input, select { width: 100%; padding: 11px 12px; border: 1px solid #b9c5cf; border-radius: 6px; font: inherit; }
+    .actions { display: flex; gap: 10px; margin-top: 20px; }
+    button, .back { border: 0; border-radius: 6px; padding: 11px 17px; background: #075985; color: white; font: 700 14px Arial, sans-serif; text-decoration: none; cursor: pointer; }
+    .back { background: #536777; }
+    .error { color: #b42318; font: 14px Arial, sans-serif; }
+    .certificate { position: relative; width: min(100%, 1100px); min-height: 680px; margin: auto; padding: 24px; background: #fffdf7; border: 8px double #a7792d; box-shadow: 0 8px 30px #17334d22; text-align: center; }
+    .print-action { display: block; margin: 0 auto 14px; }
+    .inner { min-height: 616px; border: 1px solid #c9ad73; padding: 48px 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .eyebrow { color: #8a682b; font: 700 14px Arial, sans-serif; letter-spacing: .34em; text-transform: uppercase; }
+    .academy-logo { display: block; width: 92px; height: 92px; object-fit: contain; margin: 0 auto 12px; }
+    .institution { margin: 0 0 8px; color: #173b59; font: 700 17px Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+    .certificate h2 { margin: 18px 0 8px; color: #173b59; font-size: 42px; letter-spacing: .07em; text-transform: uppercase; }
+    .rule { width: 140px; height: 2px; margin: 12px auto 22px; background: #b38b45; }
+    .statement { margin: 0; font-size: 20px; line-height: 1.75; }
+    .candidate { margin: 12px 0 14px; color: #173b59; font-size: 38px; font-weight: 700; }
+    .level { display: inline-block; margin: 10px 0; padding: 8px 26px; border: 1px solid #b38b45; color: #785719; font: 700 24px Arial, sans-serif; letter-spacing: .14em; }
+    .footer-copy { margin-top: 12px; font-size: 17px; line-height: 1.7; }
+    .signatures { width: 100%; display: flex; justify-content: space-between; gap: 90px; margin-top: 48px; }
+    .signature { flex: 1; padding-top: 9px; border-top: 1px solid #7d858b; font: 13px Arial, sans-serif; color: #526477; }
+    @page { size: A4 landscape; margin: 10mm; }
+    @media print {
+      body { padding: 0; background: white; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .form-panel { display: none !important; }
+      .print-action { display: none !important; }
+      .certificate { width: 100%; height: 190mm; min-height: 0; padding: 7mm; box-shadow: none; break-inside: avoid; }
+      .inner { height: 100%; min-height: 0; padding: 8mm 18mm; }
+      .certificate h2 { font-size: 34pt; }
+      .candidate { font-size: 30pt; }
+      .statement { font-size: 16pt; }
+      .signatures { margin-top: 28pt; }
+    }
+  </style>
+</head>
+<body>
+  <section class="form-panel">
+    <h1>Language Learning Certificate</h1>
+    <p class="intro">Enter the candidate details to prepare a certificate. Use your browser’s print dialog and choose “Save as PDF” for a landscape PDF.</p>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <label for="candidate_name">Candidate name</label>
+      <input id="candidate_name" name="candidate_name" type="text" maxlength="200" value="{{ candidate_name|default:'' }}" required>
+      <label for="pass_year">Year passed</label>
+      <input id="pass_year" name="pass_year" type="number" min="1950" max="2100" value="{{ pass_year|default:'' }}" required>
+      <label for="level">Japanese language level</label>
+      <select id="level" name="level" required>
+        <option value="">Select level</option>
+        {% for option in levels %}<option value="{{ option }}" {% if level == option %}selected{% endif %}>{{ option }}</option>{% endfor %}
+      </select>
+      <div class="actions"><button type="submit">Create certificate</button><a class="back" href="{% url 'staff:staff_ssw_working_visa' %}">Back</a></div>
+    </form>
+  </section>
+
+  {% if certificate_ready %}
+  <button class="print-action" type="button" onclick="window.print()">Print / Save as PDF</button>
+  <article class="certificate">
+    <div class="inner">
+      <img class="academy-logo" src="{% static 'images/logo.png' %}" alt="Aqua Education and Training Academy logo">
+      <div class="institution">AQUA EDUCATION AND TRAINING ACADEMY</div>
+      <div class="eyebrow">Certificate of Achievement</div>
+      <h2>Language Learning</h2>
+      <div class="rule"></div>
+      <p class="statement">This is to certify that</p>
+      <div class="candidate">{{ candidate_name }}</div>
+      <p class="statement">has successfully passed the {{ level }} examination</p>
+      <div class="level">{{ level }}</div>
+      <div class="footer-copy">in the year <strong>{{ pass_year }}</strong><br>and has demonstrated achievement in Japanese language learning.</div>
+      <div class="signatures"><div class="signature">Authorized signature</div><div class="signature">Date of issue</div></div>
+    </div>
+  </article>
+  {% endif %}
+</body>
+</html>
